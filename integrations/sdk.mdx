@@ -1,6 +1,6 @@
 ---
 title: "官方 SDK（Python / Node）"
-description: "用 OpenAI 或 Anthropic 官方 SDK 接入 Example AI。"
+description: "用 OpenAI 或 Anthropic 官方 SDK 接入 北极熊 AI。"
 ---
 
 官方 SDK 只需改 `base_url` 和密钥即可指向本网关。
@@ -13,7 +13,7 @@ from openai import OpenAI
 
 client = OpenAI(
     api_key="YOUR_API_KEY",
-    base_url="https://api.example.com/v1",
+    base_url="https://bearlabs.ai/v1",
 )
 
 resp = client.chat.completions.create(
@@ -28,7 +28,7 @@ import OpenAI from "openai";
 
 const client = new OpenAI({
   apiKey: "YOUR_API_KEY",
-  baseURL: "https://api.example.com/v1",
+  baseURL: "https://bearlabs.ai/v1",
 });
 
 const resp = await client.chat.completions.create({
@@ -47,7 +47,7 @@ from anthropic import Anthropic
 
 client = Anthropic(
     api_key="YOUR_API_KEY",
-    base_url="https://api.example.com/anthropic",
+    base_url="https://bearlabs.ai/anthropic",
 )
 
 msg = client.messages.create(
@@ -63,7 +63,7 @@ import Anthropic from "@anthropic-ai/sdk";
 
 const client = new Anthropic({
   apiKey: "YOUR_API_KEY",
-  baseURL: "https://api.example.com/anthropic",
+  baseURL: "https://bearlabs.ai/anthropic",
 });
 
 const msg = await client.messages.create({
@@ -76,5 +76,5 @@ console.log(msg.content[0].text);
 </CodeGroup>
 
 <Tip>
-  任何支持「自定义 OpenAI Base URL」的工具（LobeChat、Chatbox、Continue、Zed、沉浸式翻译等）都同理：Base URL 设为 `https://api.example.com/v1`，密钥填你的 Key 即可。
+  任何支持「自定义 OpenAI Base URL」的工具（LobeChat、Chatbox、Continue、Zed、沉浸式翻译等）都同理：Base URL 设为 `https://bearlabs.ai/v1`，密钥填你的 Key 即可。
 </Tip>

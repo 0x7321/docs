@@ -9,15 +9,15 @@ description: "对话补全接口的完整说明：请求参数、流式输出、
 
 | 协议 | 方法与路径 |
 | --- | --- |
-| OpenAI 兼容 | `POST https://api.example.com/v1/chat/completions` |
-| Anthropic 兼容 | `POST https://api.example.com/anthropic/v1/messages` |
+| OpenAI 兼容 | `POST https://bearlabs.ai/v1/chat/completions` |
+| Anthropic 兼容 | `POST https://bearlabs.ai/anthropic/v1/messages` |
 
 ## 基本请求
 
 <Tabs>
   <Tab title="OpenAI 兼容">
     ```bash
-    curl https://api.example.com/v1/chat/completions \
+    curl https://bearlabs.ai/v1/chat/completions \
       -H "Authorization: Bearer YOUR_API_KEY" \
       -H "Content-Type: application/json" \
       -d '{
@@ -32,7 +32,7 @@ description: "对话补全接口的完整说明：请求参数、流式输出、
   </Tab>
   <Tab title="Anthropic 兼容">
     ```bash
-    curl https://api.example.com/anthropic/v1/messages \
+    curl https://bearlabs.ai/anthropic/v1/messages \
       -H "x-api-key: YOUR_API_KEY" \
       -H "anthropic-version: 2023-06-01" \
       -H "Content-Type: application/json" \
@@ -84,7 +84,7 @@ description: "对话补全接口的完整说明：请求参数、流式输出、
 ```python
 from openai import OpenAI
 
-client = OpenAI(api_key="YOUR_API_KEY", base_url="https://api.example.com/v1")
+client = OpenAI(api_key="YOUR_API_KEY", base_url="https://bearlabs.ai/v1")
 
 stream = client.chat.completions.create(
     model="gpt-4o",

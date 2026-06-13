@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Example AI",
+  "name": "北极熊 AI",
   "colors": {
     "primary": "#6D4AFF",
     "light": "#9B86FF",
@@ -17,6 +17,7 @@
             "group": "开始",
             "pages": [
               "index",
+              "guides/introduction",
               "guides/quickstart",
               "guides/authentication"
             ]
@@ -66,7 +67,7 @@
     "primary": {
       "type": "button",
       "label": "控制台",
-      "href": "https://example.com"
+      "href": "https://bearlabs.ai"
     }
   },
   "contextual": {
@@ -75,9 +76,9 @@
   "footer": {
     "links": [
       {
-        "header": "Example AI",
+        "header": "北极熊 AI",
         "items": [
-          { "label": "控制台", "href": "https://example.com" },
+          { "label": "控制台", "href": "https://bearlabs.ai" },
           { "label": "快速开始", "href": "/guides/quickstart" }
         ]
       }

@@ -8,7 +8,7 @@ description: "如何查询可用模型列表与实时价格。"
 ## 列出模型
 
 ```bash
-curl https://api.example.com/v1/models
+curl https://bearlabs.ai/v1/models
 ```
 
 返回与 OpenAI `/v1/models` 兼容的列表，每项含模型 `id`，可直接用于请求的 `model` 字段。
@@ -16,7 +16,7 @@ curl https://api.example.com/v1/models
 ## 查询实时价格
 
 ```bash
-curl https://api.example.com/v1/models/pricing
+curl https://bearlabs.ai/v1/models/pricing
 ```
 
 返回每个模型的输入 / 输出单价等信息。字段含义：
@@ -37,7 +37,7 @@ curl https://api.example.com/v1/models/pricing
 ```python
 import requests
 
-models = requests.get("https://api.example.com/v1/models").json()
+models = requests.get("https://bearlabs.ai/v1/models").json()
 for m in models["data"]:
     print(m["id"])
 ```

@@ -3,7 +3,7 @@ title: "鉴权与密钥"
 description: "如何创建、传递和管理 API Key。"
 ---
 
-所有请求都通过 API Key 鉴权。密钥在 [控制台](https://example.com) 的「令牌 / API Keys」页创建，形如 `sk-xxxxxxxx`。
+所有请求都通过 API Key 鉴权。密钥在 [控制台](https://bearlabs.ai) 的「令牌 / API Keys」页创建，形如 `sk-xxxxxxxx`。
 
 ## 如何传递密钥
 
@@ -16,12 +16,12 @@ description: "如何创建、传递和管理 API Key。"
 
 <CodeGroup>
 ```bash OpenAI 兼容
-curl https://api.example.com/v1/chat/completions \
+curl https://bearlabs.ai/v1/chat/completions \
   -H "Authorization: Bearer YOUR_API_KEY" ...
 ```
 
 ```bash Anthropic 兼容
-curl https://api.example.com/anthropic/v1/messages \
+curl https://bearlabs.ai/anthropic/v1/messages \
   -H "x-api-key: YOUR_API_KEY" ...
 ```
 </CodeGroup>
