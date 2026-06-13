@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "北极熊 AI",
+  "name": "北极熊实验室",
   "colors": {
     "primary": "#6D4AFF",
     "light": "#9B86FF",
@@ -76,7 +76,7 @@
   "footer": {
     "links": [
       {
-        "header": "北极熊 AI",
+        "header": "北极熊实验室",
         "items": [
           { "label": "控制台", "href": "https://bearlab.ai" },
           { "label": "快速开始", "href": "/guides/quickstart" }
