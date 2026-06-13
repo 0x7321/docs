@@ -1,55 +1,39 @@
-# Mintlify Starter Kit
+# Example AI Docs
 
-Use the starter kit to get your docs deployed and ready to customize.
+基于 [Mintlify](https://mintlify.com) 的对话模型网关文档（chat-only，OpenAI / Anthropic 双协议）。
 
-Click the green **Use this template** button at the top of this repo to copy the Mintlify starter kit. The starter kit contains examples with
+## 部署（Mintlify Hobby 免费档）
 
-- Guide pages
-- Navigation
-- Customizations
-- API reference pages
-- Use of popular components
+1. 用 GitHub 登录 [app.mintlify.com](https://app.mintlify.com)，选 **免费 Hobby** 档。
+2. 连接本仓库（首次会让你安装 Mintlify 的 GitHub App，授权本仓库即可）。
+3. Mintlify 自动构建并给一个 `<子域>.mintlify.app` 预览地址；之后每次 `git push` 自动重新部署。
+4. （可选）在 dashboard **Settings → Custom Domain** 绑定你的域名，如 `docs.你的站.com`（免费档支持）。
 
-**[Follow the full quickstart guide](https://starter.mintlify.com/quickstart)**
-
-## AI-assisted writing
-
-Set up your AI coding tool to work with Mintlify:
+## 本地预览
 
 ```bash
-npx skills add https://mintlify.com/docs
+bunx mint dev    # 或 npx mint dev
 ```
 
-This command installs Mintlify's documentation skill for your configured AI tools like Claude Code, Cursor, Windsurf, and others. The skill includes component reference, writing standards, and workflow guidance.
+## 改成你的品牌（部署前）
 
-See the [AI tools guides](/ai-tools) for tool-specific setup.
+全仓库把占位符替换成真实值：
 
-## Development
+| 占位符 | 换成 |
+| --- | --- |
+| `Example AI` | 你的品牌名 |
+| `https://api.example.com` | 你的 API 域名 |
+| `https://example.com` | 你的控制台 / 主站 |
 
-Install the [Mintlify CLI](https://www.npmjs.com/package/mint) to preview your documentation changes locally. To install, use the following command:
+一条命令（macOS）：
 
+```bash
+LC_ALL=C find . -name '*.mdx' -o -name 'docs.json' | xargs sed -i '' \
+  -e 's#https://api\.example\.com#https://api.你的域名#g' \
+  -e 's#https://example\.com#https://你的主站#g' \
+  -e 's#Example AI#你的品牌名#g'
 ```
-npm i -g mint
-```
 
-Run the following command at the root of your documentation, where your `docs.json` is located:
+## 内容范围
 
-```
-mint dev
-```
-
-View your local preview at `http://localhost:3000`.
-
-## Publishing changes
-
-Install our GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app) to propagate changes from your repo to your deployment. Changes are deployed to production automatically after pushing to the default branch.
-
-## Need help?
-
-### Troubleshooting
-
-- If your dev environment isn't running: Run `mint update` to ensure you have the most recent version of the CLI.
-- If a page loads as a 404: Make sure you are running in a folder with a valid `docs.json`.
-
-### Resources
-- [Mintlify documentation](https://mintlify.com/docs)
+只含**对话模型**：介绍 / 快速开始 / 鉴权 / 对话补全 / 模型与定价 / 提示词缓存 / 供应商路由 / 计费 / 速率限制 / 错误处理 + 客户端接入（Cursor / Claude Code / Cline·Roo / Codex / 官方 SDK）。不含视频、图像、嵌入模型。导航在 `docs.json`。

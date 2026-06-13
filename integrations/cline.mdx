@@ -1,0 +1,23 @@
+---
+title: "Cline / Roo Code"
+description: "在 VS Code 的 Cline 或 Roo Code 扩展中使用 Example AI。"
+---
+
+[Cline](https://github.com/cline/cline) 及其增强分支 [Roo Code](https://github.com/RooVetGit/Roo-Code) 都是 VS Code 里的 AI 编程扩展，通过 OpenAI 兼容接口接入。
+
+## 配置
+
+<Steps>
+  <Step title="选择 Provider">
+    在扩展设置中，**API Provider** 选择 **OpenAI Compatible**。
+  </Step>
+  <Step title="填写连接信息">
+    - **Base URL**：`https://api.example.com/v1`
+    - **API Key**：你的 `sk-...` 密钥
+    - **Model ID**：要使用的模型，如 `claude-sonnet-4-5` 或 `gpt-4o`
+  </Step>
+</Steps>
+
+<Note>
+  选 **OpenAI Compatible** 而不是 Anthropic，Base URL 用 `/v1`。编程类任务建议选上下文窗口较大、代码能力强的模型。Model ID 必须是 [模型接口](/guides/models) 中真实存在的 ID。
+</Note>

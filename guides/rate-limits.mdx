@@ -1,0 +1,37 @@
+---
+title: "速率限制"
+description: "为保障服务稳定性而设的请求频率限制及应对策略。"
+---
+
+为保证资源公平使用和服务稳定，网关对请求频率设有限制（Rate Limits）。
+
+## 限制维度
+
+速率限制通常按以下维度计算（具体数值以控制台显示为准）：
+
+- **每分钟请求数（RPM）**：单位时间内的请求次数上限。
+- **每分钟 token 数（TPM）**：单位时间内处理的 token 上限。
+- 不同**用户等级 / 分组**可能有不同额度。
+
+## 触发后的表现
+
+超出限制时，请求返回 `429 Too Many Requests`。响应可能包含 `Retry-After` 头，提示多久后可重试。
+
+## 应对策略
+
+- **指数退避重试**：遇到 `429` 时等待后重试，等待时间逐次加倍（如 1s → 2s → 4s）。
+- **控制并发**：降低同时在途的请求数。
+- **合并请求**：把多个小请求合并，减少调用次数。
+- **需要更高额度**：联系客服或提升账户等级。
+
+```python
+import time, openai
+
+def with_retry(fn, max_retries=5):
+    for i in range(max_retries):
+        try:
+            return fn()
+        except openai.RateLimitError:
+            time.sleep(2 ** i)
+    raise RuntimeError("超过最大重试次数")
+```

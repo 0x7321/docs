@@ -1,0 +1,33 @@
+---
+title: "Claude Code"
+description: "在 Anthropic 官方 Claude Code CLI 中使用 Example AI。"
+---
+
+[Claude Code](https://docs.claude.com/claude-code) 是 Anthropic 官方命令行编程工具，走 Anthropic 兼容协议接入。
+
+## 配置
+
+通过环境变量指向本网关的 Anthropic 兼容端点：
+
+```bash
+export ANTHROPIC_BASE_URL="https://api.example.com/anthropic"
+export ANTHROPIC_AUTH_TOKEN="YOUR_API_KEY"
+
+claude
+```
+
+- `ANTHROPIC_BASE_URL`：本网关的 Anthropic 兼容地址（注意是 `/anthropic`，不带 `/v1`）。
+- `ANTHROPIC_AUTH_TOKEN`：你的 API Key。
+
+## 持久化
+
+把上面两行写进 `~/.zshrc` 或 `~/.bashrc` 即可长期生效：
+
+```bash
+echo 'export ANTHROPIC_BASE_URL="https://api.example.com/anthropic"' >> ~/.zshrc
+echo 'export ANTHROPIC_AUTH_TOKEN="YOUR_API_KEY"' >> ~/.zshrc
+```
+
+<Warning>
+  模型名用 Claude 系列（如 `claude-sonnet-4-5`），需在 [模型接口](/guides/models) 中存在。若提示鉴权失败，确认用的是 `ANTHROPIC_AUTH_TOKEN` 而非 `ANTHROPIC_API_KEY`。
+</Warning>

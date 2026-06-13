@@ -1,72 +1,86 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mintlify Starter Kit",
+  "name": "Example AI",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#6D4AFF",
+    "light": "#9B86FF",
+    "dark": "#5739D6"
   },
   "favicon": "/favicon.svg",
   "navigation": {
-    "pages": [
+    "tabs": [
       {
-        "group": "Getting Started",
-        "pages": [
-          "index",
-          "quickstart"
+        "tab": "文档",
+        "groups": [
+          {
+            "group": "开始",
+            "pages": [
+              "index",
+              "guides/quickstart",
+              "guides/authentication"
+            ]
+          },
+          {
+            "group": "对话 API",
+            "pages": [
+              "guides/chat",
+              "guides/models",
+              "guides/prompt-caching",
+              "guides/providers"
+            ]
+          },
+          {
+            "group": "账户",
+            "pages": [
+              "guides/pricing",
+              "guides/rate-limits",
+              "guides/errors"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "客户端接入",
+        "groups": [
+          {
+            "group": "编辑器 / CLI",
+            "pages": [
+              "integrations/cursor",
+              "integrations/claude-code",
+              "integrations/cline",
+              "integrations/codex"
+            ]
+          },
+          {
+            "group": "SDK",
+            "pages": [
+              "integrations/sdk"
+            ]
+          }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    ]
   },
   "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://app.mintlify.com"
+      "label": "控制台",
+      "href": "https://example.com"
     }
   },
   "contextual": {
-    "options": [
-      "copy",
-      "view",
-      "chatgpt",
-      "claude",
-      "perplexity",
-      "mcp",
-      "cursor",
-      "vscode"
-    ]
+    "options": ["copy", "view", "chatgpt", "claude"]
   },
   "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+    "links": [
+      {
+        "header": "Example AI",
+        "items": [
+          { "label": "控制台", "href": "https://example.com" },
+          { "label": "快速开始", "href": "/guides/quickstart" }
+        ]
+      }
+    ]
   }
 }

@@ -1,0 +1,26 @@
+---
+title: "Cursor"
+description: "在 Cursor 中使用 Example AI 的对话模型。"
+---
+
+[Cursor](https://cursor.com) 是流行的 AI 代码编辑器。通过 OpenAI 兼容接口接入 Example AI。
+
+## 配置步骤
+
+<Steps>
+  <Step title="打开模型设置">
+    打开 **Settings → Models**。
+  </Step>
+  <Step title="覆盖 Base URL">
+    找到 **OpenAI API Key** 区域，展开 **Override OpenAI Base URL**，填写：
+    - **Base URL**：`https://api.example.com/v1`
+    - **API Key**：你的 `sk-...` 密钥
+  </Step>
+  <Step title="添加模型并验证">
+    在模型列表中添加你要用的模型名（如 `gpt-4o`、`claude-sonnet-4-5`），保存后点击 **Verify** 验证连通。
+  </Step>
+</Steps>
+
+<Note>
+  Cursor 仅走 OpenAI 兼容协议，Base URL 用 `/v1` 结尾。添加的模型名必须是 [模型接口](/guides/models) 中真实存在的 ID。验证失败时，先用 [快速开始](/guides/quickstart) 的 curl 确认密钥可用。
+</Note>

@@ -1,20 +1,35 @@
 ---
-title: "Introduction"
-description: "Welcome to your project"
+title: "Example AI"
+description: "基于 new-api 的对话模型聚合网关，OpenAI 与 Anthropic 双协议兼容。"
 ---
 
-Write a short description of your product here. What it does, who it's for, and what they can accomplish with it.
+一个 API，接入 OpenAI、Anthropic、Google 等数十家主流**对话模型**。一个密钥、一个余额、零改造迁入。
 
-<Tip>
-  Ready to make this your own? Start by editing this page. Update your `docs.json` file to customize your site. Then fill out the [Quickstart](/quickstart) page.
-</Tip>
+<CardGroup cols={2}>
+  <Card title="快速开始" icon="rocket" href="/guides/quickstart">
+    5 分钟创建密钥并发出第一个请求。
+  </Card>
+  <Card title="对话补全" icon="comments" href="/guides/chat">
+    OpenAI 兼容 `/v1` 与 Anthropic 兼容 `/anthropic`，任选其一。
+  </Card>
+  <Card title="模型与定价" icon="tags" href="/guides/models">
+    公开免鉴权接口，实时查询可用模型与价格。
+  </Card>
+  <Card title="客户端接入" icon="plug" href="/integrations/cursor">
+    Cursor、Claude Code、Cline、Codex、各类 SDK 即插即用。
+  </Card>
+</CardGroup>
 
-<Card title="Quickstart" icon="rocket" href="/quickstart">
-  This card links to the quickstart page in your project.
-</Card>
-<Card title="Components" icon="puzzle-piece" href="https://mintlify.com/docs/components">
-  Add cards, callouts, steps, tabs, and more to design and structure your pages.
-</Card>
-<Card title="Settings" icon="gear" href="https://mintlify.com/docs/organize/settings">
-  Set your site name, branding, and navigation in the `docs.json` file.
-</Card>
+## 为什么用 Example AI
+
+<CardGroup cols={3}>
+  <Card title="双协议兼容" icon="puzzle-piece">
+    现有 OpenAI / Anthropic 代码改一个 `base_url` 即可迁入。
+  </Card>
+  <Card title="只做对话" icon="message">
+    专注大语言对话模型，不含视频 / 图像 / 嵌入，接口简单计费透明。
+  </Card>
+  <Card title="按量计费" icon="coins">
+    用多少付多少，价格随上游浮动，余额实时可查。
+  </Card>
+</CardGroup>

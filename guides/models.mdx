@@ -1,0 +1,48 @@
+---
+title: "模型与定价接口"
+description: "如何查询可用模型列表与实时价格。"
+---
+
+支持的模型与价格会随上游变动。可用一个**公开、免鉴权**的接口实时获取，无需登录即可查询。
+
+## 列出模型
+
+```bash
+curl https://api.example.com/v1/models
+```
+
+返回与 OpenAI `/v1/models` 兼容的列表，每项含模型 `id`，可直接用于请求的 `model` 字段。
+
+## 查询实时价格
+
+```bash
+curl https://api.example.com/v1/models/pricing
+```
+
+返回每个模型的输入 / 输出单价等信息。字段含义：
+
+| 字段 | 说明 |
+| --- | --- |
+| `model` | 模型 ID |
+| `input` | 每百万输入 token 价格 |
+| `output` | 每百万输出 token 价格 |
+| `cached_input` | 命中[提示词缓存](/guides/prompt-caching)的输入价格（通常更低） |
+
+<Note>
+  价格以接口实时返回为准。文档不写死具体数字，避免与实际计费不一致。
+</Note>
+
+## 在代码中动态取模型
+
+```python
+import requests
+
+models = requests.get("https://api.example.com/v1/models").json()
+for m in models["data"]:
+    print(m["id"])
+```
+
+## 说明
+
+- 仅提供**对话模型**；不含图像、视频、嵌入等模型。
+- 同一模型可能由多个供应商承载，路由策略见 [供应商与路由](/guides/providers)。

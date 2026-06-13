@@ -1,0 +1,49 @@
+---
+title: "错误处理"
+description: "常见 HTTP 状态码、含义与排查方法。"
+---
+
+接口遵循标准 HTTP 状态码，错误响应体为 JSON，通常形如：
+
+```json
+{
+  "error": {
+    "message": "具体错误描述",
+    "type": "invalid_request_error",
+    "code": "..."
+  }
+}
+```
+
+## 常见状态码
+
+| 状态码 | 含义 | 常见原因与排查 |
+| --- | --- | --- |
+| `400` | 请求格式错误 | 参数缺失 / 类型错误；Anthropic 协议漏填 `max_tokens`。 |
+| `401` | 鉴权失败 | 密钥错误 / 已删除，或鉴权头用错（`Bearer` 与 `x-api-key` 混用）。 |
+| `402` | 余额不足 | 账户余额耗尽，[充值](/guides/pricing)后恢复。 |
+| `403` | 无权限 | 密钥被禁用，或无权访问该模型 / 分组。 |
+| `404` | 资源不存在 | 路径写错，或 `model` 名称不存在。 |
+| `429` | 触发限速 | 见 [速率限制](/guides/rate-limits)，退避重试。 |
+| `5xx` | 上游 / 网关异常 | 上游临时故障，稍后重试或锁定其他[供应商](/guides/providers)。 |
+
+## 排查清单
+
+<Steps>
+  <Step title="先看 error.message">
+    大多数问题描述里已写明原因。
+  </Step>
+  <Step title="核对 base_url 与协议">
+    `/v1`（OpenAI）还是 `/anthropic`（Anthropic），鉴权头要匹配。
+  </Step>
+  <Step title="核对模型名">
+    用 [模型接口](/guides/models) 确认 `model` 拼写存在。
+  </Step>
+  <Step title="检查余额 / 重试">
+    `402` 即余额问题；`5xx` / `429` 用指数退避重试，持续失败再联系客服。
+  </Step>
+</Steps>
+
+<Note>
+  `stream: true` 时，错误可能在建立连接后以 SSE 事件返回。客户端应处理流中途出现的 `error` 事件，而不仅依赖 HTTP 状态码。
+</Note>
