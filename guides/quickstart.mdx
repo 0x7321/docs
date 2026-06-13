@@ -7,7 +7,7 @@ description: "5 分钟内创建密钥并发出第一个对话请求。"
 
 <Steps>
   <Step title="注册并充值">
-    前往 [控制台](https://bearlabs.ai) 注册账号，在「钱包」页完成充值。新用户可先小额充值测试。
+    前往 [控制台](https://bearlab.ai) 注册账号，在「钱包」页完成充值。新用户可先小额充值测试。
   </Step>
   <Step title="创建 API Key">
     进入「令牌 / API Keys」页，点击「新建」，复制生成的 `sk-...` 密钥并妥善保管。密钥只在创建时完整显示一次。
@@ -22,7 +22,7 @@ description: "5 分钟内创建密钥并发出第一个对话请求。"
 <Tabs>
   <Tab title="OpenAI 兼容">
     ```bash
-    curl https://bearlabs.ai/v1/chat/completions \
+    curl https://bearlab.ai/v1/chat/completions \
       -H "Authorization: Bearer YOUR_API_KEY" \
       -H "Content-Type: application/json" \
       -d '{
@@ -33,7 +33,7 @@ description: "5 分钟内创建密钥并发出第一个对话请求。"
   </Tab>
   <Tab title="Anthropic 兼容">
     ```bash
-    curl https://bearlabs.ai/anthropic/v1/messages \
+    curl https://bearlab.ai/anthropic/v1/messages \
       -H "x-api-key: YOUR_API_KEY" \
       -H "anthropic-version: 2023-06-01" \
       -H "Content-Type: application/json" \
@@ -50,7 +50,7 @@ description: "5 分钟内创建密钥并发出第一个对话请求。"
 
     client = OpenAI(
         api_key="YOUR_API_KEY",
-        base_url="https://bearlabs.ai/v1",
+        base_url="https://bearlab.ai/v1",
     )
 
     resp = client.chat.completions.create(

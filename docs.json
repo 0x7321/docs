@@ -67,7 +67,7 @@
     "primary": {
       "type": "button",
       "label": "控制台",
-      "href": "https://bearlabs.ai"
+      "href": "https://bearlab.ai"
     }
   },
   "contextual": {
@@ -78,7 +78,7 @@
       {
         "header": "北极熊 AI",
         "items": [
-          { "label": "控制台", "href": "https://bearlabs.ai" },
+          { "label": "控制台", "href": "https://bearlab.ai" },
           { "label": "快速开始", "href": "/guides/quickstart" }
         ]
       }

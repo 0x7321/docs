@@ -12,21 +12,21 @@ description: "在 OpenAI 官方 Codex CLI 中使用 北极熊 AI。"
 ```toml
 # 默认模型与 provider
 model = "gpt-4o"
-model_provider = "bearlabs"
+model_provider = "bearlab"
 
 # 第三方 provider 必须关闭响应存储
 disable_response_storage = true
 
-[model_providers.bearlabs]
+[model_providers.bearlab]
 name = "北极熊 AI"
-base_url = "https://bearlabs.ai/v1"
-env_key = "BEARLABS_API_KEY"
+base_url = "https://bearlab.ai/v1"
+env_key = "BEARLAB_API_KEY"
 ```
 
 然后导出密钥并运行：
 
 ```bash
-export BEARLABS_API_KEY="YOUR_API_KEY"
+export BEARLAB_API_KEY="YOUR_API_KEY"
 codex
 ```
 
