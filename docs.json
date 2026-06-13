@@ -36,7 +36,8 @@
             "pages": [
               "guides/pricing",
               "guides/rate-limits",
-              "guides/errors"
+              "guides/errors",
+              "guides/availability"
             ]
           }
         ]
