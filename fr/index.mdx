@@ -3,6 +3,17 @@ title: "BearLab"
 description: "Une clé pour chaque modèle conversationnel majeur. OpenAI, Anthropic, Google et DeepSeek via une seule API."
 ---
 
+## Disponibilité du service
+
+BearLab dessert directement les juridictions des **États-Unis et de l'Union européenne**. La région **Asie-Pacifique** est desservie par un partenaire régional, et les requêtes API de cette région doivent utiliser le point de terminaison dédié `https://bearlab.in` au lieu de `bearlab.ai`.
+
+| Région | Point de terminaison |
+| --- | --- |
+| US / EU | `https://bearlab.ai/v1` · `https://bearlab.ai/anthropic` |
+| Asie-Pacifique | `https://bearlab.in/v1` · `https://bearlab.in/anthropic` |
+
+Voir [Service Availability](/fr/guides/availability).
+
 BearLab (BearLab.ai) réunit les modèles conversationnels de dizaines de fournisseurs sous une seule API. Créez une clé, définissez une `base_url`, et appelez les derniers modèles d'OpenAI, Anthropic, Google et DeepSeek sans vous inscrire et recharger séparément chez chaque fournisseur.
 
 L'interface est compatible avec les protocoles OpenAI et Anthropic, ce qui signifie que le code existant fonctionne généralement avec une simple modification `base_url` sur une ligne.
@@ -21,14 +32,3 @@ L'interface est compatible avec les protocoles OpenAI et Anthropic, ce qui signi
     Cursor, Claude Code, Cline, Codex et SDKs, prêts à brancher.
   </Card>
 </CardGroup>
-
-## Disponibilité du service
-
-BearLab dessert directement les juridictions des **États-Unis et de l'Union européenne**. La région **Asie-Pacifique** est desservie par un partenaire régional, et les requêtes API de cette région doivent utiliser le point de terminaison dédié `https://bearlab.in` au lieu de `bearlab.ai`.
-
-| Région | Point de terminaison |
-| --- | --- |
-| US / EU | `https://bearlab.ai/v1` · `https://bearlab.ai/anthropic` |
-| Asie-Pacifique | `https://bearlab.in/v1` · `https://bearlab.in/anthropic` |
-
-Voir [Service Availability](/fr/guides/availability).

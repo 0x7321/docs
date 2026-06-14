@@ -3,6 +3,17 @@ title: "BearLab"
 description: "हर प्रमुख conversational model के लिए एक key। OpenAI, Anthropic, Google, और DeepSeek एक ही API के माध्यम से।"
 ---
 
+## सेवा उपलब्धता
+
+BearLab **संयुक्त राज्य अमेरिका और यूरोपीय संघ** jurisdictions को सीधे सेवा प्रदान करता है। **एशिया-प्रशांत** क्षेत्र एक Regional Partner द्वारा सेवा प्रदान किया जाता है, और उस क्षेत्र से API requests को `https://bearlab.in` के बजाय dedicated endpoint का उपयोग करना चाहिए।
+
+| Region | Endpoint |
+| --- | --- |
+| US / EU | `https://bearlab.ai/v1` · `https://bearlab.ai/anthropic` |
+| Asia-Pacific | `https://bearlab.in/v1` · `https://bearlab.in/anthropic` |
+
+[Service Availability](/hi/guides/availability) देखें।
+
 BearLab (BearLab.ai) दर्जनों providers के conversational models को एक API के तहत लाता है। एक key बनाएं, एक `base_url` सेट करें, और OpenAI, Anthropic, Google, और DeepSeek के नवीनतम models को बिना प्रत्येक vendor के साथ अलग से रजिस्टर और top-up किए कॉल करें।
 
 यह interface OpenAI और Anthropic दोनों protocols के साथ compatible है, इसलिए मौजूदा code आमतौर पर एक-पंक्ति `base_url` परिवर्तन के साथ काम करता है।
@@ -21,14 +32,3 @@ BearLab (BearLab.ai) दर्जनों providers के conversational model
     Cursor, Claude Code, Cline, Codex, और SDKs, तुरंत उपयोग के लिए तैयार।
   </Card>
 </CardGroup>
-
-## सेवा उपलब्धता
-
-BearLab **संयुक्त राज्य अमेरिका और यूरोपीय संघ** jurisdictions को सीधे सेवा प्रदान करता है। **एशिया-प्रशांत** क्षेत्र एक Regional Partner द्वारा सेवा प्रदान किया जाता है, और उस क्षेत्र से API requests को `https://bearlab.in` के बजाय dedicated endpoint का उपयोग करना चाहिए।
-
-| Region | Endpoint |
-| --- | --- |
-| US / EU | `https://bearlab.ai/v1` · `https://bearlab.ai/anthropic` |
-| Asia-Pacific | `https://bearlab.in/v1` · `https://bearlab.in/anthropic` |
-
-[Service Availability](/hi/guides/availability) देखें।
