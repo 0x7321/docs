@@ -21,6 +21,7 @@ disable_response_storage = true
 name = "BearLab AI"
 base_url = "https://bearlab.ai/v1"
 env_key = "BEARLAB_API_KEY"
+wire_api = "responses"
 ```
 
 然后导出密钥并运行：
@@ -31,5 +32,5 @@ codex
 ```
 
 <Warning>
-  `base_url` 用 OpenAI 兼容地址（`/v1`）。第三方 provider 需设 `disable_response_storage = true`，否则部分功能会因官方存储接口不可用而报错。`model` 必须是 [模型接口](/zh-Hans/guides/models) 中存在的 ID。
+  `base_url` 用 OpenAI 兼容地址（`/v1`）。第三方 provider 必须设 `wire_api = "responses"`（Codex 唯一支持的协议）与 `disable_response_storage = true`，否则部分功能会报错。`model` 必须是 [模型接口](/zh-Hans/guides/models) 中存在的 ID。
 </Warning>

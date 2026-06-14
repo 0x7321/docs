@@ -20,6 +20,7 @@ disable_response_storage = true
 name = "BearLab"
 base_url = "https://bearlab.ai/v1"
 env_key = "BEARLAB_API_KEY"
+wire_api = "responses"
 ```
 
 Ensuite exportez la clé et exécutez :
@@ -30,5 +31,5 @@ codex
 ```
 
 <Warning>
-  Utilisez l'adresse compatible OpenAI (`/v1`). Définissez `disable_response_storage = true` pour les fournisseurs tiers, sinon certaines fonctionnalités erreur. `model` doit exister dans le [point de terminaison des modèles](/fr/guides/models).
+  Utilisez l'adresse compatible OpenAI (`/v1`). Les fournisseurs tiers doivent définir `wire_api = "responses"` (le seul protocole pris en charge par Codex) et `disable_response_storage = true`, sinon certaines fonctionnalités échouent. `model` doit exister dans le [point de terminaison des modèles](/fr/guides/models).
 </Warning>

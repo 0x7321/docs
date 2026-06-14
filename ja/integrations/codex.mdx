@@ -20,6 +20,7 @@ disable_response_storage = true
 name = "BearLab"
 base_url = "https://bearlab.ai/v1"
 env_key = "BEARLAB_API_KEY"
+wire_api = "responses"
 ```
 
 次にキーをエクスポートして実行します:
@@ -30,5 +31,5 @@ codex
 ```
 
 <Warning>
-  OpenAI互換アドレス(`/v1`)を使用してください。サードパーティプロバイダーの場合は`disable_response_storage = true`を設定してください。そうしないと一部の機能がエラーになります。`model`は[modelsエンドポイント](/ja/guides/models)に存在する必要があります。
+  OpenAI互換アドレス(`/v1`)を使用してください。サードパーティプロバイダーは `wire_api = "responses"`(Codex が唯一サポートするプロトコル)と `disable_response_storage = true` を設定する必要があります。そうしないと一部の機能がエラーになります。`model`は[modelsエンドポイント](/ja/guides/models)に存在する必要があります。
 </Warning>
