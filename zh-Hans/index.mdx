@@ -1,0 +1,34 @@
+---
+title: "BearLab AI"
+description: "一个 Key，用上所有主流对话模型。OpenAI、Anthropic、Google、DeepSeek 同一个 API 接入。"
+---
+
+BearLab AI（BearLab.ai）把数十家厂商的对话模型收到一个 API 下。申请一个 Key、配一个 `base_url`，就能调 OpenAI、Anthropic、Google、DeepSeek 的最新对话模型，不用各家分别注册和充值。
+
+接口同时兼容 OpenAI 和 Anthropic 两套协议，现有代码基本不用改。
+
+<CardGroup cols={2}>
+  <Card title="快速开始" icon="rocket" href="/zh-Hans/guides/quickstart" cta="立即开始">
+    5 分钟创建密钥并发出第一个请求。
+  </Card>
+  <Card title="平台介绍" icon="circle-info" href="/zh-Hans/guides/introduction" cta="了解平台">
+    BearLab AI 是什么、能做什么。
+  </Card>
+  <Card title="对话补全" icon="comments" href="/zh-Hans/guides/chat" cta="看接口">
+    OpenAI 兼容 `/v1` 与 Anthropic 兼容 `/anthropic`，任选其一。
+  </Card>
+  <Card title="客户端接入" icon="plug" href="/zh-Hans/integrations/cursor" cta="去接入">
+    Cursor、Claude Code、Cline、Codex、各类 SDK 即插即用。
+  </Card>
+</CardGroup>
+
+## 服务区域
+
+BearLab AI面向**美国与欧盟**司法管辖区直接提供服务。**亚太区域**由区域合作伙伴提供服务，该区域的 API 请求须改用专用接口域名 `https://bearlab.in`，而非 `bearlab.ai`。
+
+| 区域 | 接口地址 |
+| --- | --- |
+| 美国 / 欧盟 | `https://bearlab.ai/v1` · `https://bearlab.ai/anthropic` |
+| 亚太区域 | `https://bearlab.in/v1` · `https://bearlab.in/anthropic` |
+
+详见 [服务区域](/zh-Hans/guides/availability)。

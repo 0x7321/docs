@@ -11,14 +11,13 @@
   "navigation": {
     "languages": [
       {
-        "language": "zh",
-        "default": true,
+        "language": "zh-Hant",
         "tabs": [
           {
-            "tab": "文档",
+            "tab": "文件",
             "groups": [
               {
-                "group": "开始",
+                "group": "開始",
                 "pages": [
                   "index",
                   "guides/introduction",
@@ -27,7 +26,7 @@
                 ]
               },
               {
-                "group": "对话 API",
+                "group": "對話 API",
                 "pages": [
                   "guides/chat",
                   "guides/models",
@@ -36,7 +35,7 @@
                 ]
               },
               {
-                "group": "账户",
+                "group": "帳戶",
                 "pages": [
                   "guides/pricing",
                   "guides/user-levels",
@@ -48,10 +47,10 @@
             ]
           },
           {
-            "tab": "客户端接入",
+            "tab": "客戶端接入",
             "groups": [
               {
-                "group": "编辑器 / CLI",
+                "group": "編輯器 / CLI",
                 "pages": [
                   "integrations/cursor",
                   "integrations/claude-code",
@@ -67,60 +66,61 @@
               }
             ]
           }
-        ]
+        ],
+        "default": true
       },
       {
-        "language": "zh-Hant",
+        "language": "zh-Hans",
         "tabs": [
           {
-            "tab": "文件",
+            "tab": "文档",
             "groups": [
               {
-                "group": "開始",
+                "group": "开始",
                 "pages": [
-                  "zh-Hant/index",
-                  "zh-Hant/guides/introduction",
-                  "zh-Hant/guides/quickstart",
-                  "zh-Hant/guides/authentication"
+                  "zh-Hans/index",
+                  "zh-Hans/guides/introduction",
+                  "zh-Hans/guides/quickstart",
+                  "zh-Hans/guides/authentication"
                 ]
               },
               {
-                "group": "對話 API",
+                "group": "对话 API",
                 "pages": [
-                  "zh-Hant/guides/chat",
-                  "zh-Hant/guides/models",
-                  "zh-Hant/guides/prompt-caching",
-                  "zh-Hant/guides/providers"
+                  "zh-Hans/guides/chat",
+                  "zh-Hans/guides/models",
+                  "zh-Hans/guides/prompt-caching",
+                  "zh-Hans/guides/providers"
                 ]
               },
               {
-                "group": "帳戶",
+                "group": "账户",
                 "pages": [
-                  "zh-Hant/guides/pricing",
-                  "zh-Hant/guides/user-levels",
-                  "zh-Hant/guides/rate-limits",
-                  "zh-Hant/guides/errors",
-                  "zh-Hant/guides/availability"
+                  "zh-Hans/guides/pricing",
+                  "zh-Hans/guides/user-levels",
+                  "zh-Hans/guides/rate-limits",
+                  "zh-Hans/guides/errors",
+                  "zh-Hans/guides/availability"
                 ]
               }
             ]
           },
           {
-            "tab": "客戶端接入",
+            "tab": "客户端接入",
             "groups": [
               {
-                "group": "編輯器 / CLI",
+                "group": "编辑器 / CLI",
                 "pages": [
-                  "zh-Hant/integrations/cursor",
-                  "zh-Hant/integrations/claude-code",
-                  "zh-Hant/integrations/cline",
-                  "zh-Hant/integrations/codex"
+                  "zh-Hans/integrations/cursor",
+                  "zh-Hans/integrations/claude-code",
+                  "zh-Hans/integrations/cline",
+                  "zh-Hans/integrations/codex"
                 ]
               },
               {
                 "group": "SDK",
                 "pages": [
-                  "zh-Hant/integrations/sdk"
+                  "zh-Hans/integrations/sdk"
                 ]
               }
             ]

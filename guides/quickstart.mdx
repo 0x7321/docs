@@ -1,41 +1,41 @@
 ---
-title: "快速开始"
-description: "5 分钟内创建密钥并发出第一个对话请求。"
+title: "快速開始"
+description: "5 分鐘內建立金鑰併發出第一個對話請求。"
 ---
 
-只需三步即可调用模型。
+只需三步即可呼叫模型。
 
 <Note>
-  亚太区域用户:API 接口地址请改用 `https://bearlab.in`（`/v1`、`/anthropic`），而非 `bearlab.ai`。详见 [服务区域](/guides/availability)。
+  亞太區域使用者:API 介面地址請改用 `https://bearlab.in`（`/v1`、`/anthropic`），而非 `bearlab.ai`。詳見 [服務區域](/guides/availability)。
 </Note>
 
 <Steps>
-  <Step title="注册并充值">
-    前往 [控制台](https://bearlab.ai) 注册账号，在「钱包」页完成充值。新用户可先小额充值测试。
+  <Step title="註冊並充值">
+    前往 [控制檯](https://bearlab.ai) 註冊賬號，在「錢包」頁完成充值。新使用者可先小額充值測試。
   </Step>
-  <Step title="创建 API Key">
-    进入「令牌 / API Keys」页，点击「新建」，复制生成的 `sk-...` 密钥并妥善保管。密钥只在创建时完整显示一次。
+  <Step title="建立 API Key">
+    進入「令牌 / API Keys」頁，點選「新建」，複製生成的 `sk-...` 金鑰並妥善保管。金鑰只在建立時完整顯示一次。
   </Step>
-  <Step title="发起第一个请求">
-    把下面示例里的 `YOUR_API_KEY` 换成你的密钥即可。
+  <Step title="發起第一個請求">
+    把下面示例裡的 `YOUR_API_KEY` 換成你的金鑰即可。
   </Step>
 </Steps>
 
-## 调用示例
+## 呼叫示例
 
 <Tabs>
-  <Tab title="OpenAI 兼容">
+  <Tab title="OpenAI 相容">
     ```bash
     curl https://bearlab.ai/v1/chat/completions \
       -H "Authorization: Bearer YOUR_API_KEY" \
       -H "Content-Type: application/json" \
       -d '{
         "model": "gpt-4o",
-        "messages": [{"role": "user", "content": "用一句话介绍你自己"}]
+        "messages": [{"role": "user", "content": "用一句話介紹你自己"}]
       }'
     ```
   </Tab>
-  <Tab title="Anthropic 兼容">
+  <Tab title="Anthropic 相容">
     ```bash
     curl https://bearlab.ai/anthropic/v1/messages \
       -H "x-api-key: YOUR_API_KEY" \
@@ -44,7 +44,7 @@ description: "5 分钟内创建密钥并发出第一个对话请求。"
       -d '{
         "model": "claude-sonnet-4-5",
         "max_tokens": 256,
-        "messages": [{"role": "user", "content": "用一句话介绍你自己"}]
+        "messages": [{"role": "user", "content": "用一句話介紹你自己"}]
       }'
     ```
   </Tab>
@@ -59,7 +59,7 @@ description: "5 分钟内创建密钥并发出第一个对话请求。"
 
     resp = client.chat.completions.create(
         model="gpt-4o",
-        messages=[{"role": "user", "content": "用一句话介绍你自己"}],
+        messages=[{"role": "user", "content": "用一句話介紹你自己"}],
     )
     print(resp.choices[0].message.content)
     ```
@@ -67,5 +67,5 @@ description: "5 分钟内创建密钥并发出第一个对话请求。"
 </Tabs>
 
 <Tip>
-  想知道支持哪些模型、价格多少？见 [模型与定价接口](/guides/models)。要接入 Cursor / Claude Code？见 [客户端接入](/integrations/cursor)。
+  想知道支援哪些模型、價格多少？見 [模型與定價介面](/guides/models)。要接入 Cursor / Claude Code？見 [客戶端接入](/integrations/cursor)。
 </Tip>

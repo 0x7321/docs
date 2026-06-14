@@ -1,48 +1,48 @@
 ---
-title: "鉴权与密钥"
-description: "如何创建、传递和管理 API Key。"
+title: "鑑權與金鑰"
+description: "如何建立、傳遞和管理 API Key。"
 ---
 
-所有请求都通过 API Key 鉴权。密钥在 [控制台](https://bearlab.ai) 的「令牌 / API Keys」页创建，形如 `sk-xxxxxxxx`。
+所有請求都透過 API Key 鑑權。金鑰在 [控制檯](https://bearlab.ai) 的「令牌 / API Keys」頁建立，形如 `sk-xxxxxxxx`。
 
 <Note>
-  亚太区域用户:接口地址请改用 `https://bearlab.in`，而非 `bearlab.ai`。详见 [服务区域](/guides/availability)。
+  亞太區域使用者:介面地址請改用 `https://bearlab.in`，而非 `bearlab.ai`。詳見 [服務區域](/guides/availability)。
 </Note>
 
-## 如何传递密钥
+## 如何傳遞金鑰
 
-两套协议的鉴权头不同：
+兩套協議的鑑權頭不同：
 
-| 协议 | 请求头 |
+| 協議 | 請求頭 |
 | --- | --- |
-| OpenAI 兼容 | `Authorization: Bearer YOUR_API_KEY` |
-| Anthropic 兼容 | `x-api-key: YOUR_API_KEY` |
+| OpenAI 相容 | `Authorization: Bearer YOUR_API_KEY` |
+| Anthropic 相容 | `x-api-key: YOUR_API_KEY` |
 
 <CodeGroup>
-```bash OpenAI 兼容
+```bash OpenAI 相容
 curl https://bearlab.ai/v1/chat/completions \
   -H "Authorization: Bearer YOUR_API_KEY" ...
 ```
 
-```bash Anthropic 兼容
+```bash Anthropic 相容
 curl https://bearlab.ai/anthropic/v1/messages \
   -H "x-api-key: YOUR_API_KEY" ...
 ```
 </CodeGroup>
 
-## 密钥管理建议
+## 金鑰管理建議
 
-- **一处一密钥**：为不同项目 / 客户端分别创建密钥，方便单独停用和统计用量。
-- **设置额度上限**：可在创建时给单个密钥设定可用额度，降低泄露风险。
-- **不要硬编码**：用环境变量注入，不要写进代码仓库。
-- **泄露即吊销**：怀疑泄露时，在控制台删除该密钥并新建。
+- **一處一金鑰**：為不同專案 / 客戶端分別建立金鑰，方便單獨停用和統計用量。
+- **設定額度上限**：可在建立時給單個金鑰設定可用額度，降低洩露風險。
+- **不要硬編碼**：用環境變數注入，不要寫進程式碼倉庫。
+- **洩露即吊銷**：懷疑洩露時，在控制檯刪除該金鑰並新建。
 
-## 常见鉴权错误
+## 常見鑒權錯誤
 
-| 现象 | 原因 |
+| 現象 | 原因 |
 | --- | --- |
-| `401 Unauthorized` | 密钥错误、已删除，或鉴权头写错（Bearer / x-api-key 混用）。 |
-| `403 Forbidden` | 密钥被禁用，或无权访问该模型 / 分组。 |
-| `402` 余额不足 | 账户余额耗尽，需充值。详见 [计费与充值](/guides/pricing)。 |
+| `401 Unauthorized` | 金鑰錯誤、已刪除，或鑑權頭寫錯（Bearer / x-api-key 混用）。 |
+| `403 Forbidden` | 金鑰被禁用，或無權訪問該模型 / 分組。 |
+| `402` 餘額不足 | 賬戶餘額耗盡，需充值。詳見 [計費與充值](/guides/pricing)。 |
 
-更多状态码见 [错误处理](/guides/errors)。
+更多狀態碼見 [錯誤處理](/guides/errors)。

@@ -1,26 +1,26 @@
 ---
-title: "对话补全"
-description: "对话补全接口的完整说明：请求参数、流式输出、多轮对话与双协议差异。"
+title: "對話補全"
+description: "對話補全介面的完整說明：請求引數、流式輸出、多輪對話與雙協議差異。"
 ---
 
-对话补全是核心接口。提供 OpenAI、Anthropic、Gemini 三套兼容实现，共用同一密钥。
+對話補全是核心介面。提供 OpenAI、Anthropic、Gemini 三套相容實現，共用同一金鑰。
 
 <Note>
-  亚太区域用户:接口地址请改用 `https://bearlab.in`，而非 `bearlab.ai`。详见 [服务区域](/guides/availability)。
+  亞太區域使用者:介面地址請改用 `https://bearlab.in`，而非 `bearlab.ai`。詳見 [服務區域](/guides/availability)。
 </Note>
 
-## 端点
+## 端點
 
-| 协议 | 方法与路径 |
+| 協議 | 方法與路徑 |
 | --- | --- |
-| OpenAI 兼容 | `POST https://bearlab.ai/v1/chat/completions` |
-| Anthropic 兼容 | `POST https://bearlab.ai/anthropic/v1/messages` |
+| OpenAI 相容 | `POST https://bearlab.ai/v1/chat/completions` |
+| Anthropic 相容 | `POST https://bearlab.ai/anthropic/v1/messages` |
 | Gemini 原生 | `base_url=https://bearlab.ai`，`api_version=v1beta`（Google genai SDK） |
 
-## 基本请求
+## 基本請求
 
 <Tabs>
-  <Tab title="OpenAI 兼容">
+  <Tab title="OpenAI 相容">
     ```bash
     curl https://bearlab.ai/v1/chat/completions \
       -H "Authorization: Bearer YOUR_API_KEY" \
@@ -28,14 +28,14 @@ description: "对话补全接口的完整说明：请求参数、流式输出、
       -d '{
         "model": "gpt-4o",
         "messages": [
-          {"role": "system", "content": "你是一个简洁的助手。"},
+          {"role": "system", "content": "你是一個簡潔的助手。"},
           {"role": "user", "content": "你好"}
         ],
         "temperature": 0.7
       }'
     ```
   </Tab>
-  <Tab title="Anthropic 兼容">
+  <Tab title="Anthropic 相容">
     ```bash
     curl https://bearlab.ai/anthropic/v1/messages \
       -H "x-api-key: YOUR_API_KEY" \
@@ -44,32 +44,32 @@ description: "对话补全接口的完整说明：请求参数、流式输出、
       -d '{
         "model": "claude-sonnet-4-5",
         "max_tokens": 1024,
-        "system": "你是一个简洁的助手。",
+        "system": "你是一個簡潔的助手。",
         "messages": [{"role": "user", "content": "你好"}]
       }'
     ```
   </Tab>
 </Tabs>
 
-## 常用参数
+## 常用引數
 
-| 参数 | 说明 |
+| 引數 | 說明 |
 | --- | --- |
-| `model` | 模型 ID。可用列表见 [模型与定价接口](/guides/models)。 |
-| `messages` | 多轮对话消息数组，按时间顺序排列。 |
-| `temperature` | 采样温度，`0`~`2`，越高越发散。 |
-| `top_p` | 核采样，与 `temperature` 二选一调节即可。 |
-| `max_tokens` | 最大生成 token 数。Anthropic 协议下为**必填**。 |
-| `stream` | 是否流式返回，`true` 时以 SSE 推送。 |
+| `model` | 模型 ID。可用列表見 [模型與定價介面](/guides/models)。 |
+| `messages` | 多輪對話訊息陣列，按時間順序排列。 |
+| `temperature` | 取樣溫度，`0`~`2`，越高越發散。 |
+| `top_p` | 核取樣，與 `temperature` 二選一調節即可。 |
+| `max_tokens` | 最大生成 token 數。Anthropic 協議下為**必填**。 |
+| `stream` | 是否流式返回，`true` 時以 SSE 推送。 |
 | `stop` | 停止序列。 |
 
 <Warning>
-  **协议差异**：OpenAI 协议把 system 提示放进 `messages` 的 `role: system`；Anthropic 协议用顶层 `system` 字段，且 `max_tokens` 必填。
+  **協議差異**：OpenAI 協議把 system 提示放進 `messages` 的 `role: system`；Anthropic 協議用頂層 `system` 欄位，且 `max_tokens` 必填。
 </Warning>
 
-## 多轮对话
+## 多輪對話
 
-把历史消息按顺序全部放进 `messages` 即可，服务端不保存上下文，每次请求需自带完整历史。
+把歷史訊息按順序全部放進 `messages` 即可，服務端不儲存上下文，每次請求需自帶完整歷史。
 
 ```json
 {
@@ -77,14 +77,14 @@ description: "对话补全接口的完整说明：请求参数、流式输出、
   "messages": [
     {"role": "user", "content": "我叫小明"},
     {"role": "assistant", "content": "你好，小明！"},
-    {"role": "user", "content": "我叫什么？"}
+    {"role": "user", "content": "我叫什麼？"}
   ]
 }
 ```
 
-## 流式输出
+## 流式輸出
 
-设 `stream: true`，响应以 SSE 分块推送，最后以 `data: [DONE]` 结束（OpenAI 协议）。
+設 `stream: true`，響應以 SSE 分塊推送，最後以 `data: [DONE]` 結束（OpenAI 協議）。
 
 ```python
 from openai import OpenAI
@@ -93,7 +93,7 @@ client = OpenAI(api_key="YOUR_API_KEY", base_url="https://bearlab.ai/v1")
 
 stream = client.chat.completions.create(
     model="gpt-4o",
-    messages=[{"role": "user", "content": "写一首四行小诗"}],
+    messages=[{"role": "user", "content": "寫一首四行小詩"}],
     stream=True,
 )
 for chunk in stream:
@@ -102,7 +102,7 @@ for chunk in stream:
         print(delta, end="", flush=True)
 ```
 
-## 响应结构（OpenAI 协议）
+## 響應結構（OpenAI 協議）
 
 ```json
 {
@@ -120,14 +120,14 @@ for chunk in stream:
 }
 ```
 
-`usage` 中的 token 数即本次计费依据，详见 [计费与充值](/guides/pricing)。
+`usage` 中的 token 數即本次計費依據，詳見 [計費與充值](/guides/pricing)。
 
-## 工具调用（Function Calling）
+## 工具呼叫（Function Calling）
 
-OpenAI 与 Anthropic 协议都支持工具调用。
+OpenAI 與 Anthropic 協議都支援工具呼叫。
 
 <Tabs>
-  <Tab title="OpenAI 兼容">
+  <Tab title="OpenAI 相容">
     ```python
     from openai import OpenAI
 
@@ -154,7 +154,7 @@ OpenAI 与 Anthropic 协议都支持工具调用。
     print(resp.choices[0].message)
     ```
   </Tab>
-  <Tab title="Anthropic 兼容">
+  <Tab title="Anthropic 相容">
     ```python
     import anthropic
 
@@ -181,9 +181,9 @@ OpenAI 与 Anthropic 协议都支持工具调用。
   </Tab>
 </Tabs>
 
-## Gemini 原生协议
+## Gemini 原生協議
 
-Gemini 模型可直接用 Google AI Studio 的原生格式调用，无需转成 OpenAI 格式，适合已在用 `genai` SDK 的项目。
+Gemini 模型可直接用 Google AI Studio 的原生格式呼叫，無需轉成 OpenAI 格式，適合已在用 `genai` SDK 的專案。
 
 ```python
 from google import genai
@@ -199,11 +199,11 @@ print(resp.text)
 ```
 
 <Warning>
-  1. `base_url` 设为 `https://bearlab.ai`（不带 `/v1beta` 后缀，SDK 会自动追加）
-  2. `api_version` 设为 `v1beta`
-  3. 依赖：Python `pip install google-genai`、Node.js `npm install @google/genai`
+  1. `base_url` 設為 `https://bearlab.ai`（不帶 `/v1beta` 字尾，SDK 會自動追加）
+  2. `api_version` 設為 `v1beta`
+  3. 依賴：Python `pip install google-genai`、Node.js `npm install @google/genai`
 </Warning>
 
 <Tip>
-  重复的长前缀（固定 system 提示、长文档）可启用 [提示词缓存](/guides/prompt-caching)，显著降低重复部分的费用。
+  重複的長字首（固定 system 提示、長文件）可啟用 [提示詞快取](/guides/prompt-caching)，顯著降低重複部分的費用。
 </Tip>

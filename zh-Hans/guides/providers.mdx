@@ -1,0 +1,79 @@
+---
+title: "供应商与路由"
+description: "同一模型由多个供应商承载，如何在令牌中配置或按请求覆盖路由。"
+---
+
+每个模型可能由**多个供应商**承载。供应商是按来源和成本组织的服务节点，不同供应商有不同的价格倍率和模型覆盖。发送请求时，系统按你的令牌配置自动选择可用供应商；某个供应商失败或超时会自动重试另一个，对你的代码透明。
+
+## 可用供应商
+
+| ID | 名称 | 说明 |
+| --- | --- | --- |
+| `official` | 官方 | 聚合 OpenAI、Anthropic、Google 等各大官方直连的供应商组，稳定性最高 |
+| `official_cheap` | 官方（折扣） | 官方渠道的成本优化版，稳定性高、价格更低 |
+| `mix` | 混合 | 多源混合渠道，价格最低、模型覆盖最广 |
+
+`official` 是一个**供应商组**，打包了各大官方平台的节点；选它时系统在所有官方节点间智能路由与故障转移，无需逐家指定。
+
+### 怎么选
+
+| 你的需求 | 推荐配置 |
+| --- | --- |
+| 稳定优先，不在意价格 | `official` |
+| 稳定且更划算 | `official_cheap` |
+| 成本最低，可接受轻微不稳定 | `mix` |
+| 先折扣官方，失败再回退混合 | `official_cheap,mix` |
+
+## 在令牌中配置
+
+创建或编辑令牌时可设置该令牌的默认路由：
+
+* **供应商列表**：留空（推荐）= 在所有可用供应商间自动路由；单个 = 只走该供应商；多个用逗号分隔，按顺序或排序策略尝试。
+* **仅限指定供应商**：关（默认）= 优先指定的，全失败再回退其它；开 = 严格只用指定的，全失败直接报错不回退。
+* **排序策略**：手动（默认，按你列出的顺序）/ 延迟 / 价格 / 吞吐。
+
+## 按请求覆盖
+
+也可用请求头对**单次请求**临时覆盖令牌设置，无需改令牌：
+
+| 请求头 | 作用 |
+| --- | --- |
+| `X-Provider-Order` | 指定本次请求的供应商及顺序 |
+| `X-Provider-Only` | `"true"` 开启严格模式，不回退 |
+| `X-Provider-Sort` | 覆盖排序策略（`latency` / `price` / `throughput`） |
+| `X-Provider-Ignore` | 本次请求跳过的供应商，叠加在令牌配置之上 |
+
+> 通过请求头指定的供应商仍受你的账户权限约束。
+
+### 示例
+
+```bash
+# 先折扣官方，失败回退混合
+curl https://bearlab.ai/v1/chat/completions \
+  -H "Authorization: Bearer sk-your-token" \
+  -H "X-Provider-Order: official_cheap,mix" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "gpt-4o", "messages": [{"role": "user", "content": "Hello"}]}'
+```
+
+```bash
+# 严格只走官方，不回退
+curl https://bearlab.ai/v1/chat/completions \
+  -H "Authorization: Bearer sk-your-token" \
+  -H "X-Provider-Order: official" \
+  -H "X-Provider-Only: true" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "claude-sonnet-4-5", "messages": [{"role": "user", "content": "Hello"}]}'
+```
+
+也可在 SDK 客户端里设默认头：
+
+```python
+import openai
+
+client = openai.OpenAI(
+    api_key="sk-your-token",
+    base_url="https://bearlab.ai/v1",
+    default_headers={"X-Provider-Order": "official_cheap,mix"},
+)
+```

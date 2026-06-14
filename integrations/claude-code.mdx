@@ -3,11 +3,11 @@ title: "Claude Code"
 description: "在 Anthropic 官方 Claude Code CLI 中使用 BearLab AI。"
 ---
 
-[Claude Code](https://docs.claude.com/claude-code) 是 Anthropic 官方命令行编程工具，走 Anthropic 兼容协议接入。
+[Claude Code](https://docs.claude.com/claude-code) 是 Anthropic 官方命令列程式設計工具，走 Anthropic 相容協議接入。
 
 ## 配置
 
-通过环境变量指向平台的 Anthropic 兼容端点：
+透過環境變數指向平臺的 Anthropic 相容端點：
 
 ```bash
 export ANTHROPIC_BASE_URL="https://bearlab.ai/anthropic"
@@ -16,12 +16,12 @@ export ANTHROPIC_AUTH_TOKEN="YOUR_API_KEY"
 claude
 ```
 
-- `ANTHROPIC_BASE_URL`：平台的 Anthropic 兼容地址（注意是 `/anthropic`，不带 `/v1`）。
+- `ANTHROPIC_BASE_URL`：平臺的 Anthropic 相容地址（注意是 `/anthropic`，不帶 `/v1`）。
 - `ANTHROPIC_AUTH_TOKEN`：你的 API Key。
 
 ## 持久化
 
-把上面两行写进 `~/.zshrc` 或 `~/.bashrc` 即可长期生效：
+把上面兩行寫進 `~/.zshrc` 或 `~/.bashrc` 即可長期生效：
 
 ```bash
 echo 'export ANTHROPIC_BASE_URL="https://bearlab.ai/anthropic"' >> ~/.zshrc
@@ -29,5 +29,5 @@ echo 'export ANTHROPIC_AUTH_TOKEN="YOUR_API_KEY"' >> ~/.zshrc
 ```
 
 <Warning>
-  模型名用 Claude 系列（如 `claude-sonnet-4-5`），需在 [模型接口](/guides/models) 中存在。若提示鉴权失败，确认用的是 `ANTHROPIC_AUTH_TOKEN` 而非 `ANTHROPIC_API_KEY`。
+  模型名用 Claude 系列（如 `claude-sonnet-4-5`），需在 [模型介面](/guides/models) 中存在。若提示鑑權失敗，確認用的是 `ANTHROPIC_AUTH_TOKEN` 而非 `ANTHROPIC_API_KEY`。
 </Warning>
