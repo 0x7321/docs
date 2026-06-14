@@ -42,7 +42,6 @@ curl https://bearlab.ai/v1/messages \
 | 現象 | 原因 |
 | --- | --- |
 | `401 Unauthorized` | 金鑰錯誤、已刪除，或鑑權頭寫錯（Bearer / x-api-key 混用）。 |
-| `403 Forbidden` | 金鑰被禁用，或無權訪問該模型 / 分組。 |
-| `402` 餘額不足 | 賬戶餘額耗盡，需充值。詳見 [計費與充值](/guides/pricing)。 |
+| `403 Forbidden` | 金鑰被禁用、餘額不足，或無權訪問該模型 / 分組；最常見的權限問題是模型需要實名認證。 |
 
 更多狀態碼見 [錯誤處理](/guides/errors)。

@@ -42,7 +42,6 @@ curl https://bearlab.ai/v1/messages \
 | 现象 | 原因 |
 | --- | --- |
 | `401 Unauthorized` | 密钥错误、已删除，或鉴权头写错（Bearer / x-api-key 混用）。 |
-| `403 Forbidden` | 密钥被禁用，或无权访问该模型 / 分组。 |
-| `402` 余额不足 | 账户余额耗尽，需充值。详见 [计费与充值](/zh-Hans/guides/pricing)。 |
+| `403 Forbidden` | 密钥被禁用、余额不足，或无权访问该模型 / 分组；最常见的权限问题是模型需要实名认证。 |
 
 更多状态码见 [错误处理](/zh-Hans/guides/errors)。
