@@ -1,0 +1,58 @@
+---
+title: "提示词缓存"
+description: "用提示词缓存降低重复内容的成本，并用请求 ID 保持会话路由一致以提升命中率。"
+---
+
+## 什么是提示词缓存
+
+很多模型供应商（包括 Anthropic Claude 和 OpenAI）原生支持提示词缓存。当同一段上下文被重复发送时，供应商会复用此前的计算结果，**降低延迟和 token 成本**。
+
+## 缓存的限制
+
+**缓存不能跨账户共享**，这是供应商侧的限制，不是平台限制。
+
+作为多渠道中转平台，我们无法保证同一账户连续两次请求一定路由到同一后端渠道。若被发到不同渠道，已有缓存无法复用，命中率下降、成本上升。
+
+## 保持路由一致
+
+为此，你可以在后续请求里带上前一次请求的 ID，系统会尽量把新请求路由到同一渠道，最大化缓存复用。两种方式：
+
+| 请求头 | 取值来源 | 有效期 |
+| --- | --- | --- |
+| `X-Request-Id` | 上一次响应返回的请求 ID 头 | 5 分钟 |
+| `X-Response-Id` | 上一次响应 JSON 里的会话 ID（如 Claude 的 `message.id`） | 5 分钟 |
+
+### 示例
+
+```python
+import anthropic
+
+client = anthropic.Anthropic(
+    base_url="https://bearlab.ai",
+    api_key="API_KEY",
+)
+
+# 第一次请求
+response = client.messages.create(
+    model="claude-sonnet-4-5",
+    max_tokens=1024,
+    messages=[{"role": "user", "content": "Hello!"}],
+)
+response_id = response.id
+
+# 第二次请求 —— 带上 response id 以留在同一渠道
+response2 = client.messages.create(
+    model="claude-sonnet-4-5",
+    max_tokens=1024,
+    messages=[
+        {"role": "user", "content": "Hello!"},
+        {"role": "assistant", "content": response.content[0].text},
+        {"role": "user", "content": "Continue our conversation..."},
+    ],
+    extra_headers={"X-Response-Id": response_id},
+)
+```
+
+## 使用建议
+
+把**不变内容放前面**（system、长文档），变化内容放后面（用户最新提问），以最大化前缀命中。前缀越长、复用越频繁，省得越多；一次性请求无需缓存。

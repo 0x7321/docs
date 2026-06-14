@@ -128,6 +128,64 @@
         ]
       },
       {
+        "language": "zh-MY",
+        "tabs": [
+          {
+            "tab": "说明文件",
+            "groups": [
+              {
+                "group": "开始",
+                "pages": [
+                  "zh-my/index",
+                  "zh-my/guides/introduction",
+                  "zh-my/guides/quickstart",
+                  "zh-my/guides/authentication"
+                ]
+              },
+              {
+                "group": "对话 API",
+                "pages": [
+                  "zh-my/guides/chat",
+                  "zh-my/guides/models",
+                  "zh-my/guides/prompt-caching",
+                  "zh-my/guides/providers"
+                ]
+              },
+              {
+                "group": "账户",
+                "pages": [
+                  "zh-my/guides/pricing",
+                  "zh-my/guides/user-levels",
+                  "zh-my/guides/rate-limits",
+                  "zh-my/guides/errors",
+                  "zh-my/guides/availability"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "客户端接入",
+            "groups": [
+              {
+                "group": "编辑器 / CLI",
+                "pages": [
+                  "zh-my/integrations/cursor",
+                  "zh-my/integrations/claude-code",
+                  "zh-my/integrations/cline",
+                  "zh-my/integrations/codex"
+                ]
+              },
+              {
+                "group": "SDK",
+                "pages": [
+                  "zh-my/integrations/sdk"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
         "language": "en",
         "tabs": [
           {

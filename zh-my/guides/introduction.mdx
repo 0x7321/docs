@@ -1,0 +1,46 @@
+---
+title: "平台介绍"
+description: "BearLab AI 是什么、能做什么。"
+---
+
+> BearLab AI（BearLab.ai）把数十家主流厂商的对话模型收到一个 API 下，OpenAI、Anthropic、Google、DeepSeek 都能用同一个 Key 调。
+
+## BearLab AI 是什么
+
+它是一个对话模型聚合平台。你不用再去 OpenAI、Anthropic、Google 各自注册、各自储值、各自管一套密钥，在这里申请一个 Key，配一个 `base_url`，就能调它们的最新对话模型。
+
+接口同时兼容 OpenAI 和 Anthropic 两套协议，现有代码基本不用改，换个地址和密钥就能接进来。
+
+我们只做对话模型这一件事，所以接口简单、计费清楚、跑得稳。
+
+## 主要能力
+
+**一个 Key 用所有模型**
+不同厂商、不同模型，统一用一套接口调用。一个账户管权限，一份账单看花销，一处看用量。
+
+**OpenAI / Anthropic 双协议**
+两套协议都原生支持，Cursor、Claude Code、Cline、Codex 这些工具直接填地址就能用，按需要切换，不用关心背后是哪家的模型。
+
+**稳定可用**
+热门模型接多家供应商，某一家出问题自动切到别家，请求不中断。
+
+**按量付费**
+用多少算多少，没有月费和起充门槛，价格随上游浮动，余额实时可查。
+
+**用量可查**
+每次调用的请求、响应、Token 消耗都有记录，方便排查问题和算成本。
+
+## 只做对话模型
+
+BearLab AI 不提供图像、语音、影片、音乐、嵌入（Embedding）这些模型，专注把对话模型做稳做透。需要那些能力请用对应的专门平台。
+
+## 下一步
+
+<CardGroup cols={2}>
+  <Card title="快速开始" icon="rocket" href="/zh-my/guides/quickstart" cta="立即开始">
+    5 分钟创建密钥并发出第一个请求。
+  </Card>
+  <Card title="对话补全" icon="comments" href="/zh-my/guides/chat" cta="看接口">
+    请求参数、流式输出、双协议差异。
+  </Card>
+</CardGroup>
