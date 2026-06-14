@@ -88,7 +88,9 @@
         "header": "法律 / Legal",
         "items": [
           { "label": "服务区域 / Availability", "href": "/guides/availability" },
-          { "label": "Terms of Service", "href": "/legal/terms" }
+          { "label": "Terms of Service", "href": "/legal/terms" },
+          { "label": "Privacy Policy", "href": "/legal/privacy" },
+          { "label": "Acceptable Use Policy", "href": "/legal/acceptable-use" }
         ]
       }
     ]
