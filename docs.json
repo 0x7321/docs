@@ -70,122 +70,6 @@
         "default": true
       },
       {
-        "language": "zh-Hans",
-        "tabs": [
-          {
-            "tab": "文档",
-            "groups": [
-              {
-                "group": "开始",
-                "pages": [
-                  "zh-Hans/index",
-                  "zh-Hans/guides/introduction",
-                  "zh-Hans/guides/quickstart",
-                  "zh-Hans/guides/authentication"
-                ]
-              },
-              {
-                "group": "对话 API",
-                "pages": [
-                  "zh-Hans/guides/chat",
-                  "zh-Hans/guides/models",
-                  "zh-Hans/guides/prompt-caching",
-                  "zh-Hans/guides/providers"
-                ]
-              },
-              {
-                "group": "账户",
-                "pages": [
-                  "zh-Hans/guides/pricing",
-                  "zh-Hans/guides/user-levels",
-                  "zh-Hans/guides/rate-limits",
-                  "zh-Hans/guides/errors",
-                  "zh-Hans/guides/availability"
-                ]
-              }
-            ]
-          },
-          {
-            "tab": "客户端接入",
-            "groups": [
-              {
-                "group": "编辑器 / CLI",
-                "pages": [
-                  "zh-Hans/integrations/cursor",
-                  "zh-Hans/integrations/claude-code",
-                  "zh-Hans/integrations/cline",
-                  "zh-Hans/integrations/codex"
-                ]
-              },
-              {
-                "group": "SDK",
-                "pages": [
-                  "zh-Hans/integrations/sdk"
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "language": "zh",
-        "tabs": [
-          {
-            "tab": "说明文件",
-            "groups": [
-              {
-                "group": "开始",
-                "pages": [
-                  "zh-my/index",
-                  "zh-my/guides/introduction",
-                  "zh-my/guides/quickstart",
-                  "zh-my/guides/authentication"
-                ]
-              },
-              {
-                "group": "对话 API",
-                "pages": [
-                  "zh-my/guides/chat",
-                  "zh-my/guides/models",
-                  "zh-my/guides/prompt-caching",
-                  "zh-my/guides/providers"
-                ]
-              },
-              {
-                "group": "账户",
-                "pages": [
-                  "zh-my/guides/pricing",
-                  "zh-my/guides/user-levels",
-                  "zh-my/guides/rate-limits",
-                  "zh-my/guides/errors",
-                  "zh-my/guides/availability"
-                ]
-              }
-            ]
-          },
-          {
-            "tab": "客户端接入",
-            "groups": [
-              {
-                "group": "编辑器 / CLI",
-                "pages": [
-                  "zh-my/integrations/cursor",
-                  "zh-my/integrations/claude-code",
-                  "zh-my/integrations/cline",
-                  "zh-my/integrations/codex"
-                ]
-              },
-              {
-                "group": "SDK",
-                "pages": [
-                  "zh-my/integrations/sdk"
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
         "language": "en",
         "tabs": [
           {
@@ -244,57 +128,57 @@
         ]
       },
       {
-        "language": "fr",
+        "language": "hi",
         "tabs": [
           {
-            "tab": "Documentation",
+            "tab": "दस्तावेज़",
             "groups": [
               {
-                "group": "Démarrage",
+                "group": "शुरुआत",
                 "pages": [
-                  "fr/index",
-                  "fr/guides/introduction",
-                  "fr/guides/quickstart",
-                  "fr/guides/authentication"
+                  "hi/index",
+                  "hi/guides/introduction",
+                  "hi/guides/quickstart",
+                  "hi/guides/authentication"
                 ]
               },
               {
-                "group": "API Chat",
+                "group": "चैट API",
                 "pages": [
-                  "fr/guides/chat",
-                  "fr/guides/models",
-                  "fr/guides/prompt-caching",
-                  "fr/guides/providers"
+                  "hi/guides/chat",
+                  "hi/guides/models",
+                  "hi/guides/prompt-caching",
+                  "hi/guides/providers"
                 ]
               },
               {
-                "group": "Compte",
+                "group": "खाता",
                 "pages": [
-                  "fr/guides/pricing",
-                  "fr/guides/user-levels",
-                  "fr/guides/rate-limits",
-                  "fr/guides/errors",
-                  "fr/guides/availability"
+                  "hi/guides/pricing",
+                  "hi/guides/user-levels",
+                  "hi/guides/rate-limits",
+                  "hi/guides/errors",
+                  "hi/guides/availability"
                 ]
               }
             ]
           },
           {
-            "tab": "Intégrations",
+            "tab": "इंटीग्रेशन",
             "groups": [
               {
-                "group": "Éditeurs / CLI",
+                "group": "एडिटर / CLI",
                 "pages": [
-                  "fr/integrations/cursor",
-                  "fr/integrations/claude-code",
-                  "fr/integrations/cline",
-                  "fr/integrations/codex"
+                  "hi/integrations/cursor",
+                  "hi/integrations/claude-code",
+                  "hi/integrations/cline",
+                  "hi/integrations/codex"
                 ]
               },
               {
                 "group": "SDK",
                 "pages": [
-                  "fr/integrations/sdk"
+                  "hi/integrations/sdk"
                 ]
               }
             ]
@@ -360,57 +244,173 @@
         ]
       },
       {
-        "language": "hi",
+        "language": "zh",
         "tabs": [
           {
-            "tab": "दस्तावेज़",
+            "tab": "说明文件",
             "groups": [
               {
-                "group": "शुरुआत",
+                "group": "开始",
                 "pages": [
-                  "hi/index",
-                  "hi/guides/introduction",
-                  "hi/guides/quickstart",
-                  "hi/guides/authentication"
+                  "zh-my/index",
+                  "zh-my/guides/introduction",
+                  "zh-my/guides/quickstart",
+                  "zh-my/guides/authentication"
                 ]
               },
               {
-                "group": "चैट API",
+                "group": "对话 API",
                 "pages": [
-                  "hi/guides/chat",
-                  "hi/guides/models",
-                  "hi/guides/prompt-caching",
-                  "hi/guides/providers"
+                  "zh-my/guides/chat",
+                  "zh-my/guides/models",
+                  "zh-my/guides/prompt-caching",
+                  "zh-my/guides/providers"
                 ]
               },
               {
-                "group": "खाता",
+                "group": "账户",
                 "pages": [
-                  "hi/guides/pricing",
-                  "hi/guides/user-levels",
-                  "hi/guides/rate-limits",
-                  "hi/guides/errors",
-                  "hi/guides/availability"
+                  "zh-my/guides/pricing",
+                  "zh-my/guides/user-levels",
+                  "zh-my/guides/rate-limits",
+                  "zh-my/guides/errors",
+                  "zh-my/guides/availability"
                 ]
               }
             ]
           },
           {
-            "tab": "इंटीग्रेशन",
+            "tab": "客户端接入",
             "groups": [
               {
-                "group": "एडिटर / CLI",
+                "group": "编辑器 / CLI",
                 "pages": [
-                  "hi/integrations/cursor",
-                  "hi/integrations/claude-code",
-                  "hi/integrations/cline",
-                  "hi/integrations/codex"
+                  "zh-my/integrations/cursor",
+                  "zh-my/integrations/claude-code",
+                  "zh-my/integrations/cline",
+                  "zh-my/integrations/codex"
                 ]
               },
               {
                 "group": "SDK",
                 "pages": [
-                  "hi/integrations/sdk"
+                  "zh-my/integrations/sdk"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "language": "fr",
+        "tabs": [
+          {
+            "tab": "Documentation",
+            "groups": [
+              {
+                "group": "Démarrage",
+                "pages": [
+                  "fr/index",
+                  "fr/guides/introduction",
+                  "fr/guides/quickstart",
+                  "fr/guides/authentication"
+                ]
+              },
+              {
+                "group": "API Chat",
+                "pages": [
+                  "fr/guides/chat",
+                  "fr/guides/models",
+                  "fr/guides/prompt-caching",
+                  "fr/guides/providers"
+                ]
+              },
+              {
+                "group": "Compte",
+                "pages": [
+                  "fr/guides/pricing",
+                  "fr/guides/user-levels",
+                  "fr/guides/rate-limits",
+                  "fr/guides/errors",
+                  "fr/guides/availability"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "Intégrations",
+            "groups": [
+              {
+                "group": "Éditeurs / CLI",
+                "pages": [
+                  "fr/integrations/cursor",
+                  "fr/integrations/claude-code",
+                  "fr/integrations/cline",
+                  "fr/integrations/codex"
+                ]
+              },
+              {
+                "group": "SDK",
+                "pages": [
+                  "fr/integrations/sdk"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "language": "zh-Hans",
+        "tabs": [
+          {
+            "tab": "文档",
+            "groups": [
+              {
+                "group": "开始",
+                "pages": [
+                  "zh-Hans/index",
+                  "zh-Hans/guides/introduction",
+                  "zh-Hans/guides/quickstart",
+                  "zh-Hans/guides/authentication"
+                ]
+              },
+              {
+                "group": "对话 API",
+                "pages": [
+                  "zh-Hans/guides/chat",
+                  "zh-Hans/guides/models",
+                  "zh-Hans/guides/prompt-caching",
+                  "zh-Hans/guides/providers"
+                ]
+              },
+              {
+                "group": "账户",
+                "pages": [
+                  "zh-Hans/guides/pricing",
+                  "zh-Hans/guides/user-levels",
+                  "zh-Hans/guides/rate-limits",
+                  "zh-Hans/guides/errors",
+                  "zh-Hans/guides/availability"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "客户端接入",
+            "groups": [
+              {
+                "group": "编辑器 / CLI",
+                "pages": [
+                  "zh-Hans/integrations/cursor",
+                  "zh-Hans/integrations/claude-code",
+                  "zh-Hans/integrations/cline",
+                  "zh-Hans/integrations/codex"
+                ]
+              },
+              {
+                "group": "SDK",
+                "pages": [
+                  "zh-Hans/integrations/sdk"
                 ]
               }
             ]
