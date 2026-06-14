@@ -69,9 +69,12 @@
         ],
         "default": true,
         "banner": {
-          "content": "亞太地區 API 請改用 https://bearlab.in(而非 https://bearlab.ai)。",
-          "dismissible": true,
-          "type": "info"
+          "content": "亞太地區 API 域名:https://bearlab.in",
+          "color": {
+            "light": "#000000",
+            "dark": "#1A1A1A"
+          },
+          "dismissible": true
         }
       },
       {
@@ -132,9 +135,12 @@
           }
         ],
         "banner": {
-          "content": "亚太地区 API 请改用 https://bearlab.in(而非 https://bearlab.ai)。",
-          "dismissible": true,
-          "type": "info"
+          "content": "亚太地区 API 域名:https://bearlab.in",
+          "color": {
+            "light": "#000000",
+            "dark": "#1A1A1A"
+          },
+          "dismissible": true
         }
       },
       {
@@ -195,9 +201,12 @@
           }
         ],
         "banner": {
-          "content": "Asia-Pacific: use https://bearlab.in for API requests, not https://bearlab.ai.",
-          "dismissible": true,
-          "type": "info"
+          "content": "Asia-Pacific API domain: https://bearlab.in",
+          "color": {
+            "light": "#000000",
+            "dark": "#1A1A1A"
+          },
+          "dismissible": true
         }
       },
       {
@@ -258,9 +267,12 @@
           }
         ],
         "banner": {
-          "content": "Asie-Pacifique : utilisez https://bearlab.in pour les requêtes API, et non https://bearlab.ai.",
-          "dismissible": true,
-          "type": "info"
+          "content": "Domaine API Asie-Pacifique : https://bearlab.in",
+          "color": {
+            "light": "#000000",
+            "dark": "#1A1A1A"
+          },
+          "dismissible": true
         }
       },
       {
@@ -321,9 +333,12 @@
           }
         ],
         "banner": {
-          "content": "アジア太平洋地域の API は https://bearlab.in をご利用ください(https://bearlab.ai ではありません)。",
-          "dismissible": true,
-          "type": "info"
+          "content": "アジア太平洋の API ドメイン: https://bearlab.in",
+          "color": {
+            "light": "#000000",
+            "dark": "#1A1A1A"
+          },
+          "dismissible": true
         }
       },
       {
@@ -384,9 +399,12 @@
           }
         ],
         "banner": {
-          "content": "एशिया-प्रशांत: API के लिए https://bearlab.ai नहीं, https://bearlab.in का उपयोग करें।",
-          "dismissible": true,
-          "type": "info"
+          "content": "एशिया-प्रशांत API डोमेन: https://bearlab.in",
+          "color": {
+            "light": "#000000",
+            "dark": "#1A1A1A"
+          },
+          "dismissible": true
         }
       }
     ]
