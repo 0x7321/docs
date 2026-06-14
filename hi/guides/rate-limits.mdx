@@ -1,0 +1,48 @@
+---
+title: "Rate Limits"
+description: "Limit forms, उनका relationship user levels के साथ, और कैसे respond करें।"
+---
+
+Resource use को fair रखने और service को stable रखने के लिए, platform request frequency और token usage को limit करता है।
+
+## Limits के forms
+
+| Form | Meaning |
+| --- | --- |
+| **RPM** | Max requests per minute |
+| **RPH** | Max requests per hour |
+| **RPD** | Max requests per day |
+| **TPM** | Max tokens per minute (input + output) |
+| **TPD** | Max tokens per day |
+
+## User levels के साथ relationship
+
+Limits मुख्य रूप से [user level](/hi/guides/user-levels) द्वारा driven होते हैं:
+
+| Tier | कैसे प्राप्त करें | Limit |
+| --- | --- | --- |
+| **Tier 1** | Registration के बाद default | 5 RPM |
+| **Tier 2** | किसी भी top-up के बाद automatic | कोई limit नहीं |
+
+नए accounts Tier 1 (5 RPM) को default करते हैं; **कोई भी top-up तुरंत Tier 2 को upgrade करता है और rate limit को remove करता है**, कोई manual request के साथ नहीं।
+
+## TPM और max_tokens
+
+Total tokens को request send करने के समय know नहीं किया जा सकता है, इसलिए system TPM limiting के लिए `max_tokens` parameter के साथ estimate करता है, फिर generation के बाद actual tokens के साथ correct करता है। `max_tokens` को **actual need के करीब** set करें over-estimation से errors को reduce करने के लिए।
+
+## जब limited
+
+जब requests या token usage cap तक पहुंचते हैं, API `429 Too Many Requests` return करता है; later requests temporarily reject होते हैं जब तक cooldown pass न हो जाए।
+
+```http
+HTTP/1.1 429 Too Many Requests
+Content-Type: application/json
+
+{ "error": { "message": "The current group upstream load is saturated, please try again later", "type": "bearlab_api_error" } }
+```
+
+## Tips
+
+- **Exponential backoff**: `429` पर, wait करें और doubling delays के साथ retry करें।
+- **Batch requests**: जब requests capped हों लेकिन tokens नहीं, tasks को एक request में merge करें।
+- **अधिक need**: एक dedicated quota के लिए अपने account manager को contact करें।

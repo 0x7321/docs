@@ -1,0 +1,21 @@
+---
+title: "Cline / Roo Code"
+description: "ClineまたはRoo Code VS Code拡張機能でBearLabを使用します。"
+---
+
+[Cline](https://github.com/cline/cline)とその強化版フォーク[Roo Code](https://github.com/RooVetGit/Roo-Code)はVS Code AIコーディング拡張機能で、OpenAI互換インターフェース経由で接続されます。
+
+<Steps>
+  <Step title="プロバイダーを選択">
+    拡張機能の設定で、APIプロバイダーを**OpenAI Compatible**に設定します。
+  </Step>
+  <Step title="接続詳細を入力">
+    - **ベースURL**: `https://bearlab.ai/v1`
+    - **APIキー**: あなたの`sk-...`キー
+    - **モデルID**: 例. `claude-sonnet-4-5`または`gpt-4o`
+  </Step>
+</Steps>
+
+<Note>
+  Anthropicではなく**OpenAI Compatible**を選択してください。`/v1`ベースURLを使用します。モデルIDは[modelsエンドポイント](/ja/guides/models)に存在する必要があります。
+</Note>

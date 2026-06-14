@@ -1,0 +1,33 @@
+---
+title: "Claude Code"
+description: "AnthropicのClaude Code CLIでBearLabを使用します。"
+---
+
+[Claude Code](https://docs.claude.com/claude-code)はAnthropicの公式コマンドラインコーディングツールで、Anthropic互換プロトコル経由で接続されます。
+
+## 設定
+
+環境変数をAnthropicコンパチブルエンドポイントに向けます:
+
+```bash
+export ANTHROPIC_BASE_URL="https://bearlab.ai/anthropic"
+export ANTHROPIC_AUTH_TOKEN="YOUR_API_KEY"
+
+claude
+```
+
+- `ANTHROPIC_BASE_URL`: Anthropic互換アドレス(`/anthropic`に注意、`/v1`なし)。
+- `ANTHROPIC_AUTH_TOKEN`: APIキー。
+
+## 永続化
+
+2つの行を`~/.zshrc`または`~/.bashrc`に追加します:
+
+```bash
+echo 'export ANTHROPIC_BASE_URL="https://bearlab.ai/anthropic"' >> ~/.zshrc
+echo 'export ANTHROPIC_AUTH_TOKEN="YOUR_API_KEY"' >> ~/.zshrc
+```
+
+<Warning>
+  Claudeモデル(例. `claude-sonnet-4-5`)を使用してください。[modelsエンドポイント](/ja/guides/models)に存在していないモデルです。認証が失敗した場合は、`ANTHROPIC_AUTH_TOKEN`を使用していることを確認してください。`ANTHROPIC_API_KEY`ではありません。
+</Warning>

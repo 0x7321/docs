@@ -1,0 +1,24 @@
+---
+title: "Cursor"
+description: "Cursor में BearLab conversational models का उपयोग करें।"
+---
+
+[Cursor](https://cursor.com) एक लोकप्रिय AI code editor है। इसे OpenAI-compatible interface के माध्यम से connect करें।
+
+<Steps>
+  <Step title="Model settings खोलें">
+    Settings, Models खोलें।
+  </Step>
+  <Step title="Base URL को override करें">
+    OpenAI API Key area में, Override OpenAI Base URL को expand करें और set करें:
+    - **Base URL**: `https://bearlab.ai/v1`
+    - **API Key**: आपकी `sk-...` key
+  </Step>
+  <Step title="Models add करें और verify करें">
+    Model names add करें जो आप चाहते हैं (e.g. `gpt-4o`, `claude-sonnet-4-5`), save करें, फिर Verify पर click करें।
+  </Step>
+</Steps>
+
+<Note>
+  Cursor केवल OpenAI-compatible protocol का उपयोग करता है, इसलिए base URL `/v1` के साथ समाप्त होता है। Model names [models endpoint](/hi/guides/models) में exist करने चाहिए। यदि verification fail होता है, तो [Quickstart](/hi/guides/quickstart) curl के साथ key को confirm करें।
+</Note>

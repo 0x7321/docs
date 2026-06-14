@@ -1,0 +1,35 @@
+---
+title: "Authentification"
+description: "Comment créer, passer et gérer les clés API."
+---
+
+Chaque requête est authentifiée avec une clé API. Créez des clés sur la [console](https://bearlab.ai) sous API Tokens ; elles ressemblent à `sk-xxxxxxxx`.
+
+<Note>
+  Utilisateurs Asie-Pacifique : utilisez `https://bearlab.in` comme point de terminaison au lieu de `bearlab.ai`. Voir [Service Availability](/fr/guides/availability).
+</Note>
+
+## Passer la clé
+
+Les deux protocoles utilisent différents en-têtes d'authentification :
+
+| Protocole | En-tête |
+| --- | --- |
+| Compatible OpenAI | `Authorization: Bearer YOUR_API_KEY` |
+| Compatible Anthropic | `x-api-key: YOUR_API_KEY` |
+
+## Gestion des clés
+
+- **Une clé par usage** : créez des clés séparées par projet ou client pour une révocation facile et des statistiques d'utilisation par clé.
+- **Définir un plafond de quota** : donnez à une seule clé une limite de dépenses à la création pour réduire l'exposition.
+- **Ne pas coder en dur** : injectez via les variables d'environnement ; ne commitez jamais les clés dans un dépôt.
+- **Révoquer en cas de fuite** : si une clé peut être exposée, supprimez-la sur la console et créez-en une nouvelle.
+
+## Erreurs d'authentification courantes
+
+| Symptôme | Cause |
+| --- | --- |
+| `401 Unauthorized` | Clé erronée ou supprimée, ou en-tête mal assorti (Bearer vs x-api-key). |
+| `403 Forbidden` | Clé désactivée, solde insuffisant, ou pas d'accès au modèle ou au groupe. Le problème de permission le plus courant est un modèle qui nécessite une vérification d'identité. |
+
+Voir [Error Handling](/fr/guides/errors) pour plus de codes.

@@ -1,0 +1,44 @@
+---
+title: "Pricing & Billing"
+description: "Facturation à l'usage, multiplicateurs de fournisseurs, recharges, alertes de solde et remboursements."
+---
+
+Ne payez que ce que vous utilisez. Pas de minimum, et ça s'adapte élastiquement à votre activité.
+
+## Devise de facturation
+
+La plateforme facture en **USD**, alignée avec la tarification officielle de chaque fournisseur.
+
+## Méthode de facturation
+
+Les modèles conversationnels sont facturés **par jeton** : les jetons d'entrée et de sortie sont tarifés séparément, et les jetons d'entrée qui frappent [prompt caching](/fr/guides/prompt-caching) obtiennent un tarif inférieur.
+
+L'utilisation des jetons par requête est prise à partir de `prompt_tokens` et `completion_tokens` dans la réponse `usage`.
+
+## Multiplicateurs de fournisseurs et remises
+
+Chaque [fournisseur](/fr/guides/providers) a son propre **multiplicateur de prix**. Le prix que vous payez est égal au prix de base du modèle multiplié par le multiplicateur du fournisseur. Les [niveaux d'utilisateur](/fr/guides/user-levels) plus élevés peuvent recevoir des remises supplémentaires.
+
+## Recharge
+
+- Recharge en ligne via **Stripe** (cartes de crédit et de débit) ; le solde est accrédité instantanément.
+- Pour la facturation d'entreprise ou les grandes recharges, [nous contacter](mailto:support@bearlab.ai).
+
+## Alertes de solde
+
+Pour éviter les interruptions, définissez une alerte : Dashboard, Paramètres de profil, Gestion de l'abonnement, définissez un seuil. Quand votre solde descend en dessous, nous vous notifions par email ou message in-app.
+
+## Plans pour grand volume
+
+Pour une plus grande concurrence ou une tarification dédiée, [nous contacter](mailto:support@bearlab.ai).
+
+## Remboursements
+
+Pour demander un remboursement, contactez le support. Remarque :
+
+- Si un remboursement réduit votre niveau de compte, le montant du sur-avantage est déduit.
+- Les recharges pour lesquelles une facture a été émise ne sont pas remboursables.
+- Des frais de traitement de jusqu'à **5%** s'appliquent.
+- Les remboursements retournent à la méthode de paiement d'origine.
+
+Stripe envoie un reçu après chaque recharge réussie. Pour une facture officielle, contactez le support avec le nom de votre entreprise, le numéro d'identification fiscale et le montant.

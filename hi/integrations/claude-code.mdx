@@ -1,0 +1,33 @@
+---
+title: "Claude Code"
+description: "Anthropic के Claude Code CLI में BearLab का उपयोग करें।"
+---
+
+[Claude Code](https://docs.claude.com/claude-code) Anthropic का official command-line coding tool है, Anthropic-compatible protocol के माध्यम से connected।
+
+## Configuration
+
+Environment variables को Anthropic-compatible endpoint पर point करें:
+
+```bash
+export ANTHROPIC_BASE_URL="https://bearlab.ai/anthropic"
+export ANTHROPIC_AUTH_TOKEN="YOUR_API_KEY"
+
+claude
+```
+
+- `ANTHROPIC_BASE_URL`: Anthropic-compatible address (note `/anthropic`, कोई `/v1` नहीं)।
+- `ANTHROPIC_AUTH_TOKEN`: आपकी API key।
+
+## इसे persist करें
+
+दो lines को `~/.zshrc` या `~/.bashrc` में add करें:
+
+```bash
+echo 'export ANTHROPIC_BASE_URL="https://bearlab.ai/anthropic"' >> ~/.zshrc
+echo 'export ANTHROPIC_AUTH_TOKEN="YOUR_API_KEY"' >> ~/.zshrc
+```
+
+<Warning>
+  एक Claude model (e.g. `claude-sonnet-4-5`) का उपयोग करें जो [models endpoint](/hi/guides/models) में exist करता है। यदि auth fail होता है, तो confirm करें कि आपने `ANTHROPIC_AUTH_TOKEN` का उपयोग किया, `ANTHROPIC_API_KEY` का नहीं।
+</Warning>

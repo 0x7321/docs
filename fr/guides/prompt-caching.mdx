@@ -1,0 +1,53 @@
+---
+title: "Prompt Caching"
+description: "Réduisez les coûts du contenu répété et maintenez un routage cohérent avec les ID de requête pour améliorer les taux de succès."
+---
+
+## Qu'est-ce que le prompt caching
+
+De nombreux fournisseurs (y compris Anthropic Claude et OpenAI) supportent nativement le prompt caching. Quand le même contexte est envoyé à plusieurs reprises, le fournisseur réutilise le calcul antérieur, **réduisant la latence et le coût des jetons**.
+
+## Limitations de la mise en cache
+
+**Les caches ne peuvent pas être partagés entre comptes**, une restriction côté fournisseur, pas côté plateforme.
+
+En tant que relais multi-canal, nous ne pouvons pas garantir que deux requêtes consécutives d'un compte frappent le même canal backend. S'ils vont à des canaux différents, les caches existants ne peuvent pas être réutilisés, ce qui réduit les taux de succès et augmente les coûts.
+
+## Garder le routage cohérent
+
+Pour remédier à cela, incluez l'ID d'une requête antérieure dans les requêtes ultérieures. Le système tentera de router la nouvelle requête vers le même canal, maximisant la réutilisation du cache.
+
+| En-tête | Source | TTL |
+| --- | --- | --- |
+| `X-Request-Id` | L'en-tête request-id de la réponse précédente | 5 minutes |
+| `X-Response-Id` | L'ID de conversation dans le JSON de réponse antérieur (par exemple, `message.id` de Claude) | 5 minutes |
+
+### Exemple
+
+```python
+import anthropic
+
+client = anthropic.Anthropic(base_url="https://bearlab.ai/anthropic", api_key="API_KEY")
+
+response = client.messages.create(
+    model="claude-sonnet-4-5",
+    max_tokens=1024,
+    messages=[{"role": "user", "content": "Hello!"}],
+)
+response_id = response.id
+
+response2 = client.messages.create(
+    model="claude-sonnet-4-5",
+    max_tokens=1024,
+    messages=[
+        {"role": "user", "content": "Hello!"},
+        {"role": "assistant", "content": response.content[0].text},
+        {"role": "user", "content": "Continue our conversation..."},
+    ],
+    extra_headers={"X-Response-Id": response_id},
+)
+```
+
+## Conseils
+
+Mettez le contenu inchangeable en premier (prompts système, longs documents) et le contenu variable en dernier (le dernier message utilisateur) pour maximiser les succès de préfixe. Plus le préfixe est long et fréquemment réutilisé, plus vous économisez.

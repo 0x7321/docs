@@ -1,0 +1,123 @@
+---
+title: "Models & Pricing API"
+description: "एक public, unauthenticated endpoint जो सभी available conversational models और उनकी published prices को list करता है, OpenRouter Providers specification को follow करते हुए।"
+---
+
+`/v1/models/pricing` एक **public, unauthenticated** aggregation endpoint है जो हर conversational model को currently available के साथ return करता है उसकी published price के साथ। Response [OpenRouter Providers specification](https://openrouter.ai/docs/guides/community/for-providers) को follow करता है, इसलिए इसे OpenRouter, third-party price aggregators, या किसी भी custom client द्वारा ingested किया जा सकता है।
+
+<Note>
+  Asia-Pacific users: endpoint के रूप में `bearlab.ai` के बजाय `https://bearlab.in` का उपयोग करें। [Service Availability](/hi/guides/availability) देखें।
+</Note>
+
+<Note>
+  यह "published price" entry point है और कोई user identity carry नहीं करता है। Prices anonymous context में `default` group को represent करते हैं। एक authenticated user वास्तव में जो price pay करता है (group, tier discount, आदि) देखने के लिए, console में pricing page का उपयोग करें।
+</Note>
+
+## जब इसका उपयोग करें
+
+| Use case | Description |
+| --- | --- |
+| Price aggregation | OpenRouter और अन्य aggregators जो catalog और published prices को scrape कर रहे हैं |
+| Client display | Apps, bots, और SDKs जो model list को render करते हैं |
+| Monitoring | समय के साथ catalog या price changes को track करना |
+
+## Endpoint
+
+| Item | Value |
+| --- | --- |
+| **URL** | `https://bearlab.ai/v1/models/pricing` |
+| **Method** | `GET` |
+| **Auth** | None (public) |
+| **Rate limit** | Strict per-IP critical rate limit |
+| **Caching** | 60s in-process cache; `Cache-Control: public, max-age=60` |
+
+### Request
+
+```bash
+curl https://bearlab.ai/v1/models/pricing
+```
+
+## Response structure
+
+Top level हमेशा `data` array में wrapped होता है:
+
+```json
+{
+  "data": [
+    {
+      "id": "gpt-4o",
+      "name": "GPT-4o",
+      "created": 1715558400,
+      "input_modalities": ["text"],
+      "output_modalities": ["text"],
+      "context_length": 128000,
+      "max_output_length": 16384,
+      "pricing": {
+        "prompt": "0.0000025",
+        "completion": "0.00001",
+        "request": "0",
+        "input_cache_read": "0.00000125"
+      },
+      "supported_features": ["tools", "json_mode", "structured_outputs", "logprobs"]
+    }
+  ]
+}
+```
+
+### Model fields
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | `string` | Unique model identifier; `/v1/chat/completions` को call करते समय इसका उपयोग करें |
+| `name` | `string` | Display name; `id` को fallback करता है |
+| `created` | `int64` | Release time (Unix seconds) |
+| `input_modalities` / `output_modalities` | `string[]` | कम से कम `text` |
+| `context_length` | `int` | Maximum context window in tokens |
+| `max_output_length` | `int` | Maximum output tokens per response |
+| `pricing` | `Pricing` | Pricing object; नीचे देखें |
+| `pricing_tiers` | `Pricing[]` | Tiered pricing (at most one, by context-length threshold) |
+| `supported_features` | `string[]` | Capability flags |
+
+### Pricing fields
+
+सभी prices **USD strings** हैं; token-class fields प्रति token priced हैं।
+
+| Field | Unit | Description |
+| --- | --- | --- |
+| `prompt` | USD / input token | Input unit price |
+| `completion` | USD / output token | Output unit price |
+| `request` | USD / request | Flat per-request fee (usually `"0"` for chat models) |
+| `internal_reasoning` | USD / reasoning token | Reasoning token price |
+| `input_cache_read` | USD / token | Cache-hit read price (usually lower) |
+| `input_cache_write` | USD / token | Cache write price |
+| `web_search` | USD / query | Built-in web search tool fee |
+
+<Note>
+  `"0"` का मतलब "free" या "not applicable to this model" हो सकता है। Capability को infer करने के लिए `supported_features` को combine करें बजाय pricing पर ही rely करने के।
+</Note>
+
+### `supported_features`
+
+| Value | Meaning |
+| --- | --- |
+| `tools` | Function calling / tool use |
+| `reasoning` | Returns reasoning tokens |
+| `json_mode` | JSON mode output |
+| `structured_outputs` | Schema-constrained structured outputs |
+| `logprobs` | Token log probabilities |
+| `web_search` | Built-in web search tool |
+
+## Caching और update cadence
+
+| Aspect | Behavior |
+| --- | --- |
+| Server cache | 60s in-process; admin updates 1 minute के अंदर लागू होते हैं |
+| Client cache | `Cache-Control: public, max-age=60` |
+| Recommended polling | Most 5 मिनट में एक बार; aggressive polling rate-limited है |
+
+## अन्य endpoints के साथ तुलना
+
+| Endpoint | Purpose | Auth |
+| --- | --- | --- |
+| `/v1/models/pricing` | OpenRouter format में public pricing | Public |
+| `/v1/models` | OpenAI-SDK-compatible model id list | Token required |

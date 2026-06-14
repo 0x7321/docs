@@ -1,0 +1,21 @@
+---
+title: "Cline / Roo Code"
+description: "Utilisez BearLab dans les extensions VS Code Cline ou Roo Code."
+---
+
+[Cline](https://github.com/cline/cline) et son fork amélioré [Roo Code](https://github.com/RooVetGit/Roo-Code) sont des extensions de codage IA VS Code, connectées via l'interface compatible OpenAI.
+
+<Steps>
+  <Step title="Sélectionnez le fournisseur">
+    Dans les paramètres de l'extension, définissez API Provider sur **OpenAI Compatible**.
+  </Step>
+  <Step title="Remplissez les détails de connexion">
+    - **Base URL**: `https://bearlab.ai/v1`
+    - **API Key**: votre clé `sk-...`
+    - **Model ID**: par ex. `claude-sonnet-4-5` ou `gpt-4o`
+  </Step>
+</Steps>
+
+<Note>
+  Choisissez **OpenAI Compatible**, pas Anthropic, avec une URL de base `/v1`. L'ID du modèle doit exister dans le [point de terminaison des modèles](/fr/guides/models).
+</Note>

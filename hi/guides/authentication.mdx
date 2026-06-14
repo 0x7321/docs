@@ -1,0 +1,35 @@
+---
+title: "प्रमाणीकरण"
+description: "API keys कैसे बनाएं, pass करें, और manage करें।"
+---
+
+हर request एक API key के साथ authenticated है। [console](https://bearlab.ai) पर API Tokens के तहत keys बनाएं; वे `sk-xxxxxxxx` की तरह दिखते हैं।
+
+<Note>
+  Asia-Pacific users: endpoint के रूप में `bearlab.ai` के बजाय `https://bearlab.in` का उपयोग करें। [Service Availability](/hi/guides/availability) देखें।
+</Note>
+
+## Key को pass करना
+
+दोनों protocols विभिन्न auth headers का उपयोग करते हैं:
+
+| Protocol | Header |
+| --- | --- |
+| OpenAI-compatible | `Authorization: Bearer YOUR_API_KEY` |
+| Anthropic-compatible | `x-api-key: YOUR_API_KEY` |
+
+## Key management
+
+- **प्रत्येक use के लिए एक key**: आसान revocation और per-key usage stats के लिए project या client के लिए अलग keys बनाएं।
+- **एक quota cap सेट करें**: exposure को कम करने के लिए creation पर एक single key को spending limit दें।
+- **Hardcode न करें**: environment variables के माध्यम से inject करें; कभी भी keys को repository में commit न करें।
+- **Leak पर revoke करें**: यदि एक key exposed हो सकता है, तो इसे console पर delete करें और एक नया बनाएं।
+
+## Common auth errors
+
+| Symptom | Cause |
+| --- | --- |
+| `401 Unauthorized` | गलत या deleted key, या mismatched header (Bearer vs x-api-key)। |
+| `403 Forbidden` | Key disabled, insufficient balance, या model या group तक कोई access नहीं। सबसे common permission issue एक model है जिसे identity verification की आवश्यकता है। |
+
+अधिक codes के लिए [Error Handling](/hi/guides/errors) देखें।

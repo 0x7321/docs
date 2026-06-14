@@ -1,0 +1,34 @@
+---
+title: "BearLab"
+description: "すべての主要な会話型モデルに対応する1つのキー。OpenAI、Anthropic、Google、DeepSeekを単一のAPIで利用できます。"
+---
+
+BearLab (BearLab.ai) は、数十のプロバイダーの会話型モデルを1つのAPIで統合します。1つのキーを作成し、1つの`base_url`を設定すれば、OpenAI、Anthropic、Google、DeepSeekの最新モデルを、各ベンダーで個別に登録したり入金したりすることなく呼び出せます。
+
+インターフェースはOpenAIおよびAnthropicのプロトコルの両方に対応しているため、既存のコードは通常、1行の`base_url`変更で動作します。
+
+<CardGroup cols={2}>
+  <Card title="クイックスタート" icon="rocket" href="/ja/guides/quickstart" cta="始める">
+    キーを作成し、5分で最初のリクエストを行います。
+  </Card>
+  <Card title="はじめに" icon="circle-info" href="/ja/guides/introduction" cta="詳しく">
+    BearLabとは何か、何ができるかについて。
+  </Card>
+  <Card title="チャット完了" icon="comments" href="/ja/guides/chat" cta="APIを見る">
+    OpenAI互換の `/v1` および Anthropic互換の `/anthropic`。
+  </Card>
+  <Card title="統合" icon="plug" href="/ja/integrations/cursor" cta="接続">
+    Cursor、Claude Code、Cline、Codex、SDKがすぐに利用可能です。
+  </Card>
+</CardGroup>
+
+## サービス提供地域
+
+BearLabは**米国およびヨーロッパ連合**の管轄区域に直接サービスを提供しています。**アジア太平洋**地域は地域パートナーによってサービスされており、その地域からのAPIリクエストは、bearlab.aiの代わりに専用エンドポイント `https://bearlab.in` を使用する必要があります。
+
+| 地域 | エンドポイント |
+| --- | --- |
+| 米国 / EU | `https://bearlab.ai/v1` · `https://bearlab.ai/anthropic` |
+| アジア太平洋 | `https://bearlab.in/v1` · `https://bearlab.in/anthropic` |
+
+[サービス提供地域](/ja/guides/availability)を参照してください。

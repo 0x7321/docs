@@ -184,6 +184,180 @@
             ]
           }
         ]
+      },
+      {
+        "language": "fr",
+        "tabs": [
+          {
+            "tab": "Documentation",
+            "groups": [
+              {
+                "group": "Démarrage",
+                "pages": [
+                  "fr/index",
+                  "fr/guides/introduction",
+                  "fr/guides/quickstart",
+                  "fr/guides/authentication"
+                ]
+              },
+              {
+                "group": "API Chat",
+                "pages": [
+                  "fr/guides/chat",
+                  "fr/guides/models",
+                  "fr/guides/prompt-caching",
+                  "fr/guides/providers"
+                ]
+              },
+              {
+                "group": "Compte",
+                "pages": [
+                  "fr/guides/pricing",
+                  "fr/guides/user-levels",
+                  "fr/guides/rate-limits",
+                  "fr/guides/errors",
+                  "fr/guides/availability"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "Intégrations",
+            "groups": [
+              {
+                "group": "Éditeurs / CLI",
+                "pages": [
+                  "fr/integrations/cursor",
+                  "fr/integrations/claude-code",
+                  "fr/integrations/cline",
+                  "fr/integrations/codex"
+                ]
+              },
+              {
+                "group": "SDK",
+                "pages": [
+                  "fr/integrations/sdk"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "language": "ja",
+        "tabs": [
+          {
+            "tab": "ドキュメント",
+            "groups": [
+              {
+                "group": "はじめに",
+                "pages": [
+                  "ja/index",
+                  "ja/guides/introduction",
+                  "ja/guides/quickstart",
+                  "ja/guides/authentication"
+                ]
+              },
+              {
+                "group": "チャット API",
+                "pages": [
+                  "ja/guides/chat",
+                  "ja/guides/models",
+                  "ja/guides/prompt-caching",
+                  "ja/guides/providers"
+                ]
+              },
+              {
+                "group": "アカウント",
+                "pages": [
+                  "ja/guides/pricing",
+                  "ja/guides/user-levels",
+                  "ja/guides/rate-limits",
+                  "ja/guides/errors",
+                  "ja/guides/availability"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "連携",
+            "groups": [
+              {
+                "group": "エディタ / CLI",
+                "pages": [
+                  "ja/integrations/cursor",
+                  "ja/integrations/claude-code",
+                  "ja/integrations/cline",
+                  "ja/integrations/codex"
+                ]
+              },
+              {
+                "group": "SDK",
+                "pages": [
+                  "ja/integrations/sdk"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "language": "hi",
+        "tabs": [
+          {
+            "tab": "दस्तावेज़",
+            "groups": [
+              {
+                "group": "शुरुआत",
+                "pages": [
+                  "hi/index",
+                  "hi/guides/introduction",
+                  "hi/guides/quickstart",
+                  "hi/guides/authentication"
+                ]
+              },
+              {
+                "group": "चैट API",
+                "pages": [
+                  "hi/guides/chat",
+                  "hi/guides/models",
+                  "hi/guides/prompt-caching",
+                  "hi/guides/providers"
+                ]
+              },
+              {
+                "group": "खाता",
+                "pages": [
+                  "hi/guides/pricing",
+                  "hi/guides/user-levels",
+                  "hi/guides/rate-limits",
+                  "hi/guides/errors",
+                  "hi/guides/availability"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "इंटीग्रेशन",
+            "groups": [
+              {
+                "group": "एडिटर / CLI",
+                "pages": [
+                  "hi/integrations/cursor",
+                  "hi/integrations/claude-code",
+                  "hi/integrations/cline",
+                  "hi/integrations/codex"
+                ]
+              },
+              {
+                "group": "SDK",
+                "pages": [
+                  "hi/integrations/sdk"
+                ]
+              }
+            ]
+          }
+        ]
       }
     ]
   },
@@ -195,24 +369,47 @@
     }
   },
   "contextual": {
-    "options": ["copy", "view", "chatgpt", "claude"]
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude"
+    ]
   },
   "footer": {
     "links": [
       {
         "header": "北极熊实验室",
         "items": [
-          { "label": "控制台", "href": "https://bearlab.ai" },
-          { "label": "快速开始", "href": "/guides/quickstart" }
+          {
+            "label": "控制台",
+            "href": "https://bearlab.ai"
+          },
+          {
+            "label": "快速开始",
+            "href": "/guides/quickstart"
+          }
         ]
       },
       {
         "header": "法律 / Legal",
         "items": [
-          { "label": "服务区域 / Availability", "href": "/guides/availability" },
-          { "label": "Terms of Service", "href": "/legal/terms" },
-          { "label": "Privacy Policy", "href": "/legal/privacy" },
-          { "label": "Acceptable Use Policy", "href": "/legal/acceptable-use" }
+          {
+            "label": "服务区域 / Availability",
+            "href": "/guides/availability"
+          },
+          {
+            "label": "Terms of Service",
+            "href": "/legal/terms"
+          },
+          {
+            "label": "Privacy Policy",
+            "href": "/legal/privacy"
+          },
+          {
+            "label": "Acceptable Use Policy",
+            "href": "/legal/acceptable-use"
+          }
         ]
       }
     ]

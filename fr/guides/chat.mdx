@@ -1,0 +1,142 @@
+---
+title: "Chat Completions"
+description: "Paramètres de requête, streaming, appel d'outils et les trois protocoles compatibles."
+---
+
+Chat completion est le point de terminaison central, offert via trois interfaces compatibles (OpenAI, Anthropic, Gemini) qui partagent une seule clé.
+
+<Note>
+  Utilisateurs Asie-Pacifique : utilisez `https://bearlab.in` comme point de terminaison au lieu de `bearlab.ai`. Voir [Service Availability](/fr/guides/availability).
+</Note>
+
+## Points de terminaison
+
+| Protocole | Méthode et chemin |
+| --- | --- |
+| Compatible OpenAI | `POST https://bearlab.ai/v1/chat/completions` |
+| Compatible Anthropic | `POST https://bearlab.ai/anthropic/v1/messages` |
+| Gemini native | `base_url=https://bearlab.ai`, `api_version=v1beta` (SDK Google genai) |
+
+## Requête basique
+
+<Tabs>
+  <Tab title="Compatible OpenAI">
+    ```bash
+    curl https://bearlab.ai/v1/chat/completions \
+      -H "Authorization: Bearer YOUR_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "gpt-4o",
+        "messages": [
+          {"role": "system", "content": "You are a concise assistant."},
+          {"role": "user", "content": "Hello"}
+        ]
+      }'
+    ```
+  </Tab>
+  <Tab title="Compatible Anthropic">
+    ```bash
+    curl https://bearlab.ai/anthropic/v1/messages \
+      -H "x-api-key: YOUR_API_KEY" \
+      -H "anthropic-version: 2023-06-01" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "claude-sonnet-4-5",
+        "max_tokens": 1024,
+        "system": "You are a concise assistant.",
+        "messages": [{"role": "user", "content": "Hello"}]
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+## Paramètres courants
+
+| Paramètre | Description |
+| --- | --- |
+| `model` | ID du modèle. Voir [Models & Pricing API](/fr/guides/models). |
+| `messages` | Tableau ordonné des messages de conversation. |
+| `temperature` | Température d'échantillonnage, `0`-`2`. |
+| `max_tokens` | Jetons de sortie maximaux. **Requis** sous le protocole Anthropic. |
+| `stream` | Diffusez la réponse via SSE quand `true`. |
+
+<Warning>
+  Différence de protocole : le protocole OpenAI place le prompt système dans `messages` en tant que `role: system` ; le protocole Anthropic utilise un champ `system` de niveau supérieur et nécessite `max_tokens`.
+</Warning>
+
+## Streaming
+
+Définissez `stream: true` ; la réponse est poussée via SSE, se terminant par `data: [DONE]` (protocole OpenAI).
+
+```python
+from openai import OpenAI
+
+client = OpenAI(api_key="YOUR_API_KEY", base_url="https://bearlab.ai/v1")
+
+stream = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "Write a short poem about spring."}],
+    stream=True,
+)
+for chunk in stream:
+    delta = chunk.choices[0].delta.content
+    if delta:
+        print(delta, end="", flush=True)
+```
+
+## Appel d'outils
+
+Les protocoles OpenAI et Anthropic supportent tous deux l'appel d'outils.
+
+```python
+from openai import OpenAI
+
+client = OpenAI(base_url="https://bearlab.ai/v1", api_key="YOUR_API_KEY")
+
+tools = [{
+    "type": "function",
+    "function": {
+        "name": "get_weather",
+        "description": "Get the current weather for a city",
+        "parameters": {
+            "type": "object",
+            "properties": {"city": {"type": "string"}},
+            "required": ["city"],
+        },
+    },
+}]
+
+resp = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "What's the weather in London?"}],
+    tools=tools,
+)
+print(resp.choices[0].message)
+```
+
+## Protocole Gemini native
+
+Les modèles Gemini peuvent être appelés au format natif Google AI Studio, sans conversion au format OpenAI.
+
+```python
+from google import genai
+from google.genai import types
+
+client = genai.Client(
+    api_key="YOUR_API_KEY",
+    http_options=types.HttpOptions(api_version="v1beta", base_url="https://bearlab.ai"),
+)
+
+resp = client.models.generate_content(model="gemini-2.5-pro", contents="Hello")
+print(resp.text)
+```
+
+<Warning>
+  1. Définissez `base_url` à `https://bearlab.ai` (pas de suffixe `/v1beta` ; le SDK l'ajoute).
+  2. Définissez `api_version` à `v1beta`.
+  3. Installez : Python `pip install google-genai`, Node.js `npm install @google/genai`.
+</Warning>
+
+<Tip>
+  Les préfixes longs répétés (prompts système fixes, longs documents) peuvent utiliser [Prompt Caching](/fr/guides/prompt-caching) pour réduire le coût de la partie répétée.
+</Tip>

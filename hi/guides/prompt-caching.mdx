@@ -1,0 +1,53 @@
+---
+title: "Prompt Caching"
+description: "Repeated content के लिए cost को कम करें, और request IDs के साथ routing को consistent रखें hit rates को improve करने के लिए।"
+---
+
+## Prompt caching क्या है
+
+कई providers (Anthropic Claude और OpenAI सहित) natively prompt caching को support करते हैं। जब same context बार-बार भेजा जाता है, provider prior computation को reuse करता है, **latency और token cost को कम करते हुए**।
+
+## Caching limitations
+
+**Caches को accounts में share नहीं किया जा सकता है**, एक provider-side restriction, platform one नहीं।
+
+एक multi-channel relay के रूप में, हम guarantee नहीं दे सकते कि एक account से दो consecutive requests same backend channel hit करें। यदि वे विभिन्न channels को जाते हैं, तो existing caches को reuse नहीं किया जा सकता है, hit rates को कम करते हुए और cost को बढ़ाते हुए।
+
+## Routing को consistent रखना
+
+इसे address करने के लिए, एक previous request की ID को later requests में include करें। System नए request को same channel को route करने की कोशिश करेगा, cache reuse को maximize करते हुए।
+
+| Header | Source | TTL |
+| --- | --- | --- |
+| `X-Request-Id` | Previous response से request-id header | 5 minutes |
+| `X-Response-Id` | Previous response JSON में conversation ID (e.g. Claude का `message.id`) | 5 minutes |
+
+### उदाहरण
+
+```python
+import anthropic
+
+client = anthropic.Anthropic(base_url="https://bearlab.ai/anthropic", api_key="API_KEY")
+
+response = client.messages.create(
+    model="claude-sonnet-4-5",
+    max_tokens=1024,
+    messages=[{"role": "user", "content": "Hello!"}],
+)
+response_id = response.id
+
+response2 = client.messages.create(
+    model="claude-sonnet-4-5",
+    max_tokens=1024,
+    messages=[
+        {"role": "user", "content": "Hello!"},
+        {"role": "assistant", "content": response.content[0].text},
+        {"role": "user", "content": "Continue our conversation..."},
+    ],
+    extra_headers={"X-Response-Id": response_id},
+)
+```
+
+## Tips
+
+Unchanging content को first रखें (system prompts, long documents) और variable content को last रखें (latest user message) prefix hits को maximize करने के लिए। Longer और अधिक frequently reused prefix, अधिक आप save करते हैं।

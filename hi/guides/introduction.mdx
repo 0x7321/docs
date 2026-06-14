@@ -1,0 +1,46 @@
+---
+title: "परिचय"
+description: "BearLab क्या है और यह क्या करता है।"
+---
+
+> BearLab (BearLab.ai) दर्जनों leading providers के conversational models को एक API के तहत लाता है। OpenAI, Anthropic, Google, और DeepSeek सभी एक single key के साथ accessible हैं।
+
+## BearLab क्या है
+
+BearLab एक conversational-model aggregation platform है। OpenAI, Anthropic, और Google के साथ अलग-अलग registration, top-up, और key management करने के बजाय, आप यहां एक key बनाते हैं, एक `base_url` सेट करते हैं, और उनके नवीनतम conversational models को कॉल करते हैं।
+
+यह interface OpenAI और Anthropic दोनों protocols के साथ compatible है, इसलिए मौजूदा code आमतौर पर endpoint और key को बदलने के बाद काम करता है।
+
+हम एक काम करते हैं, conversational models, जो interface को सरल, billing को स्पष्ट, और सेवा को स्थिर रखता है।
+
+## मुख्य क्षमताएं
+
+**हर model के लिए एक key**
+विभिन्न vendors और models एक unified interface के माध्यम से। एक account access के लिए, एक bill spend के लिए, एक जगह usage देखने के लिए।
+
+**OpenAI / Anthropic dual protocol**
+दोनों protocols natively supported हैं। Cursor, Claude Code, Cline, और Codex endpoint सेट करके connect करते हैं, बिना यह परवाह किए कि एक model के पीछे कौन सा vendor है।
+
+**स्थिर और उपलब्ध**
+लोकप्रिय models कई providers द्वारा backed हैं। यदि एक fail हो जाता है, requests स्वचालित रूप से दूसरे को fail over कर जाते हैं।
+
+**Pay as you go**
+केवल जो आप उपयोग करते हैं उसके लिए भुगतान करें। कोई monthly fee नहीं, कोई minimum top-up नहीं। Prices upstream providers को track करते हैं, और balance real time में visible है।
+
+**Observable usage**
+हर call अपना request, response, और token consumption record करता है, जिससे troubleshoot करना और cost के लिए account करना आसान हो जाता है।
+
+## केवल Conversational models
+
+BearLab image, audio, video, music, या embedding models नहीं प्रदान करता है। हम conversational models को स्थिर और complete बनाने पर focus करते हैं। उन अन्य क्षमताओं के लिए, एक dedicated platform का उपयोग करें।
+
+## अगला
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/hi/guides/quickstart" cta="शुरू करें">
+    एक key बनाएं और अपना पहला request बनाएं।
+  </Card>
+  <Card title="Chat Completions" icon="comments" href="/hi/guides/chat" cta="API देखें">
+    Parameters, streaming, और protocol differences।
+  </Card>
+</CardGroup>

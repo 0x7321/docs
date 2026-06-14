@@ -1,0 +1,123 @@
+---
+title: "Models & Pricing API"
+description: "Un point de terminaison public et non authentifié répertoriant tous les modèles conversationnels disponibles et leurs prix publiés, suivant la spécification OpenRouter Providers."
+---
+
+`/v1/models/pricing` est un point de terminaison d'agrégation **public et non authentifié** qui retourne chaque modèle conversationnel actuellement disponible ainsi que son prix publié. La réponse suit la [spécification OpenRouter Providers](https://openrouter.ai/docs/guides/community/for-providers), afin qu'elle puisse être ingérée par OpenRouter, des agrégateurs de prix tiers ou n'importe quel client personnalisé.
+
+<Note>
+  Utilisateurs Asie-Pacifique : utilisez `https://bearlab.in` comme point de terminaison au lieu de `bearlab.ai`. Voir [Service Availability](/fr/guides/availability).
+</Note>
+
+<Note>
+  Ceci est le point d'entrée "prix publié" et ne porte aucune identité utilisateur. Les prix représentent le groupe `default` dans un contexte anonyme. Pour voir le prix qu'un utilisateur authentifié paie réellement (groupe, remise de niveau, etc.), utilisez la page de tarification dans la console.
+</Note>
+
+## Quand l'utiliser
+
+| Cas d'usage | Description |
+| --- | --- |
+| Agrégation de prix | OpenRouter et autres agrégateurs qui scrapent le catalogue et les prix publiés |
+| Affichage client | Applications, bots et SDKs qui rendent la liste des modèles |
+| Surveillance | Suivi des changements de catalogue ou de prix au fil du temps |
+
+## Point de terminaison
+
+| Élément | Valeur |
+| --- | --- |
+| **URL** | `https://bearlab.ai/v1/models/pricing` |
+| **Méthode** | `GET` |
+| **Auth** | Aucune (public) |
+| **Limite de débit** | Limite critique stricte par IP |
+| **Mise en cache** | Cache en mémoire de 60s ; `Cache-Control: public, max-age=60` |
+
+### Requête
+
+```bash
+curl https://bearlab.ai/v1/models/pricing
+```
+
+## Structure de réponse
+
+Le niveau supérieur est toujours enveloppé dans un tableau `data` :
+
+```json
+{
+  "data": [
+    {
+      "id": "gpt-4o",
+      "name": "GPT-4o",
+      "created": 1715558400,
+      "input_modalities": ["text"],
+      "output_modalities": ["text"],
+      "context_length": 128000,
+      "max_output_length": 16384,
+      "pricing": {
+        "prompt": "0.0000025",
+        "completion": "0.00001",
+        "request": "0",
+        "input_cache_read": "0.00000125"
+      },
+      "supported_features": ["tools", "json_mode", "structured_outputs", "logprobs"]
+    }
+  ]
+}
+```
+
+### Champs du modèle
+
+| Champ | Type | Description |
+| --- | --- | --- |
+| `id` | `string` | Identifiant de modèle unique ; utilisez-le lors de l'appel de `/v1/chat/completions` |
+| `name` | `string` | Nom d'affichage ; revient à `id` |
+| `created` | `int64` | Temps de sortie (secondes Unix) |
+| `input_modalities` / `output_modalities` | `string[]` | Au moins `text` |
+| `context_length` | `int` | Fenêtre de contexte maximale en jetons |
+| `max_output_length` | `int` | Jetons de sortie maximaux par réponse |
+| `pricing` | `Pricing` | Objet de tarification ; voir ci-dessous |
+| `pricing_tiers` | `Pricing[]` | Tarification par niveau (au plus un, par seuil de longueur de contexte) |
+| `supported_features` | `string[]` | Drapeaux de capacité |
+
+### Champs de tarification
+
+Tous les prix sont des **chaînes USD** ; les champs de classe de jetons sont tarifés par jeton.
+
+| Champ | Unité | Description |
+| --- | --- | --- |
+| `prompt` | USD / jeton d'entrée | Prix unitaire d'entrée |
+| `completion` | USD / jeton de sortie | Prix unitaire de sortie |
+| `request` | USD / requête | Frais forfaitaires par requête (généralement `"0"` pour les modèles de chat) |
+| `internal_reasoning` | USD / jeton de raisonnement | Prix du jeton de raisonnement |
+| `input_cache_read` | USD / jeton | Prix de lecture du cache (généralement inférieur) |
+| `input_cache_write` | USD / jeton | Prix d'écriture du cache |
+| `web_search` | USD / requête | Frais de l'outil de recherche web intégré |
+
+<Note>
+  Une valeur de `"0"` peut signifier "gratuit" ou "non applicable à ce modèle". Combinez `supported_features` pour déduire la capacité plutôt que de vous fier au tarif seul.
+</Note>
+
+### `supported_features`
+
+| Valeur | Signification |
+| --- | --- |
+| `tools` | Appel de fonction / utilisation d'outils |
+| `reasoning` | Retourne les jetons de raisonnement |
+| `json_mode` | Mode de sortie JSON |
+| `structured_outputs` | Sorties structurées contraintes par schéma |
+| `logprobs` | Probabilités de log des jetons |
+| `web_search` | Outil de recherche web intégré |
+
+## Mise en cache et cadence de mise à jour
+
+| Aspect | Comportement |
+| --- | --- |
+| Cache serveur | 60s en mémoire ; les mises à jour d'administrateur prennent effet en 1 minute |
+| Cache client | `Cache-Control: public, max-age=60` |
+| Sondage recommandé | Au maximum une fois toutes les 5 minutes ; le sondage agressif est limité en débit |
+
+## Comparaison avec d'autres points de terminaison
+
+| Point de terminaison | Objectif | Auth |
+| --- | --- | --- |
+| `/v1/models/pricing` | Tarification publique au format OpenRouter | Public |
+| `/v1/models` | Liste d'ID de modèle compatible SDK OpenAI | Jeton requis |

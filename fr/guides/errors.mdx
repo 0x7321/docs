@@ -1,0 +1,48 @@
+---
+title: "Error Handling"
+description: "Codes de statut HTTP courants, leur signification et comment dépanner."
+---
+
+L'API utilise les codes de statut HTTP standard. Les corps d'erreur sont JSON et portent un en-tête request-id (pour le dépannage et [le routage du cache](/fr/guides/prompt-caching)) :
+
+```json
+{
+  "error": {
+    "code": "",
+    "message": "A description, including the request id",
+    "type": "bearlab_api_error"
+  }
+}
+```
+
+## Codes de statut courants
+
+| Code | Signification | Cause et solution |
+| --- | --- | --- |
+| `400` | Mauvais paramètres | Paramètres manquants ou de mauvais type ; `max_tokens` manquant sous Anthropic. Corriger par `message`. |
+| `401` | Auth échouée | Clé API non définie correctement (clé erronée/supprimée, ou Bearer vs x-api-key mal assorti). |
+| `403` | Solde ou permission insuffisant | Solde épuisé ; ou pas d'accès au modèle/groupe. Le problème de permission le plus courant est un modèle qui nécessite une vérification d'identité. |
+| `429` | Limite de débit atteinte | RPM / RPD / TPM / TPD atteint ; voir [Rate Limits](/fr/guides/rate-limits). Peut également être des tentatives répétées à partir de mauvais paramètres. |
+| `503` / `504` | Charge élevée | Réessayez plus tard ; pour le chat, essayez le streaming avec `"stream": true`. |
+| `500` | Erreur serveur inconnue | Contactez le support avec l'ID de requête. |
+
+## Liste de contrôle
+
+<Steps>
+  <Step title="Lire error.message en premier">
+    La plupart des problèmes y sont expliqués.
+  </Step>
+  <Step title="Vérifiez base_url et le protocole">
+    `/v1` (OpenAI) vs `/anthropic` (Anthropic) ; l'en-tête d'auth doit correspondre.
+  </Step>
+  <Step title="Vérifiez le nom du modèle">
+    Confirmez que `model` existe via le [point de terminaison des modèles](/fr/guides/models).
+  </Step>
+  <Step title="Vérifiez le solde / réessayez">
+    `403` peut être un solde ; réessayez `5xx` / `429` avec backoff exponentiel, puis contactez le support.
+  </Step>
+</Steps>
+
+<Note>
+  Avec `stream: true`, les erreurs peuvent arriver sous forme d'événements SSE après l'ouverture de la connexion. Gérez un événement `error` au milieu du stream, pas seulement le statut HTTP.
+</Note>

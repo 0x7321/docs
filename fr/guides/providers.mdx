@@ -1,0 +1,56 @@
+---
+title: "Providers & Routing"
+description: "Chaque modèle est soutenu par plusieurs fournisseurs. Configurez le routage dans votre jeton ou remplacez-le par requête."
+---
+
+Chaque modèle peut être soutenu par **plusieurs fournisseurs**, des nœuds de service organisés par source et coût avec différents multiplicateurs de prix et couverture de modèles. Le système sélectionne un fournisseur disponible en fonction de la configuration de votre jeton ; si l'un échoue ou expire, il réessaie un autre, de manière transparente à votre code.
+
+## Fournisseurs disponibles
+
+| ID | Nom | Description |
+| --- | --- | --- |
+| `official` | Officiel | Un groupe de fournisseurs regroupant les connexions directes aux principales plateformes officielles (OpenAI, Anthropic, Google) ; stabilité la plus élevée |
+| `official_cheap` | Officiel (Réduit) | Canaux officiels optimisés pour le coût ; stabilité élevée à un prix inférieur |
+| `mix` | Mixte | Canaux mixtes multi-sources ; prix le plus bas, couverture la plus large |
+
+`official` est un **groupe de fournisseurs** regroupant les nœuds des principales plateformes officielles ; le sélectionner route et bascule entre tous les nœuds officiels sans spécifier chaque fournisseur.
+
+### Comment choisir
+
+| Besoin | Configuration recommandée |
+| --- | --- |
+| Stabilité maximale, le prix n'est pas une préoccupation | `official` |
+| Bonne stabilité, meilleur rapport qualité-prix | `official_cheap` |
+| Coût le plus bas, légère instabilité acceptable | `mix` |
+| Officiel réduit en premier, basculer vers mixte | `official_cheap,mix` |
+
+## Configuration dans un jeton
+
+Lors de la création ou de la modification d'un jeton, vous définissez son routage par défaut :
+
+- **Liste de fournisseurs** : vide (recommandé) route entre tous les fournisseurs disponibles ; un seul le limite à celui-ci ; plusieurs (séparés par des virgules) sont essayés dans l'ordre ou par stratégie de tri.
+- **Mode fournisseur uniquement** : désactivé (par défaut) priorise les fournisseurs spécifiés mais bascule ; activé limite strictement à ceux-ci et retourne une erreur si tous échouent.
+- **Stratégie de tri** : manuel (par défaut), latence, prix ou débit.
+
+## Remplacement par requête
+
+Remplacez les paramètres du jeton pour une seule requête via des en-têtes :
+
+| En-tête | Effet |
+| --- | --- |
+| `X-Provider-Order` | Fournisseurs et ordre pour cette requête |
+| `X-Provider-Only` | `"true"` active le mode strict, pas de basculement |
+| `X-Provider-Sort` | Remplacez la stratégie de tri (`latency` / `price` / `throughput`) |
+| `X-Provider-Ignore` | Fournisseurs à ignorer, empilés sur la configuration du jeton |
+
+> Les fournisseurs spécifiés via les en-têtes sont toujours soumis à vos autorisations de compte.
+
+### Exemple
+
+```bash
+curl https://bearlab.ai/v1/chat/completions \
+  -H "Authorization: Bearer sk-your-token" \
+  -H "X-Provider-Order: official_cheap,mix" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "gpt-4o", "messages": [{"role": "user", "content": "Hello"}]}'
+```

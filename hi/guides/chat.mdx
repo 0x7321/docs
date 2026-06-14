@@ -1,0 +1,142 @@
+---
+title: "Chat Completions"
+description: "Request parameters, streaming, tool calling, और तीन compatible protocols।"
+---
+
+Chat completion core endpoint है, तीन compatible interfaces (OpenAI, Anthropic, Gemini) के माध्यम से दिया गया है जो एक key share करते हैं।
+
+<Note>
+  Asia-Pacific users: endpoint के रूप में `bearlab.ai` के बजाय `https://bearlab.in` का उपयोग करें। [Service Availability](/hi/guides/availability) देखें।
+</Note>
+
+## Endpoints
+
+| Protocol | Method और path |
+| --- | --- |
+| OpenAI-compatible | `POST https://bearlab.ai/v1/chat/completions` |
+| Anthropic-compatible | `POST https://bearlab.ai/anthropic/v1/messages` |
+| Gemini native | `base_url=https://bearlab.ai`, `api_version=v1beta` (Google genai SDK) |
+
+## Basic request
+
+<Tabs>
+  <Tab title="OpenAI-compatible">
+    ```bash
+    curl https://bearlab.ai/v1/chat/completions \
+      -H "Authorization: Bearer YOUR_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "gpt-4o",
+        "messages": [
+          {"role": "system", "content": "You are a concise assistant."},
+          {"role": "user", "content": "Hello"}
+        ]
+      }'
+    ```
+  </Tab>
+  <Tab title="Anthropic-compatible">
+    ```bash
+    curl https://bearlab.ai/anthropic/v1/messages \
+      -H "x-api-key: YOUR_API_KEY" \
+      -H "anthropic-version: 2023-06-01" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "claude-sonnet-4-5",
+        "max_tokens": 1024,
+        "system": "You are a concise assistant.",
+        "messages": [{"role": "user", "content": "Hello"}]
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+## Common parameters
+
+| Parameter | Description |
+| --- | --- |
+| `model` | Model ID। [Models & Pricing API](/hi/guides/models) देखें। |
+| `messages` | Conversation messages का ordered array। |
+| `temperature` | Sampling temperature, `0`-`2`। |
+| `max_tokens` | Maximum output tokens। **Required** Anthropic protocol के तहत। |
+| `stream` | जब `true` हो तो SSE पर response stream करें। |
+
+<Warning>
+  Protocol difference: OpenAI protocol system prompt को `messages` में `role: system` के रूप में रखता है; Anthropic protocol एक top-level `system` field का उपयोग करता है और `max_tokens` की आवश्यकता है।
+</Warning>
+
+## Streaming
+
+`stream: true` सेट करें; response SSE पर pushed है, `data: [DONE]` के साथ समाप्त होता है (OpenAI protocol)।
+
+```python
+from openai import OpenAI
+
+client = OpenAI(api_key="YOUR_API_KEY", base_url="https://bearlab.ai/v1")
+
+stream = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "Write a short poem about spring."}],
+    stream=True,
+)
+for chunk in stream:
+    delta = chunk.choices[0].delta.content
+    if delta:
+        print(delta, end="", flush=True)
+```
+
+## Tool calling
+
+OpenAI और Anthropic दोनों protocols tool calling को support करते हैं।
+
+```python
+from openai import OpenAI
+
+client = OpenAI(base_url="https://bearlab.ai/v1", api_key="YOUR_API_KEY")
+
+tools = [{
+    "type": "function",
+    "function": {
+        "name": "get_weather",
+        "description": "Get the current weather for a city",
+        "parameters": {
+            "type": "object",
+            "properties": {"city": {"type": "string"}},
+            "required": ["city"],
+        },
+    },
+}]
+
+resp = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "What's the weather in London?"}],
+    tools=tools,
+)
+print(resp.choices[0].message)
+```
+
+## Gemini native protocol
+
+Gemini models को native Google AI Studio format में कॉल किया जा सकता है, बिना OpenAI format में conversion के।
+
+```python
+from google import genai
+from google.genai import types
+
+client = genai.Client(
+    api_key="YOUR_API_KEY",
+    http_options=types.HttpOptions(api_version="v1beta", base_url="https://bearlab.ai"),
+)
+
+resp = client.models.generate_content(model="gemini-2.5-pro", contents="Hello")
+print(resp.text)
+```
+
+<Warning>
+  1. `base_url` को `https://bearlab.ai` पर सेट करें (कोई `/v1beta` suffix नहीं; SDK इसे append करता है)।
+  2. `api_version` को `v1beta` पर सेट करें।
+  3. Install: Python `pip install google-genai`, Node.js `npm install @google/genai`।
+</Warning>
+
+<Tip>
+  लंबे repeated prefixes (fixed system prompts, long documents) [Prompt Caching](/hi/guides/prompt-caching) का उपयोग कर सकते हैं repeated part की cost को कम करने के लिए।
+</Tip>

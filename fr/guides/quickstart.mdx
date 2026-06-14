@@ -1,0 +1,71 @@
+---
+title: "Démarrage rapide"
+description: "Créez une clé et effectuez votre première requête en 5 minutes."
+---
+
+Trois étapes pour appeler un modèle.
+
+<Note>
+  Utilisateurs Asie-Pacifique : utilisez `https://bearlab.in` comme point de terminaison au lieu de `bearlab.ai`. Voir [Service Availability](/fr/guides/availability).
+</Note>
+
+<Steps>
+  <Step title="S'inscrire et recharger">
+    Inscrivez-vous sur la [console](https://bearlab.ai) et ajoutez des fonds sur la page Portefeuille. Les nouveaux utilisateurs peuvent commencer par une petite recharge pour tester.
+  </Step>
+  <Step title="Créer une clé API">
+    Allez à Dashboard, API Tokens, cliquez sur Add Token, et copiez la clé `sk-...`. La clé s'affiche en intégralité une seule fois.
+  </Step>
+  <Step title="Effectuez votre première requête">
+    Remplacez `YOUR_API_KEY` par votre clé.
+  </Step>
+</Steps>
+
+## Exemples
+
+<Tabs>
+  <Tab title="Compatible OpenAI">
+    ```bash
+    curl https://bearlab.ai/v1/chat/completions \
+      -H "Authorization: Bearer YOUR_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "gpt-4o",
+        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+      }'
+    ```
+  </Tab>
+  <Tab title="Compatible Anthropic">
+    ```bash
+    curl https://bearlab.ai/anthropic/v1/messages \
+      -H "x-api-key: YOUR_API_KEY" \
+      -H "anthropic-version: 2023-06-01" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "claude-sonnet-4-5",
+        "max_tokens": 256,
+        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+      }'
+    ```
+  </Tab>
+  <Tab title="Python (SDK OpenAI)">
+    ```python
+    from openai import OpenAI
+
+    client = OpenAI(
+        api_key="YOUR_API_KEY",
+        base_url="https://bearlab.ai/v1",
+    )
+
+    resp = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": "Introduce yourself in one sentence"}],
+    )
+    print(resp.choices[0].message.content)
+    ```
+  </Tab>
+</Tabs>
+
+<Tip>
+  Vous voulez la liste des modèles et les prix ? Voir [Models & Pricing API](/fr/guides/models). Vous connectez Cursor ou Claude Code ? Voir [Integrations](/fr/integrations/cursor).
+</Tip>

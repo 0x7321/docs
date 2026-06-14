@@ -1,0 +1,56 @@
+---
+title: "Providers & Routing"
+description: "प्रत्येक model कई providers द्वारा backed है। अपनी token में routing configure करें या इसे प्रत्येक request पर override करें।"
+---
+
+प्रत्येक model **multiple providers** द्वारा backed हो सकता है, service nodes source और cost द्वारा organized किए गए विभिन्न price multipliers और model coverage के साथ। System आपकी token configuration के आधार पर एक available provider को select करता है; यदि एक fail या timeout हो जाता है, तो यह दूसरे को retry करता है, आपके code के लिए transparent।
+
+## Available providers
+
+| ID | Name | Description |
+| --- | --- | --- |
+| `official` | Official | Direct connections को major official platforms (OpenAI, Anthropic, Google) को bundling करने वाला एक provider group; highest stability |
+| `official_cheap` | Official (Discounted) | Cost-optimized official channels; कम price पर high stability |
+| `mix` | Mixed | Multi-source mixed channels; lowest price, widest coverage |
+
+`official` एक **provider group** है major official platforms से nodes को bundling करता है; इसे select करना सभी official nodes में route और fail over करता है बिना प्रत्येक vendor को specify किए।
+
+### कैसे चुनें
+
+| Need | Recommended config |
+| --- | --- |
+| Maximum stability, price no concern | `official` |
+| Good stability, better value | `official_cheap` |
+| Lowest cost, minor instability acceptable | `mix` |
+| Discounted official first, fallback to mixed | `official_cheap,mix` |
+
+## एक token में configuring
+
+जब एक token बनाते या edit करते हैं तो आप इसकी default routing set करते हैं:
+
+- **Provider list**: empty (recommended) सभी available providers में route करता है; एक single को restrict करता है; multiple (comma-separated) order में या sort strategy द्वारा tried किए जाते हैं।
+- **Provider-only mode**: off (default) specified providers को prioritize करता है लेकिन fallback; on strictly उन तक limit करता है और एक error return करता है यदि सभी fail हो जाते हैं।
+- **Sort strategy**: manual (default), latency, price, या throughput।
+
+## प्रत्येक request पर override करना
+
+Headers के माध्यम से एक single request के लिए token settings को override करें:
+
+| Header | Effect |
+| --- | --- |
+| `X-Provider-Order` | इस request के लिए Providers और order |
+| `X-Provider-Only` | `"true"` strict mode को enable करता है, कोई fallback नहीं |
+| `X-Provider-Sort` | Override sort strategy (`latency` / `price` / `throughput`) |
+| `X-Provider-Ignore` | Skip करने के लिए Providers, token config पर stacked |
+
+> Headers के माध्यम से specify किए गए Providers अभी भी आपकी account permissions के subject हैं।
+
+### उदाहरण
+
+```bash
+curl https://bearlab.ai/v1/chat/completions \
+  -H "Authorization: Bearer sk-your-token" \
+  -H "X-Provider-Order: official_cheap,mix" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "gpt-4o", "messages": [{"role": "user", "content": "Hello"}]}'
+```

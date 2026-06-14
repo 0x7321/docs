@@ -1,0 +1,71 @@
+---
+title: "クイックスタート"
+description: "キーを作成し、5分で最初のリクエストを行います。"
+---
+
+モデルを呼び出すための3つのステップ。
+
+<Note>
+  アジア太平洋ユーザー: bearlab.aiの代わりに、エンドポイントとして`https://bearlab.in`を使用してください。[サービス提供地域](/ja/guides/availability)を参照してください。
+</Note>
+
+<Steps>
+  <Step title="登録して入金する">
+    [コンソール](https://bearlab.ai)で登録し、ウォレットページから資金を追加します。新規ユーザーはテストするために少額の入金から始めることができます。
+  </Step>
+  <Step title="APIキーを作成する">
+    ダッシュボード、APIトークンに移動して、トークンを追加をクリックし、`sk-...` キーをコピーします。キーは最初の1回だけ完全に表示されます。
+  </Step>
+  <Step title="最初のリクエストを行う">
+    `YOUR_API_KEY` をあなたのキーに置き換えます。
+  </Step>
+</Steps>
+
+## 例
+
+<Tabs>
+  <Tab title="OpenAI互換">
+    ```bash
+    curl https://bearlab.ai/v1/chat/completions \
+      -H "Authorization: Bearer YOUR_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "gpt-4o",
+        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+      }'
+    ```
+  </Tab>
+  <Tab title="Anthropic互換">
+    ```bash
+    curl https://bearlab.ai/anthropic/v1/messages \
+      -H "x-api-key: YOUR_API_KEY" \
+      -H "anthropic-version: 2023-06-01" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "claude-sonnet-4-5",
+        "max_tokens": 256,
+        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+      }'
+    ```
+  </Tab>
+  <Tab title="Python (OpenAI SDK)">
+    ```python
+    from openai import OpenAI
+
+    client = OpenAI(
+        api_key="YOUR_API_KEY",
+        base_url="https://bearlab.ai/v1",
+    )
+
+    resp = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": "Introduce yourself in one sentence"}],
+    )
+    print(resp.choices[0].message.content)
+    ```
+  </Tab>
+</Tabs>
+
+<Tip>
+  モデルリストと価格が必要ですか？[モデル & 価格API](/ja/guides/models)を参照してください。CursorまたはClaude Codeを接続していますか？[統合](/ja/integrations/cursor)を参照してください。
+</Tip>

@@ -1,0 +1,44 @@
+---
+title: "Pricing & Billing"
+description: "Pay-as-you-go billing, provider multipliers, top-ups, balance alerts, और refunds।"
+---
+
+केवल जो आप use करते हैं उसके लिए pay करें। कोई minimum नहीं, और यह आपके business के साथ elastically scale करता है।
+
+## Billing currency
+
+Platform **USD** में bills करता है, प्रत्येक provider की official pricing के साथ aligned।
+
+## Billing method
+
+Conversational models **per token** billed होते हैं: input और output tokens separately priced होते हैं, और input tokens जो [prompt caching](/hi/guides/prompt-caching) को hit करते हैं एक lower rate प्राप्त करते हैं।
+
+Response `usage` में `prompt_tokens` और `completion_tokens` से token usage प्रति request लिया जाता है।
+
+## Provider multipliers और discounts
+
+प्रत्येक [provider](/hi/guides/providers) का अपना **price multiplier** है। Price जो आप pay करते हैं model base price times provider multiplier के बराबर होता है। Higher [user levels](/hi/guides/user-levels) को अतिरिक्त discounts मिल सकते हैं।
+
+## Top-up
+
+- Online top-up **Stripe** के माध्यम से (credit और debit cards); balance तुरंत credited होता है।
+- Enterprise billing या बड़े top-ups के लिए, [contact us](mailto:support@bearlab.ai)।
+
+## Balance alerts
+
+Interruptions से बचने के लिए, एक alert set करें: Dashboard, Profile Settings, Subscription Management, एक threshold set करें। जब आपका balance इससे नीचे चला जाता है, तो हम आपको email या in-app message द्वारा notify करते हैं।
+
+## High-volume plans
+
+Higher concurrency या dedicated pricing के लिए, [contact us](mailto:support@bearlab.ai)।
+
+## Refunds
+
+Refund के लिए request करने के लिए, support को contact करें। ध्यान दें:
+
+- यदि एक refund आपकी account level को drop करता है, तो over-benefit amount deducted होता है।
+- Top-ups जिसके लिए एक invoice जारी किया गया था, non-refundable हैं।
+- **5%** तक का processing fee लागू होता है।
+- Refunds original payment method को return होते हैं।
+
+Stripe प्रत्येक successful top-up के बाद एक receipt email करता है। एक formal invoice के लिए, support को अपनी company name, tax ID, और amount के साथ contact करें।

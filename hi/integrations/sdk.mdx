@@ -1,0 +1,74 @@
+---
+title: "Official SDKs (Python / Node)"
+description: "BearLab के साथ official OpenAI या Anthropic SDKs का उपयोग करें।"
+---
+
+Official SDKs को केवल एक changed `base_url` और key की आवश्यकता है BearLab को point करने के लिए।
+
+## OpenAI SDK
+
+<CodeGroup>
+```python Python
+from openai import OpenAI
+
+client = OpenAI(api_key="YOUR_API_KEY", base_url="https://bearlab.ai/v1")
+
+resp = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "Hello"}],
+)
+print(resp.choices[0].message.content)
+```
+
+```javascript Node.js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "YOUR_API_KEY",
+  baseURL: "https://bearlab.ai/v1",
+});
+
+const resp = await client.chat.completions.create({
+  model: "gpt-4o",
+  messages: [{ role: "user", content: "Hello" }],
+});
+console.log(resp.choices[0].message.content);
+```
+</CodeGroup>
+
+## Anthropic SDK
+
+<CodeGroup>
+```python Python
+from anthropic import Anthropic
+
+client = Anthropic(api_key="YOUR_API_KEY", base_url="https://bearlab.ai/anthropic")
+
+msg = client.messages.create(
+    model="claude-sonnet-4-5",
+    max_tokens=1024,
+    messages=[{"role": "user", "content": "Hello"}],
+)
+print(msg.content[0].text)
+```
+
+```javascript Node.js
+import Anthropic from "@anthropic-ai/sdk";
+
+const client = new Anthropic({
+  apiKey: "YOUR_API_KEY",
+  baseURL: "https://bearlab.ai/anthropic",
+});
+
+const msg = await client.messages.create({
+  model: "claude-sonnet-4-5",
+  max_tokens: 1024,
+  messages: [{ role: "user", content: "Hello" }],
+});
+console.log(msg.content[0].text);
+```
+</CodeGroup>
+
+<Tip>
+  कोई भी tool जो एक custom OpenAI base URL को support करता है (LobeChat, Chatbox, Continue, Zed, Immersive Translate) same way में काम करता है: base URL को `https://bearlab.ai/v1` पर set करें और अपनी key का उपयोग करें।
+</Tip>

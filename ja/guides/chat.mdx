@@ -1,0 +1,142 @@
+---
+title: "チャット完了"
+description: "リクエストパラメータ、ストリーミング、ツール呼び出し、3つの互換プロトコル。"
+---
+
+チャット完了はコアエンドポイントであり、1つのキーを共有する3つの互換インターフェース(OpenAI、Anthropic、Gemini)を通じて提供されます。
+
+<Note>
+  アジア太平洋ユーザー: bearlab.aiの代わりに、エンドポイントとして`https://bearlab.in`を使用してください。[サービス提供地域](/ja/guides/availability)を参照してください。
+</Note>
+
+## エンドポイント
+
+| プロトコル | メソッドとパス |
+| --- | --- |
+| OpenAI互換 | `POST https://bearlab.ai/v1/chat/completions` |
+| Anthropic互換 | `POST https://bearlab.ai/anthropic/v1/messages` |
+| Gemini native | `base_url=https://bearlab.ai`, `api_version=v1beta` (Google genai SDK) |
+
+## 基本的なリクエスト
+
+<Tabs>
+  <Tab title="OpenAI互換">
+    ```bash
+    curl https://bearlab.ai/v1/chat/completions \
+      -H "Authorization: Bearer YOUR_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "gpt-4o",
+        "messages": [
+          {"role": "system", "content": "You are a concise assistant."},
+          {"role": "user", "content": "Hello"}
+        ]
+      }'
+    ```
+  </Tab>
+  <Tab title="Anthropic互換">
+    ```bash
+    curl https://bearlab.ai/anthropic/v1/messages \
+      -H "x-api-key: YOUR_API_KEY" \
+      -H "anthropic-version: 2023-06-01" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "claude-sonnet-4-5",
+        "max_tokens": 1024,
+        "system": "You are a concise assistant.",
+        "messages": [{"role": "user", "content": "Hello"}]
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+## 一般的なパラメータ
+
+| パラメータ | 説明 |
+| --- | --- |
+| `model` | モデルID。[モデル & 価格API](/ja/guides/models)を参照してください。 |
+| `messages` | 会話メッセージの順序付き配列。 |
+| `temperature` | サンプリング温度、`0`-`2`。 |
+| `max_tokens` | 最大出力トークン。**Anthropicプロトコルでは必須です。** |
+| `stream` | `true`の場合、SSEでレスポンスをストリーミングします。 |
+
+<Warning>
+  プロトコルの違い: OpenAIプロトコルはシステムプロンプトを`messages`内の`role: system`として置きます。Anthropicプロトコルは最上位の`system`フィールドを使用し、`max_tokens`が必須です。
+</Warning>
+
+## ストリーミング
+
+`stream: true`を設定します。レスポンスはSSE経由でプッシュされ、`data: [DONE]` (OpenAIプロトコル)で終了します。
+
+```python
+from openai import OpenAI
+
+client = OpenAI(api_key="YOUR_API_KEY", base_url="https://bearlab.ai/v1")
+
+stream = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "Write a short poem about spring."}],
+    stream=True,
+)
+for chunk in stream:
+    delta = chunk.choices[0].delta.content
+    if delta:
+        print(delta, end="", flush=True)
+```
+
+## ツール呼び出し
+
+OpenAIとAnthropicのプロトコルはどちらもツール呼び出しをサポートしています。
+
+```python
+from openai import OpenAI
+
+client = OpenAI(base_url="https://bearlab.ai/v1", api_key="YOUR_API_KEY")
+
+tools = [{
+    "type": "function",
+    "function": {
+        "name": "get_weather",
+        "description": "Get the current weather for a city",
+        "parameters": {
+            "type": "object",
+            "properties": {"city": {"type": "string"}},
+            "required": ["city"],
+        },
+    },
+}]
+
+resp = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "What's the weather in London?"}],
+    tools=tools,
+)
+print(resp.choices[0].message)
+```
+
+## Gemini native プロトコル
+
+Geminiモデルは、OpenAI形式への変換なく、ネイティブのGoogle AI Studio形式で呼び出せます。
+
+```python
+from google import genai
+from google.genai import types
+
+client = genai.Client(
+    api_key="YOUR_API_KEY",
+    http_options=types.HttpOptions(api_version="v1beta", base_url="https://bearlab.ai"),
+)
+
+resp = client.models.generate_content(model="gemini-2.5-pro", contents="Hello")
+print(resp.text)
+```
+
+<Warning>
+  1. `base_url`を`https://bearlab.ai`に設定します(`/v1beta`サフィックスなし、SDKが追加します)。
+  2. `api_version`を`v1beta`に設定します。
+  3. インストール: Python `pip install google-genai`, Node.js `npm install @google/genai`。
+</Warning>
+
+<Tip>
+  長く繰り返されるプレフィックス(固定されたシステムプロンプト、長いドキュメント)は、[プロンプトキャッシング](/ja/guides/prompt-caching)を使用して、繰り返される部分のコストを削減できます。
+</Tip>

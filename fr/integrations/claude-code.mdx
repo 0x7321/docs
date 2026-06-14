@@ -1,0 +1,33 @@
+---
+title: "Claude Code"
+description: "Utilisez BearLab dans l'outil de ligne de commande Claude Code d'Anthropic."
+---
+
+[Claude Code](https://docs.claude.com/claude-code) est l'outil officiel de codage en ligne de commande d'Anthropic, connecté via le protocole compatible Anthropic.
+
+## Configuration
+
+Pointez les variables d'environnement vers le point de terminaison compatible Anthropic :
+
+```bash
+export ANTHROPIC_BASE_URL="https://bearlab.ai/anthropic"
+export ANTHROPIC_AUTH_TOKEN="YOUR_API_KEY"
+
+claude
+```
+
+- `ANTHROPIC_BASE_URL` : l'adresse compatible Anthropic (remarquez `/anthropic`, pas `/v1`).
+- `ANTHROPIC_AUTH_TOKEN` : votre clé API.
+
+## Rendre persistant
+
+Ajoutez les deux lignes à `~/.zshrc` ou `~/.bashrc` :
+
+```bash
+echo 'export ANTHROPIC_BASE_URL="https://bearlab.ai/anthropic"' >> ~/.zshrc
+echo 'export ANTHROPIC_AUTH_TOKEN="YOUR_API_KEY"' >> ~/.zshrc
+```
+
+<Warning>
+  Utilisez un modèle Claude (par ex. `claude-sonnet-4-5`) qui existe dans le [point de terminaison des modèles](/fr/guides/models). Si l'authentification échoue, confirmez que vous avez utilisé `ANTHROPIC_AUTH_TOKEN`, pas `ANTHROPIC_API_KEY`.
+</Warning>

@@ -1,0 +1,46 @@
+---
+title: "Introduction"
+description: "Qu'est-ce que BearLab et ce qu'il fait."
+---
+
+> BearLab (BearLab.ai) réunit les modèles conversationnels de dizaines de fournisseurs majeurs sous une seule API. OpenAI, Anthropic, Google et DeepSeek sont tous accessibles avec une seule clé.
+
+## Qu'est-ce que BearLab
+
+BearLab est une plateforme d'agrégation de modèles conversationnels. Au lieu de vous inscrire, de recharger et de gérer une clé séparée avec OpenAI, Anthropic et Google individuellement, vous créez une clé ici, définissez une `base_url`, et appelez leurs derniers modèles conversationnels.
+
+L'interface est compatible avec les protocoles OpenAI et Anthropic, donc le code existant fonctionne généralement après avoir changé le point de terminaison et la clé.
+
+Nous faisons une seule chose, les modèles conversationnels, ce qui garde l'interface simple, la facturation claire et le service stable.
+
+## Capacités clés
+
+**Une clé pour chaque modèle**
+Différents fournisseurs et modèles via une interface unifiée. Un compte pour l'accès, une facture pour les dépenses, un endroit pour voir l'utilisation.
+
+**Protocole double OpenAI / Anthropic**
+Les deux protocoles sont nativement supportés. Cursor, Claude Code, Cline et Codex se connectent en définissant le point de terminaison, sans avoir besoin de savoir quel fournisseur est derrière un modèle.
+
+**Stable et disponible**
+Les modèles populaires sont soutenus par plusieurs fournisseurs. Si l'un échoue, les requêtes basculent automatiquement vers un autre.
+
+**Paiement à l'usage**
+Ne payez que ce que vous utilisez. Pas de frais mensuels, pas de recharge minimale. Les prix suivent les fournisseurs en amont, et le solde est visible en temps réel.
+
+**Utilisation observable**
+Chaque appel enregistre sa requête, sa réponse et sa consommation de jetons, ce qui facilite le dépannage et la comptabilité des coûts.
+
+## Modèles conversationnels uniquement
+
+BearLab n'offre pas de modèles d'image, audio, vidéo, musique ou embedding. Nous nous concentrons sur la stabilité et la complétude des modèles conversationnels. Pour ces autres capacités, utilisez une plateforme dédiée.
+
+## Étapes suivantes
+
+<CardGroup cols={2}>
+  <Card title="Démarrage rapide" icon="rocket" href="/fr/guides/quickstart" cta="Commencer">
+    Créez une clé et effectuez votre première requête.
+  </Card>
+  <Card title="Chat Completions" icon="comments" href="/fr/guides/chat" cta="Voir l'API">
+    Paramètres, streaming et différences de protocole.
+  </Card>
+</CardGroup>

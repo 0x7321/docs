@@ -1,0 +1,48 @@
+---
+title: "Rate Limits"
+description: "Formes de limite, leur relation aux niveaux d'utilisateur et comment répondre."
+---
+
+Pour assurer un usage équitable des ressources et la stabilité du service, la plateforme limite la fréquence des requêtes et l'utilisation des jetons.
+
+## Formes de limite
+
+| Forme | Signification |
+| --- | --- |
+| **RPM** | Max requêtes par minute |
+| **RPH** | Max requêtes par heure |
+| **RPD** | Max requêtes par jour |
+| **TPM** | Max jetons par minute (entrée + sortie) |
+| **TPD** | Max jetons par jour |
+
+## Relation aux niveaux d'utilisateur
+
+Les limites sont principalement entraînées par [le niveau d'utilisateur](/fr/guides/user-levels) :
+
+| Tier | Comment l'obtenir | Limite |
+| --- | --- | --- |
+| **Tier 1** | Par défaut après l'inscription | 5 RPM |
+| **Tier 2** | Automatique après n'importe quelle recharge | Pas de limite |
+
+Les nouveaux comptes sont par défaut au Tier 1 (5 RPM) ; **n'importe quelle recharge améliore immédiatement à Tier 2 et supprime la limite de débit**, sans demande manuelle.
+
+## TPM et max_tokens
+
+Le total des jetons ne peut pas être connu quand une requête est envoyée, donc le système estime avec le paramètre `max_tokens` pour la limitation TPM, puis corrige avec les jetons réels après la génération. Définissez `max_tokens` **proche du besoin réel** pour réduire les erreurs de surestimation.
+
+## Quand limité
+
+Quand les requêtes ou l'utilisation des jetons atteint le plafond, l'API retourne `429 Too Many Requests` ; les requêtes ultérieures sont temporairement rejetées jusqu'à ce que le refroidissement passe.
+
+```http
+HTTP/1.1 429 Too Many Requests
+Content-Type: application/json
+
+{ "error": { "message": "The current group upstream load is saturated, please try again later", "type": "bearlab_api_error" } }
+```
+
+## Conseils
+
+- **Backoff exponentiel** : sur `429`, attendez et réessayez avec les délais doublant.
+- **Requêtes par lot** : quand les requêtes sont limitées mais pas les jetons, fusionnez les tâches en une seule requête.
+- **Besoin de plus** : contactez votre responsable de compte pour un quota dédié.

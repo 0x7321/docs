@@ -1,0 +1,53 @@
+---
+title: "プロンプトキャッシング"
+description: "繰り返されるコンテンツのコストを削減し、リクエストIDを使用してルーティングを一貫性に保ち、ヒット率を向上させます。"
+---
+
+## プロンプトキャッシングとは
+
+多くのプロバイダー(Anthropic ClaudeおよびOpenAIを含む)はプロンプトキャッシングをネイティブにサポートしています。同じコンテキストが繰り返して送信されたとき、プロバイダーは以前の計算を再利用し、**遅延とトークンコストを削減します**。
+
+## キャッシングの制限事項
+
+**キャッシュはアカウント間で共有できません**。これはプラットフォーム側の制限ではなく、プロバイダー側の制限です。
+
+マルチチャネルリレーとして、同じアカウントからの2つの連続したリクエストが同じバックエンドチャネルをヒットすることを保証できません。異なるチャネルに行く場合、既存のキャッシュを再利用できず、ヒット率を低下させてコストを上げます。
+
+## ルーティングを一貫性に保つ
+
+これに対処するには、前のリクエストのIDを後のリクエストに含めます。システムは新しいリクエストを同じチャネルにルーティングしようとし、キャッシュ再利用を最大化します。
+
+| ヘッダー | ソース | TTL |
+| --- | --- | --- |
+| `X-Request-Id` | 前のレスポンスのrequest-idヘッダー | 5分 |
+| `X-Response-Id` | 前のレスポンスJSON内の会話ID(例えば、ClaudeのCanonical.id`) | 5分 |
+
+### 例
+
+```python
+import anthropic
+
+client = anthropic.Anthropic(base_url="https://bearlab.ai/anthropic", api_key="API_KEY")
+
+response = client.messages.create(
+    model="claude-sonnet-4-5",
+    max_tokens=1024,
+    messages=[{"role": "user", "content": "Hello!"}],
+)
+response_id = response.id
+
+response2 = client.messages.create(
+    model="claude-sonnet-4-5",
+    max_tokens=1024,
+    messages=[
+        {"role": "user", "content": "Hello!"},
+        {"role": "assistant", "content": response.content[0].text},
+        {"role": "user", "content": "Continue our conversation..."},
+    ],
+    extra_headers={"X-Response-Id": response_id},
+)
+```
+
+## ヒント
+
+変わらないコンテンツを最初(システムプロンプト、長いドキュメント)に置き、変数コンテンツを最後(最新のユーザーメッセージ)に置くことで、プレフィックスのヒットを最大化します。プレフィックスが長く、頻繁に再利用されるほど、節約できます。

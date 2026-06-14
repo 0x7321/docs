@@ -1,0 +1,48 @@
+---
+title: "Error Handling"
+description: "Common HTTP status codes, उनका meaning, और troubleshoot कैसे करें।"
+---
+
+API standard HTTP status codes का उपयोग करता है। Error bodies JSON हैं और एक request-id header carry करते हैं (troubleshooting और [cache routing](/hi/guides/prompt-caching) के लिए):
+
+```json
+{
+  "error": {
+    "code": "",
+    "message": "A description, including the request id",
+    "type": "bearlab_api_error"
+  }
+}
+```
+
+## Common status codes
+
+| Code | Meaning | Cause और fix |
+| --- | --- | --- |
+| `400` | Bad parameters | Missing या wrong-typed parameters; Anthropic के तहत missing `max_tokens`। `message` के अनुसार fix करें। |
+| `401` | Auth failed | API key correctly set नहीं है (wrong/deleted key, या Bearer vs x-api-key mismatch)। |
+| `403` | Insufficient balance या permission | Balance out; या model/group तक कोई access नहीं। सबसे common permission issue एक model है जिसे identity verification की आवश्यकता है। |
+| `429` | Rate limited | RPM / RPD / TPM / TPD reached; [Rate Limits](/hi/guides/rate-limits) देखें। Bad parameters से repeated retries भी हो सकते हैं। |
+| `503` / `504` | High load | बाद में retry करें; chat के लिए, `"stream": true` के साथ streaming try करें। |
+| `500` | Unknown server error | Request id के साथ support को contact करें। |
+
+## Checklist
+
+<Steps>
+  <Step title="पहले error.message पढ़ें">
+    अधिकांश issues वहां explained हैं।
+  </Step>
+  <Step title="base_url और protocol check करें">
+    `/v1` (OpenAI) vs `/anthropic` (Anthropic); auth header match करना चाहिए।
+  </Step>
+  <Step title="Model name check करें">
+    Confirm करें `model` [models endpoint](/hi/guides/models) के माध्यम से exist करता है।
+  </Step>
+  <Step title="Balance check करें / retry करें">
+    `403` balance हो सकता है; exponential backoff के साथ `5xx` / `429` को retry करें, फिर support को contact करें।
+  </Step>
+</Steps>
+
+<Note>
+  `stream: true` के साथ, errors SSE events के रूप में आ सकते हैं connection खुलने के बाद। एक `error` event को mid-stream में handle करें, केवल HTTP status को नहीं।
+</Note>
