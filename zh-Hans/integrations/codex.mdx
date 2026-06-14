@@ -5,20 +5,24 @@ description: "在 OpenAI 官方 Codex CLI 中使用 BearLab AI。"
 
 [Codex CLI](https://github.com/openai/codex) 是 OpenAI 官方命令行编程代理，通过自定义 provider 接入平台。
 
+<Warning>
+  Codex 走 OpenAI **Responses API**（`wire_api = "responses"`），这是 OpenAI 专有协议，**只能使用 OpenAI 系模型**（`gpt-*` / `o*`）。Claude、Gemini 等模型无法通过 Codex 使用——要用 Claude 请走 [Claude Code](/zh-Hans/integrations/claude-code)、[Cursor](/zh-Hans/integrations/cursor) 或 [Cline](/zh-Hans/integrations/cline)。
+</Warning>
+
 ## 推荐模型
 
 | 模型 | ID | 适用场景 |
 | --- | --- | --- |
-| Claude Sonnet 4.6 | `claude-sonnet-4-6` | 编程首选，速度与能力均衡 |
-| o4-mini | `o4-mini` | 快速推理，适合调试与解释 |
-| GPT-4o | `gpt-4o` | 通用编程任务 |
+| GPT-5.5 | `gpt-5.5` | 最新通用模型，Codex 当前默认 |
+| GPT-5.2-Codex | `gpt-5.2-codex` | Codex 编程优化，API Key 工作流首选 |
+| GPT-5.4-mini | `gpt-5.4-mini` | 轻量快速，子任务与交互编辑 |
 
 ## 配置
 
 编辑 `~/.codex/config.toml`，新增指向平台的 provider：
 
 ```toml
-model = "claude-sonnet-4-6"
+model = "gpt-5.5"
 model_provider = "bearlab"
 
 # 第三方 provider 必须关闭响应存储
@@ -39,5 +43,5 @@ codex
 ```
 
 <Note>
-  `base_url` 用 `/v1` 结尾的 OpenAI 兼容地址。第三方 provider 必须设 `wire_api = "responses"` 与 `disable_response_storage = true`。`model` 必须是 [模型接口](/zh-Hans/guides/models) 中存在的 ID。
+  `base_url` 用 `/v1` 结尾的 OpenAI 兼容地址。`wire_api = "responses"` 与 `disable_response_storage = true` 是第三方 OpenAI 系 provider 的必需项。`model` 必须是 [模型接口](/zh-Hans/guides/models) 中存在的 OpenAI 系 ID。
 </Note>

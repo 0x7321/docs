@@ -5,20 +5,24 @@ description: "OpenAIのCodex CLIでBearLab AIを使用します。"
 
 [Codex CLI](https://github.com/openai/codex) はOpenAIの公式コマンドラインコーディングエージェントで、カスタムプロバイダー経由で接続されます。
 
+<Warning>
+  CodexはOpenAIの **Responses API**（`wire_api = "responses"`）を使用します。これはOpenAI専有プロトコルで、**OpenAI系モデル**（`gpt-*` / `o*`）でしか動作しません。Claude・Geminiなどのモデルは Codex 経由では使用できません——Claudeを使う場合は [Claude Code](/ja/integrations/claude-code)、[Cursor](/ja/integrations/cursor)、[Cline](/ja/integrations/cline) を利用してください。
+</Warning>
+
 ## 推奨モデル
 
 | モデル | ID | 用途 |
 | --- | --- | --- |
-| Claude Sonnet 4.6 | `claude-sonnet-4-6` | コーディング向け、速度と能力のバランス |
-| o4-mini | `o4-mini` | 高速推論、デバッグと説明に最適 |
-| GPT-4o | `gpt-4o` | 汎用コーディングタスク |
+| GPT-5.5 | `gpt-5.5` | 最新の汎用モデル、Codex の現在のデフォルト |
+| GPT-5.2-Codex | `gpt-5.2-codex` | Codex コーディング最適化、API キーワークフロー向け |
+| GPT-5.4-mini | `gpt-5.4-mini` | 軽量・高速、サブタスクと対話編集 |
 
 ## 設定
 
 `~/.codex/config.toml`を編集し、BearLabを指すプロバイダーを追加します:
 
 ```toml
-model = "claude-sonnet-4-6"
+model = "gpt-5.5"
 model_provider = "bearlab"
 
 # サードパーティプロバイダーはレスポンスストレージを無効にする必要があります
@@ -39,5 +43,5 @@ codex
 ```
 
 <Note>
-  `/v1` で終わるOpenAI互換アドレスを使用してください。サードパーティプロバイダーは `wire_api = "responses"` と `disable_response_storage = true` を設定する必要があります。`model` は[modelsエンドポイント](/ja/guides/models)に存在するものを使用してください。
+  `/v1` で終わるOpenAI互換アドレスを使用してください。`wire_api = "responses"` と `disable_response_storage = true` はサードパーティのOpenAI形式プロバイダーに必須です。`model` は[modelsエンドポイント](/ja/guides/models)に存在するOpenAI系のIDを使用してください。
 </Note>

@@ -5,20 +5,24 @@ description: "OpenAI के Codex CLI में BearLab AI का उपयो�
 
 [Codex CLI](https://github.com/openai/codex) OpenAI का official command-line coding agent है, एक custom provider के माध्यम से connected।
 
+<Warning>
+  Codex OpenAI **Responses API** (`wire_api = "responses"`) का उपयोग करता है, जो एक OpenAI-proprietary protocol है और **केवल OpenAI models** (`gpt-*` / `o*`) के साथ काम करता है। Claude, Gemini जैसे models को Codex के through use नहीं किया जा सकता — Claude के लिए [Claude Code](/hi/integrations/claude-code), [Cursor](/hi/integrations/cursor) या [Cline](/hi/integrations/cline) का उपयोग करें।
+</Warning>
+
 ## Recommended Models
 
 | Model | ID | Best For |
 | --- | --- | --- |
-| Claude Sonnet 4.6 | `claude-sonnet-4-6` | Coding tasks, balanced speed and capability |
-| o4-mini | `o4-mini` | Fast reasoning, debugging और explanation |
-| GPT-4o | `gpt-4o` | General-purpose coding |
+| GPT-5.5 | `gpt-5.5` | Latest general model, Codex का current default |
+| GPT-5.2-Codex | `gpt-5.2-codex` | Codex coding-tuned, API-key workflows के लिए best |
+| GPT-5.4-mini | `gpt-5.4-mini` | Lightweight और fast, sub-tasks और interactive edits |
 
 ## Configuration
 
 `~/.codex/config.toml` को edit करें और BearLab को point करने वाला provider add करें:
 
 ```toml
-model = "claude-sonnet-4-6"
+model = "gpt-5.5"
 model_provider = "bearlab"
 
 # Third-party providers को response storage को disable करना चाहिए
@@ -39,5 +43,5 @@ codex
 ```
 
 <Note>
-  `/v1` से ending वाला OpenAI-compatible address use करें। Third-party providers को `wire_api = "responses"` और `disable_response_storage = true` set करना चाहिए। `model` [models endpoint](/hi/guides/models) में exist होना चाहिए।
+  `/v1` से ending वाला OpenAI-compatible address use करें। `wire_api = "responses"` और `disable_response_storage = true` third-party OpenAI-format provider के लिए required हैं। `model` [models endpoint](/hi/guides/models) में मौजूद एक OpenAI-family ID होना चाहिए।
 </Note>
