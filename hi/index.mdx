@@ -11,12 +11,14 @@ BearLab **संयुक्त राज्य अमेरिका और य
 **एशिया-प्रशांत** क्षेत्र एक Regional Partner द्वारा सेवा प्रदान किया जाता है, और उस क्षेत्र से API requests के लिए `https://bearlab.ai` के बजाय समर्पित डोमेन `https://bearlab.in` का उपयोग करना चाहिए।
 </Tip>
 
-| Region | API domain |
-| --- | --- |
-| US / EU | `https://bearlab.ai` |
-| Asia-Pacific | `https://bearlab.in` |
+| Region | Protocol | base_url | Endpoint |
+| --- | --- | --- | --- |
+| US / EU | OpenAI | `https://bearlab.ai/v1` | `POST /v1/chat/completions` |
+| US / EU | Anthropic | `https://bearlab.ai` | `POST /v1/messages` |
+| Asia-Pacific | OpenAI | `https://bearlab.in/v1` | `POST /v1/chat/completions` |
+| Asia-Pacific | Anthropic | `https://bearlab.in` | `POST /v1/messages` |
 
-OpenAI base_url = domain + `/v1` (endpoint `/v1/chat/completions`); Anthropic base_url = domain (endpoint `/v1/messages`). [Chat Completions](/hi/guides/chat) देखें।
+[Chat Completions](/hi/guides/chat) देखें।
 
 [Service Availability](/hi/guides/availability) देखें।
 
