@@ -82,6 +82,13 @@
           { "label": "控制台", "href": "https://bearlab.ai" },
           { "label": "快速开始", "href": "/guides/quickstart" }
         ]
+      },
+      {
+        "header": "法律 / Legal",
+        "items": [
+          { "label": "服务区域 / Availability", "href": "/guides/availability" },
+          { "label": "Terms of Service", "href": "/legal/terms" }
+        ]
       }
     ]
   }
