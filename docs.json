@@ -9,56 +9,120 @@
   },
   "favicon": "/favicon.svg",
   "navigation": {
-    "tabs": [
+    "languages": [
       {
-        "tab": "文档",
-        "groups": [
+        "language": "zh",
+        "default": true,
+        "tabs": [
           {
-            "group": "开始",
-            "pages": [
-              "index",
-              "guides/introduction",
-              "guides/quickstart",
-              "guides/authentication"
+            "tab": "文档",
+            "groups": [
+              {
+                "group": "开始",
+                "pages": [
+                  "index",
+                  "guides/introduction",
+                  "guides/quickstart",
+                  "guides/authentication"
+                ]
+              },
+              {
+                "group": "对话 API",
+                "pages": [
+                  "guides/chat",
+                  "guides/models",
+                  "guides/prompt-caching",
+                  "guides/providers"
+                ]
+              },
+              {
+                "group": "账户",
+                "pages": [
+                  "guides/pricing",
+                  "guides/user-levels",
+                  "guides/rate-limits",
+                  "guides/errors",
+                  "guides/availability"
+                ]
+              }
             ]
           },
           {
-            "group": "对话 API",
-            "pages": [
-              "guides/chat",
-              "guides/models",
-              "guides/prompt-caching",
-              "guides/providers"
-            ]
-          },
-          {
-            "group": "账户",
-            "pages": [
-              "guides/pricing",
-              "guides/user-levels",
-              "guides/rate-limits",
-              "guides/errors",
-              "guides/availability"
+            "tab": "客户端接入",
+            "groups": [
+              {
+                "group": "编辑器 / CLI",
+                "pages": [
+                  "integrations/cursor",
+                  "integrations/claude-code",
+                  "integrations/cline",
+                  "integrations/codex"
+                ]
+              },
+              {
+                "group": "SDK",
+                "pages": [
+                  "integrations/sdk"
+                ]
+              }
             ]
           }
         ]
       },
       {
-        "tab": "客户端接入",
-        "groups": [
+        "language": "en",
+        "tabs": [
           {
-            "group": "编辑器 / CLI",
-            "pages": [
-              "integrations/cursor",
-              "integrations/claude-code",
-              "integrations/cline",
-              "integrations/codex"
+            "tab": "Docs",
+            "groups": [
+              {
+                "group": "Getting Started",
+                "pages": [
+                  "en/index",
+                  "en/guides/introduction",
+                  "en/guides/quickstart",
+                  "en/guides/authentication"
+                ]
+              },
+              {
+                "group": "Chat API",
+                "pages": [
+                  "en/guides/chat",
+                  "en/guides/models",
+                  "en/guides/prompt-caching",
+                  "en/guides/providers"
+                ]
+              },
+              {
+                "group": "Account",
+                "pages": [
+                  "en/guides/pricing",
+                  "en/guides/user-levels",
+                  "en/guides/rate-limits",
+                  "en/guides/errors",
+                  "en/guides/availability"
+                ]
+              }
             ]
           },
           {
-            "group": "SDK",
-            "pages": [
-              "integrations/sdk"
+            "tab": "Integrations",
+            "groups": [
+              {
+                "group": "Editors / CLI",
+                "pages": [
+                  "en/integrations/cursor",
+                  "en/integrations/claude-code",
+                  "en/integrations/cline",
+                  "en/integrations/codex"
+                ]
+              },
+              {
+                "group": "SDK",
+                "pages": [
+                  "en/integrations/sdk"
+                ]
+              }
             ]
           }
         ]
