@@ -1,0 +1,71 @@
+---
+title: "Quickstart"
+description: "Create a key and make your first request in 5 minutes."
+---
+
+Three steps to call a model.
+
+<Note>
+  Asia-Pacific users: use `https://bearlab.in` as the endpoint instead of `bearlab.ai`. See [Service Availability](/guides/availability).
+</Note>
+
+<Steps>
+  <Step title="Sign up and top up">
+    Register at the [console](https://bearlab.ai) and add funds on the Wallet page. New users can start with a small top-up to test.
+  </Step>
+  <Step title="Create an API key">
+    Go to Dashboard, API Tokens, click Add Token, and copy the `sk-...` key. The key is shown in full only once.
+  </Step>
+  <Step title="Make your first request">
+    Replace `YOUR_API_KEY` with your key.
+  </Step>
+</Steps>
+
+## Examples
+
+<Tabs>
+  <Tab title="OpenAI-compatible">
+    ```bash
+    curl https://bearlab.ai/v1/chat/completions \
+      -H "Authorization: Bearer YOUR_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "gpt-4o",
+        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+      }'
+    ```
+  </Tab>
+  <Tab title="Anthropic-compatible">
+    ```bash
+    curl https://bearlab.ai/anthropic/v1/messages \
+      -H "x-api-key: YOUR_API_KEY" \
+      -H "anthropic-version: 2023-06-01" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "claude-sonnet-4-5",
+        "max_tokens": 256,
+        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+      }'
+    ```
+  </Tab>
+  <Tab title="Python (OpenAI SDK)">
+    ```python
+    from openai import OpenAI
+
+    client = OpenAI(
+        api_key="YOUR_API_KEY",
+        base_url="https://bearlab.ai/v1",
+    )
+
+    resp = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": "Introduce yourself in one sentence"}],
+    )
+    print(resp.choices[0].message.content)
+    ```
+  </Tab>
+</Tabs>
+
+<Tip>
+  Want the model list and prices? See [Models & Pricing API](/en/guides/models). Connecting Cursor or Claude Code? See [Integrations](/en/integrations/cursor).
+</Tip>

@@ -1,0 +1,56 @@
+---
+title: "Providers & Routing"
+description: "Each model is backed by multiple providers. Configure routing in your token or override it per request."
+---
+
+Each model may be backed by **multiple providers**, service nodes organized by source and cost with different price multipliers and model coverage. The system selects an available provider based on your token configuration; if one fails or times out, it retries another, transparent to your code.
+
+## Available providers
+
+| ID | Name | Description |
+| --- | --- | --- |
+| `official` | Official | A provider group bundling direct connections to major official platforms (OpenAI, Anthropic, Google); highest stability |
+| `official_cheap` | Official (Discounted) | Cost-optimized official channels; high stability at a lower price |
+| `mix` | Mixed | Multi-source mixed channels; lowest price, widest coverage |
+
+`official` is a **provider group** bundling nodes from the major official platforms; selecting it routes and fails over across all official nodes without specifying each vendor.
+
+### How to choose
+
+| Need | Recommended config |
+| --- | --- |
+| Maximum stability, price not a concern | `official` |
+| Good stability, better value | `official_cheap` |
+| Lowest cost, minor instability acceptable | `mix` |
+| Discounted official first, fall back to mixed | `official_cheap,mix` |
+
+## Configuring in a token
+
+When creating or editing a token you set its default routing:
+
+- **Provider list**: empty (recommended) routes across all available providers; a single one restricts to it; multiple (comma-separated) are tried in order or by sort strategy.
+- **Provider-only mode**: off (default) prioritizes specified providers but falls back; on strictly limits to them and returns an error if all fail.
+- **Sort strategy**: manual (default), latency, price, or throughput.
+
+## Overriding per request
+
+Override token settings for a single request via headers:
+
+| Header | Effect |
+| --- | --- |
+| `X-Provider-Order` | Providers and order for this request |
+| `X-Provider-Only` | `"true"` enables strict mode, no fallback |
+| `X-Provider-Sort` | Override sort strategy (`latency` / `price` / `throughput`) |
+| `X-Provider-Ignore` | Providers to skip, stacked on token config |
+
+> Providers specified via headers are still subject to your account permissions.
+
+### Example
+
+```bash
+curl https://bearlab.ai/v1/chat/completions \
+  -H "Authorization: Bearer sk-your-token" \
+  -H "X-Provider-Order: official_cheap,mix" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "gpt-4o", "messages": [{"role": "user", "content": "Hello"}]}'
+```

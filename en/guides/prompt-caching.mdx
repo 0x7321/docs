@@ -1,0 +1,53 @@
+---
+title: "Prompt Caching"
+description: "Reduce cost for repeated content, and keep routing consistent with request IDs to improve hit rates."
+---
+
+## What is prompt caching
+
+Many providers (including Anthropic Claude and OpenAI) natively support prompt caching. When the same context is sent repeatedly, the provider reuses prior computation, **reducing latency and token cost**.
+
+## Caching limitations
+
+**Caches cannot be shared across accounts**, a provider-side restriction, not a platform one.
+
+As a multi-channel relay, we cannot guarantee that two consecutive requests from one account hit the same backend channel. If they go to different channels, existing caches cannot be reused, lowering hit rates and raising cost.
+
+## Keeping routing consistent
+
+To address this, include a previous request's ID in later requests. The system will try to route the new request to the same channel, maximizing cache reuse.
+
+| Header | Source | TTL |
+| --- | --- | --- |
+| `X-Request-Id` | The request-id header from the previous response | 5 minutes |
+| `X-Response-Id` | The conversation ID in the previous response JSON (e.g. Claude's `message.id`) | 5 minutes |
+
+### Example
+
+```python
+import anthropic
+
+client = anthropic.Anthropic(base_url="https://bearlab.ai/anthropic", api_key="API_KEY")
+
+response = client.messages.create(
+    model="claude-sonnet-4-5",
+    max_tokens=1024,
+    messages=[{"role": "user", "content": "Hello!"}],
+)
+response_id = response.id
+
+response2 = client.messages.create(
+    model="claude-sonnet-4-5",
+    max_tokens=1024,
+    messages=[
+        {"role": "user", "content": "Hello!"},
+        {"role": "assistant", "content": response.content[0].text},
+        {"role": "user", "content": "Continue our conversation..."},
+    ],
+    extra_headers={"X-Response-Id": response_id},
+)
+```
+
+## Tips
+
+Put unchanging content first (system prompts, long documents) and variable content last (the latest user message) to maximize prefix hits. The longer and more frequently reused the prefix, the more you save.

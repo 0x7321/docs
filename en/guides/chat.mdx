@@ -1,0 +1,142 @@
+---
+title: "Chat Completions"
+description: "Request parameters, streaming, tool calling, and the three compatible protocols."
+---
+
+Chat completion is the core endpoint, offered through three compatible interfaces (OpenAI, Anthropic, Gemini) that share one key.
+
+<Note>
+  Asia-Pacific users: use `https://bearlab.in` as the endpoint instead of `bearlab.ai`. See [Service Availability](/guides/availability).
+</Note>
+
+## Endpoints
+
+| Protocol | Method and path |
+| --- | --- |
+| OpenAI-compatible | `POST https://bearlab.ai/v1/chat/completions` |
+| Anthropic-compatible | `POST https://bearlab.ai/anthropic/v1/messages` |
+| Gemini native | `base_url=https://bearlab.ai`, `api_version=v1beta` (Google genai SDK) |
+
+## Basic request
+
+<Tabs>
+  <Tab title="OpenAI-compatible">
+    ```bash
+    curl https://bearlab.ai/v1/chat/completions \
+      -H "Authorization: Bearer YOUR_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "gpt-4o",
+        "messages": [
+          {"role": "system", "content": "You are a concise assistant."},
+          {"role": "user", "content": "Hello"}
+        ]
+      }'
+    ```
+  </Tab>
+  <Tab title="Anthropic-compatible">
+    ```bash
+    curl https://bearlab.ai/anthropic/v1/messages \
+      -H "x-api-key: YOUR_API_KEY" \
+      -H "anthropic-version: 2023-06-01" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "claude-sonnet-4-5",
+        "max_tokens": 1024,
+        "system": "You are a concise assistant.",
+        "messages": [{"role": "user", "content": "Hello"}]
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+## Common parameters
+
+| Parameter | Description |
+| --- | --- |
+| `model` | Model ID. See [Models & Pricing API](/en/guides/models). |
+| `messages` | Ordered array of conversation messages. |
+| `temperature` | Sampling temperature, `0`-`2`. |
+| `max_tokens` | Maximum output tokens. **Required** under the Anthropic protocol. |
+| `stream` | Stream the response over SSE when `true`. |
+
+<Warning>
+  Protocol difference: the OpenAI protocol puts the system prompt in `messages` as `role: system`; the Anthropic protocol uses a top-level `system` field and requires `max_tokens`.
+</Warning>
+
+## Streaming
+
+Set `stream: true`; the response is pushed over SSE, ending with `data: [DONE]` (OpenAI protocol).
+
+```python
+from openai import OpenAI
+
+client = OpenAI(api_key="YOUR_API_KEY", base_url="https://bearlab.ai/v1")
+
+stream = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "Write a short poem about spring."}],
+    stream=True,
+)
+for chunk in stream:
+    delta = chunk.choices[0].delta.content
+    if delta:
+        print(delta, end="", flush=True)
+```
+
+## Tool calling
+
+Both the OpenAI and Anthropic protocols support tool calling.
+
+```python
+from openai import OpenAI
+
+client = OpenAI(base_url="https://bearlab.ai/v1", api_key="YOUR_API_KEY")
+
+tools = [{
+    "type": "function",
+    "function": {
+        "name": "get_weather",
+        "description": "Get the current weather for a city",
+        "parameters": {
+            "type": "object",
+            "properties": {"city": {"type": "string"}},
+            "required": ["city"],
+        },
+    },
+}]
+
+resp = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "What's the weather in London?"}],
+    tools=tools,
+)
+print(resp.choices[0].message)
+```
+
+## Gemini native protocol
+
+Gemini models can be called in the native Google AI Studio format, with no conversion to OpenAI format.
+
+```python
+from google import genai
+from google.genai import types
+
+client = genai.Client(
+    api_key="YOUR_API_KEY",
+    http_options=types.HttpOptions(api_version="v1beta", base_url="https://bearlab.ai"),
+)
+
+resp = client.models.generate_content(model="gemini-2.5-pro", contents="Hello")
+print(resp.text)
+```
+
+<Warning>
+  1. Set `base_url` to `https://bearlab.ai` (no `/v1beta` suffix; the SDK appends it).
+  2. Set `api_version` to `v1beta`.
+  3. Install: Python `pip install google-genai`, Node.js `npm install @google/genai`.
+</Warning>
+
+<Tip>
+  Long repeated prefixes (fixed system prompts, long documents) can use [Prompt Caching](/en/guides/prompt-caching) to lower the cost of the repeated part.
+</Tip>

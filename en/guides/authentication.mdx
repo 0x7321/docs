@@ -1,0 +1,35 @@
+---
+title: "Authentication"
+description: "How to create, pass, and manage API keys."
+---
+
+Every request is authenticated with an API key. Create keys on the [console](https://bearlab.ai) under API Tokens; they look like `sk-xxxxxxxx`.
+
+<Note>
+  Asia-Pacific users: use `https://bearlab.in` as the endpoint instead of `bearlab.ai`. See [Service Availability](/guides/availability).
+</Note>
+
+## Passing the key
+
+The two protocols use different auth headers:
+
+| Protocol | Header |
+| --- | --- |
+| OpenAI-compatible | `Authorization: Bearer YOUR_API_KEY` |
+| Anthropic-compatible | `x-api-key: YOUR_API_KEY` |
+
+## Key management
+
+- **One key per use**: create separate keys per project or client for easy revocation and per-key usage stats.
+- **Set a quota cap**: give a single key a spending limit at creation to reduce exposure.
+- **Do not hardcode**: inject via environment variables; never commit keys to a repository.
+- **Revoke on leak**: if a key may be exposed, delete it on the console and create a new one.
+
+## Common auth errors
+
+| Symptom | Cause |
+| --- | --- |
+| `401 Unauthorized` | Wrong or deleted key, or mismatched header (Bearer vs x-api-key). |
+| `403 Forbidden` | Key disabled, insufficient balance, or no access to the model or group. The most common permission issue is a model that requires identity verification. |
+
+See [Error Handling](/en/guides/errors) for more codes.

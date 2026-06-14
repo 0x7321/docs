@@ -1,0 +1,48 @@
+---
+title: "Error Handling"
+description: "Common HTTP status codes, their meaning, and how to troubleshoot."
+---
+
+The API uses standard HTTP status codes. Error bodies are JSON and carry a request-id header (for troubleshooting and [cache routing](/en/guides/prompt-caching)):
+
+```json
+{
+  "error": {
+    "code": "",
+    "message": "A description, including the request id",
+    "type": "bearlab_api_error"
+  }
+}
+```
+
+## Common status codes
+
+| Code | Meaning | Cause and fix |
+| --- | --- | --- |
+| `400` | Bad parameters | Missing or wrong-typed parameters; missing `max_tokens` under Anthropic. Fix per `message`. |
+| `401` | Auth failed | API key not set correctly (wrong/deleted key, or Bearer vs x-api-key mismatch). |
+| `403` | Insufficient balance or permission | Out of balance; or no access to the model/group. The most common permission issue is a model that requires identity verification. |
+| `429` | Rate limited | RPM / RPD / TPM / TPD reached; see [Rate Limits](/en/guides/rate-limits). May also be repeated retries from bad parameters. |
+| `503` / `504` | High load | Retry later; for chat, try streaming with `"stream": true`. |
+| `500` | Unknown server error | Contact support with the request id. |
+
+## Checklist
+
+<Steps>
+  <Step title="Read error.message first">
+    Most issues are explained there.
+  </Step>
+  <Step title="Check base_url and protocol">
+    `/v1` (OpenAI) vs `/anthropic` (Anthropic); the auth header must match.
+  </Step>
+  <Step title="Check the model name">
+    Confirm `model` exists via the [models endpoint](/en/guides/models).
+  </Step>
+  <Step title="Check balance / retry">
+    `403` may be balance; retry `5xx` / `429` with exponential backoff, then contact support.
+  </Step>
+</Steps>
+
+<Note>
+  With `stream: true`, errors may arrive as SSE events after the connection opens. Handle an `error` event mid-stream, not only the HTTP status.
+</Note>

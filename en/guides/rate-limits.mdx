@@ -1,0 +1,48 @@
+---
+title: "Rate Limits"
+description: "Limit forms, their relationship to user levels, and how to respond."
+---
+
+To keep resource use fair and the service stable, the platform limits request frequency and token usage.
+
+## Forms of limit
+
+| Form | Meaning |
+| --- | --- |
+| **RPM** | Max requests per minute |
+| **RPH** | Max requests per hour |
+| **RPD** | Max requests per day |
+| **TPM** | Max tokens per minute (input + output) |
+| **TPD** | Max tokens per day |
+
+## Relationship to user levels
+
+Limits are driven mainly by [user level](/en/guides/user-levels):
+
+| Tier | How to get it | Limit |
+| --- | --- | --- |
+| **Tier 1** | Default after registration | 5 RPM |
+| **Tier 2** | Automatic after any top-up | No limit |
+
+New accounts default to Tier 1 (5 RPM); **any top-up immediately upgrades to Tier 2 and removes the rate limit**, with no manual request.
+
+## TPM and max_tokens
+
+Total tokens cannot be known when a request is sent, so the system estimates with the `max_tokens` parameter for TPM limiting, then corrects with actual tokens after generation. Set `max_tokens` **close to actual need** to reduce errors from over-estimation.
+
+## When limited
+
+When requests or token usage reach the cap, the API returns `429 Too Many Requests`; later requests are temporarily rejected until the cooldown passes.
+
+```http
+HTTP/1.1 429 Too Many Requests
+Content-Type: application/json
+
+{ "error": { "message": "The current group upstream load is saturated, please try again later", "type": "bearlab_api_error" } }
+```
+
+## Tips
+
+- **Exponential backoff**: on `429`, wait and retry with doubling delays.
+- **Batch requests**: when requests are capped but tokens are not, merge tasks into one request.
+- **Need more**: contact your account manager for a dedicated quota.

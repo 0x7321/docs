@@ -1,0 +1,44 @@
+---
+title: "Pricing & Billing"
+description: "Pay-as-you-go billing, provider multipliers, top-ups, balance alerts, and refunds."
+---
+
+Pay only for what you use. No minimum, and it scales elastically with your business.
+
+## Billing currency
+
+The platform bills in **USD**, aligned with each provider's official pricing.
+
+## Billing method
+
+Conversational models are billed **per token**: input and output tokens are priced separately, and input tokens that hit [prompt caching](/en/guides/prompt-caching) get a lower rate.
+
+Token usage per request is taken from `prompt_tokens` and `completion_tokens` in the response `usage`.
+
+## Provider multipliers and discounts
+
+Each [provider](/en/guides/providers) has its own **price multiplier**. The price you pay equals the model base price times the provider multiplier. Higher [user levels](/en/guides/user-levels) may receive additional discounts.
+
+## Top-up
+
+- Online top-up via **Stripe** (credit and debit cards); balance is credited instantly.
+- For enterprise billing or large top-ups, [contact us](mailto:support@bearlab.ai).
+
+## Balance alerts
+
+To avoid interruptions, set an alert: Dashboard, Profile Settings, Subscription Management, set a threshold. When your balance drops below it, we notify you by email or in-app message.
+
+## High-volume plans
+
+For higher concurrency or dedicated pricing, [contact us](mailto:support@bearlab.ai).
+
+## Refunds
+
+To request a refund, contact support. Note:
+
+- If a refund drops your account level, the over-benefit amount is deducted.
+- Top-ups for which an invoice was issued are non-refundable.
+- A processing fee of up to **5%** applies.
+- Refunds return to the original payment method.
+
+Stripe emails a receipt after each successful top-up. For a formal invoice, contact support with your company name, tax ID, and amount.
