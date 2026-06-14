@@ -7,14 +7,16 @@ description: "Une clé pour chaque modèle conversationnel majeur. OpenAI, Anthr
 
 BearLab dessert directement les juridictions des **États-Unis et de l'Union européenne**.
 
-<Warning>
-La région **Asie-Pacifique** est desservie par un partenaire régional, et les requêtes API de cette région doivent utiliser le point de terminaison dédié `https://bearlab.in` au lieu de `bearlab.ai`.
-</Warning>
+<Tip>
+La région **Asie-Pacifique** est desservie par un partenaire régional, et les requêtes API de cette région doivent utiliser le domaine dédié `https://bearlab.in` au lieu de `https://bearlab.ai`.
+</Tip>
 
-| Région | Point de terminaison |
+| Région | Domaine API |
 | --- | --- |
-| US / EU | `https://bearlab.ai/v1` · `https://bearlab.ai/anthropic` |
-| Asie-Pacifique | `https://bearlab.in/v1` · `https://bearlab.in/anthropic` |
+| US / EU | `https://bearlab.ai` |
+| Asie-Pacifique | `https://bearlab.in` |
+
+base_url OpenAI = domaine + `/v1` (endpoint `/v1/chat/completions`) ; base_url Anthropic = domaine (endpoint `/v1/messages`). Voir [Chat Completions](/fr/guides/chat).
 
 Voir [Service Availability](/fr/guides/availability).
 
@@ -30,7 +32,7 @@ L'interface est compatible avec les protocoles OpenAI et Anthropic, ce qui signi
     Qu'est-ce que BearLab et ce qu'il fait.
   </Card>
   <Card title="Chat Completions" icon="comments" href="/fr/guides/chat" cta="Voir l'API">
-    Compatible OpenAI `/v1` et compatible Anthropic `/anthropic`.
+    Compatible OpenAI `/v1` et compatible Anthropic `/v1/messages`.
   </Card>
   <Card title="Intégrations" icon="plug" href="/fr/integrations/cursor" cta="Connecter">
     Cursor, Claude Code, Cline, Codex et SDKs, prêts à brancher.

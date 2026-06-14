@@ -6,7 +6,7 @@ description: "リクエストパラメータ、ストリーミング、ツール
 チャット完了はコアエンドポイントであり、1つのキーを共有する3つの互換インターフェース(OpenAI、Anthropic、Gemini)を通じて提供されます。
 
 <Note>
-  アジア太平洋ユーザー: bearlab.aiの代わりに、エンドポイントとして`https://bearlab.in`を使用してください。[サービス提供地域](/ja/guides/availability)を参照してください。
+  アジア太平洋ユーザー: `https://bearlab.ai` の代わりに専用ドメイン `https://bearlab.in` を使用してください。[サービス提供地域](/ja/guides/availability)を参照してください。
 </Note>
 
 ## エンドポイント
@@ -14,7 +14,7 @@ description: "リクエストパラメータ、ストリーミング、ツール
 | プロトコル | メソッドとパス |
 | --- | --- |
 | OpenAI互換 | `POST https://bearlab.ai/v1/chat/completions` |
-| Anthropic互換 | `POST https://bearlab.ai/anthropic/v1/messages` |
+| Anthropic互換 | `POST https://bearlab.ai/v1/messages` |
 | Gemini native | `base_url=https://bearlab.ai`, `api_version=v1beta` (Google genai SDK) |
 
 ## 基本的なリクエスト
@@ -36,7 +36,7 @@ description: "リクエストパラメータ、ストリーミング、ツール
   </Tab>
   <Tab title="Anthropic互換">
     ```bash
-    curl https://bearlab.ai/anthropic/v1/messages \
+    curl https://bearlab.ai/v1/messages \
       -H "x-api-key: YOUR_API_KEY" \
       -H "anthropic-version: 2023-06-01" \
       -H "Content-Type: application/json" \

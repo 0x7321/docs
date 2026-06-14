@@ -6,7 +6,7 @@ description: "5 分钟内创建密钥并发出第一个对话请求。"
 只需三步即可调用模型。
 
 <Note>
-  亚太区域用户:API 接口地址请改用 `https://bearlab.in`（`/v1`、`/anthropic`），而非 `bearlab.ai`。详见 [服务区域](/zh-Hans/guides/availability)。
+  亚太区域用户:API 请改用专用域名 `https://bearlab.in`（`/v1`、`/v1/messages`），而非 `https://bearlab.ai`。详见 [服务区域](/zh-Hans/guides/availability)。
 </Note>
 
 <Steps>
@@ -37,7 +37,7 @@ description: "5 分钟内创建密钥并发出第一个对话请求。"
   </Tab>
   <Tab title="Anthropic 兼容">
     ```bash
-    curl https://bearlab.ai/anthropic/v1/messages \
+    curl https://bearlab.ai/v1/messages \
       -H "x-api-key: YOUR_API_KEY" \
       -H "anthropic-version: 2023-06-01" \
       -H "Content-Type: application/json" \

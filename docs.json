@@ -69,8 +69,8 @@
         ],
         "default": true,
         "banner": {
-          "content": "亞太地區 API 請改用 **https://bearlab.in**(而非 bearlab.ai)。",
-          "type": "warning",
+          "content": "亞太地區 API 請改用 **https://bearlab.in**(而非 https://bearlab.ai)。",
+          "color": "#15803D",
           "dismissible": true
         }
       },
@@ -132,8 +132,8 @@
           }
         ],
         "banner": {
-          "content": "亚太地区 API 请改用 **https://bearlab.in**(而非 bearlab.ai)。",
-          "type": "warning",
+          "content": "亚太地区 API 请改用 **https://bearlab.in**(而非 https://bearlab.ai)。",
+          "color": "#15803D",
           "dismissible": true
         }
       },
@@ -195,8 +195,8 @@
           }
         ],
         "banner": {
-          "content": "Asia-Pacific: use **https://bearlab.in** for API requests, not bearlab.ai.",
-          "type": "warning",
+          "content": "Asia-Pacific: use **https://bearlab.in** for API requests, not https://bearlab.ai.",
+          "color": "#15803D",
           "dismissible": true
         }
       },
@@ -258,8 +258,8 @@
           }
         ],
         "banner": {
-          "content": "Asie-Pacifique : utilisez **https://bearlab.in** pour les requêtes API, et non bearlab.ai.",
-          "type": "warning",
+          "content": "Asie-Pacifique : utilisez **https://bearlab.in** pour les requêtes API, et non https://bearlab.ai.",
+          "color": "#15803D",
           "dismissible": true
         }
       },
@@ -321,8 +321,8 @@
           }
         ],
         "banner": {
-          "content": "アジア太平洋地域の API は **https://bearlab.in** をご利用ください(bearlab.ai ではありません)。",
-          "type": "warning",
+          "content": "アジア太平洋地域の API は **https://bearlab.in** をご利用ください(https://bearlab.ai ではありません)。",
+          "color": "#15803D",
           "dismissible": true
         }
       },
@@ -384,8 +384,8 @@
           }
         ],
         "banner": {
-          "content": "एशिया-प्रशांत: API के लिए bearlab.ai नहीं, **https://bearlab.in** का उपयोग करें।",
-          "type": "warning",
+          "content": "एशिया-प्रशांत: API के लिए https://bearlab.ai नहीं, **https://bearlab.in** का उपयोग करें।",
+          "color": "#15803D",
           "dismissible": true
         }
       }

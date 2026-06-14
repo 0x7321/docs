@@ -6,7 +6,7 @@ description: "Créez une clé et effectuez votre première requête en 5 minutes
 Trois étapes pour appeler un modèle.
 
 <Note>
-  Utilisateurs Asie-Pacifique : utilisez `https://bearlab.in` comme point de terminaison au lieu de `bearlab.ai`. Voir [Service Availability](/fr/guides/availability).
+  Utilisateurs Asie-Pacifique : utilisez le domaine dédié `https://bearlab.in` au lieu de `https://bearlab.ai`. Voir [Service Availability](/fr/guides/availability).
 </Note>
 
 <Steps>
@@ -37,7 +37,7 @@ Trois étapes pour appeler un modèle.
   </Tab>
   <Tab title="Compatible Anthropic">
     ```bash
-    curl https://bearlab.ai/anthropic/v1/messages \
+    curl https://bearlab.ai/v1/messages \
       -H "x-api-key: YOUR_API_KEY" \
       -H "anthropic-version: 2023-06-01" \
       -H "Content-Type: application/json" \

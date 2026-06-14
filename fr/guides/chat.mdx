@@ -6,7 +6,7 @@ description: "Paramètres de requête, streaming, appel d'outils et les trois pr
 Chat completion est le point de terminaison central, offert via trois interfaces compatibles (OpenAI, Anthropic, Gemini) qui partagent une seule clé.
 
 <Note>
-  Utilisateurs Asie-Pacifique : utilisez `https://bearlab.in` comme point de terminaison au lieu de `bearlab.ai`. Voir [Service Availability](/fr/guides/availability).
+  Utilisateurs Asie-Pacifique : utilisez le domaine dédié `https://bearlab.in` au lieu de `https://bearlab.ai`. Voir [Service Availability](/fr/guides/availability).
 </Note>
 
 ## Points de terminaison
@@ -14,7 +14,7 @@ Chat completion est le point de terminaison central, offert via trois interfaces
 | Protocole | Méthode et chemin |
 | --- | --- |
 | Compatible OpenAI | `POST https://bearlab.ai/v1/chat/completions` |
-| Compatible Anthropic | `POST https://bearlab.ai/anthropic/v1/messages` |
+| Compatible Anthropic | `POST https://bearlab.ai/v1/messages` |
 | Gemini native | `base_url=https://bearlab.ai`, `api_version=v1beta` (SDK Google genai) |
 
 ## Requête basique
@@ -36,7 +36,7 @@ Chat completion est le point de terminaison central, offert via trois interfaces
   </Tab>
   <Tab title="Compatible Anthropic">
     ```bash
-    curl https://bearlab.ai/anthropic/v1/messages \
+    curl https://bearlab.ai/v1/messages \
       -H "x-api-key: YOUR_API_KEY" \
       -H "anthropic-version: 2023-06-01" \
       -H "Content-Type: application/json" \

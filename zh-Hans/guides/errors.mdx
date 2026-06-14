@@ -33,7 +33,7 @@ description: "常见 HTTP 状态码、含义与排查方法。"
     大多数问题描述里已写明原因。
   </Step>
   <Step title="核对 base_url 与协议">
-    `/v1`（OpenAI）还是 `/anthropic`（Anthropic），鉴权头要匹配。
+    `/v1`（OpenAI）还是 `/v1/messages`（Anthropic），鉴权头要匹配。
   </Step>
   <Step title="核对模型名">
     用 [模型接口](/zh-Hans/guides/models) 确认 `model` 拼写存在。

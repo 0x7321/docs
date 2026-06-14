@@ -10,13 +10,13 @@ description: "Utilisez BearLab dans l'outil de ligne de commande Claude Code d'A
 Pointez les variables d'environnement vers le point de terminaison compatible Anthropic :
 
 ```bash
-export ANTHROPIC_BASE_URL="https://bearlab.ai/anthropic"
+export ANTHROPIC_BASE_URL="https://bearlab.ai"
 export ANTHROPIC_AUTH_TOKEN="YOUR_API_KEY"
 
 claude
 ```
 
-- `ANTHROPIC_BASE_URL` : l'adresse compatible Anthropic (remarquez `/anthropic`, pas `/v1`).
+- `ANTHROPIC_BASE_URL` : l'adresse compatible Anthropic (remarquez `/v1/messages`, pas `/v1`).
 - `ANTHROPIC_AUTH_TOKEN` : votre clé API.
 
 ## Rendre persistant
@@ -24,7 +24,7 @@ claude
 Ajoutez les deux lignes à `~/.zshrc` ou `~/.bashrc` :
 
 ```bash
-echo 'export ANTHROPIC_BASE_URL="https://bearlab.ai/anthropic"' >> ~/.zshrc
+echo 'export ANTHROPIC_BASE_URL="https://bearlab.ai"' >> ~/.zshrc
 echo 'export ANTHROPIC_AUTH_TOKEN="YOUR_API_KEY"' >> ~/.zshrc
 ```
 

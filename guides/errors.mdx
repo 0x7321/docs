@@ -33,7 +33,7 @@ description: "常見 HTTP 狀態碼、含義與排查方法。"
     大多數問題描述裡已寫明原因。
   </Step>
   <Step title="核對 base_url 與協議">
-    `/v1`（OpenAI）還是 `/anthropic`（Anthropic），鑑權頭要匹配。
+    `/v1`（OpenAI）還是 `/v1/messages`（Anthropic），鑑權頭要匹配。
   </Step>
   <Step title="核對模型名">
     用 [模型介面](/guides/models) 確認 `model` 拼寫存在。

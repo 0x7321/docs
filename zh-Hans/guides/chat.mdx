@@ -6,7 +6,7 @@ description: "对话补全接口的完整说明：请求参数、流式输出、
 对话补全是核心接口。提供 OpenAI、Anthropic、Gemini 三套兼容实现，共用同一密钥。
 
 <Note>
-  亚太区域用户:接口地址请改用 `https://bearlab.in`，而非 `bearlab.ai`。详见 [服务区域](/zh-Hans/guides/availability)。
+  亚太区域用户:请改用专用域名 `https://bearlab.in`，而非 `https://bearlab.ai`。详见 [服务区域](/zh-Hans/guides/availability)。
 </Note>
 
 ## 端点
@@ -14,7 +14,7 @@ description: "对话补全接口的完整说明：请求参数、流式输出、
 | 协议 | 方法与路径 |
 | --- | --- |
 | OpenAI 兼容 | `POST https://bearlab.ai/v1/chat/completions` |
-| Anthropic 兼容 | `POST https://bearlab.ai/anthropic/v1/messages` |
+| Anthropic 兼容 | `POST https://bearlab.ai/v1/messages` |
 | Gemini 原生 | `base_url=https://bearlab.ai`，`api_version=v1beta`（Google genai SDK） |
 
 ## 基本请求
@@ -37,7 +37,7 @@ description: "对话补全接口的完整说明：请求参数、流式输出、
   </Tab>
   <Tab title="Anthropic 兼容">
     ```bash
-    curl https://bearlab.ai/anthropic/v1/messages \
+    curl https://bearlab.ai/v1/messages \
       -H "x-api-key: YOUR_API_KEY" \
       -H "anthropic-version: 2023-06-01" \
       -H "Content-Type: application/json" \
@@ -158,7 +158,7 @@ OpenAI 与 Anthropic 协议都支持工具调用。
     ```python
     import anthropic
 
-    client = anthropic.Anthropic(base_url="https://bearlab.ai/anthropic", api_key="YOUR_API_KEY")
+    client = anthropic.Anthropic(base_url="https://bearlab.ai", api_key="YOUR_API_KEY")
 
     tools = [{
         "name": "get_weather",

@@ -10,13 +10,13 @@ description: "Use BearLab in Anthropic's Claude Code CLI."
 Point environment variables at the Anthropic-compatible endpoint:
 
 ```bash
-export ANTHROPIC_BASE_URL="https://bearlab.ai/anthropic"
+export ANTHROPIC_BASE_URL="https://bearlab.ai"
 export ANTHROPIC_AUTH_TOKEN="YOUR_API_KEY"
 
 claude
 ```
 
-- `ANTHROPIC_BASE_URL`: the Anthropic-compatible address (note `/anthropic`, no `/v1`).
+- `ANTHROPIC_BASE_URL`: the Anthropic-compatible address (note `/v1/messages`, no `/v1`).
 - `ANTHROPIC_AUTH_TOKEN`: your API key.
 
 ## Persist it
@@ -24,7 +24,7 @@ claude
 Add the two lines to `~/.zshrc` or `~/.bashrc`:
 
 ```bash
-echo 'export ANTHROPIC_BASE_URL="https://bearlab.ai/anthropic"' >> ~/.zshrc
+echo 'export ANTHROPIC_BASE_URL="https://bearlab.ai"' >> ~/.zshrc
 echo 'export ANTHROPIC_AUTH_TOKEN="YOUR_API_KEY"' >> ~/.zshrc
 ```
 

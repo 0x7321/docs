@@ -6,7 +6,7 @@ description: "Request parameters, streaming, tool calling, and the three compati
 Chat completion is the core endpoint, offered through three compatible interfaces (OpenAI, Anthropic, Gemini) that share one key.
 
 <Note>
-  Asia-Pacific users: use `https://bearlab.in` as the endpoint instead of `bearlab.ai`. See [Service Availability](/guides/availability).
+  Asia-Pacific users: use the dedicated domain `https://bearlab.in` instead of `https://bearlab.ai`. See [Service Availability](/en/guides/availability).
 </Note>
 
 ## Endpoints
@@ -14,7 +14,7 @@ Chat completion is the core endpoint, offered through three compatible interface
 | Protocol | Method and path |
 | --- | --- |
 | OpenAI-compatible | `POST https://bearlab.ai/v1/chat/completions` |
-| Anthropic-compatible | `POST https://bearlab.ai/anthropic/v1/messages` |
+| Anthropic-compatible | `POST https://bearlab.ai/v1/messages` |
 | Gemini native | `base_url=https://bearlab.ai`, `api_version=v1beta` (Google genai SDK) |
 
 ## Basic request
@@ -36,7 +36,7 @@ Chat completion is the core endpoint, offered through three compatible interface
   </Tab>
   <Tab title="Anthropic-compatible">
     ```bash
-    curl https://bearlab.ai/anthropic/v1/messages \
+    curl https://bearlab.ai/v1/messages \
       -H "x-api-key: YOUR_API_KEY" \
       -H "anthropic-version: 2023-06-01" \
       -H "Content-Type: application/json" \

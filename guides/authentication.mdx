@@ -6,7 +6,7 @@ description: "如何建立、傳遞和管理 API Key。"
 所有請求都透過 API Key 鑑權。金鑰在 [控制檯](https://bearlab.ai) 的「令牌 / API Keys」頁建立，形如 `sk-xxxxxxxx`。
 
 <Note>
-  亞太區域使用者:介面地址請改用 `https://bearlab.in`，而非 `bearlab.ai`。詳見 [服務區域](/guides/availability)。
+  亞太區域使用者:請改用專用網域 `https://bearlab.in`，而非 `https://bearlab.ai`。詳見 [服務區域](/guides/availability)。
 </Note>
 
 ## 如何傳遞金鑰
@@ -25,7 +25,7 @@ curl https://bearlab.ai/v1/chat/completions \
 ```
 
 ```bash Anthropic 相容
-curl https://bearlab.ai/anthropic/v1/messages \
+curl https://bearlab.ai/v1/messages \
   -H "x-api-key: YOUR_API_KEY" ...
 ```
 </CodeGroup>

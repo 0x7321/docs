@@ -47,7 +47,7 @@ from anthropic import Anthropic
 
 client = Anthropic(
     api_key="YOUR_API_KEY",
-    base_url="https://bearlab.ai/anthropic",
+    base_url="https://bearlab.ai",
 )
 
 msg = client.messages.create(
@@ -63,7 +63,7 @@ import Anthropic from "@anthropic-ai/sdk";
 
 const client = new Anthropic({
   apiKey: "YOUR_API_KEY",
-  baseURL: "https://bearlab.ai/anthropic",
+  baseURL: "https://bearlab.ai",
 });
 
 const msg = await client.messages.create({

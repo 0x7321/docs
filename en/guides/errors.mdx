@@ -33,7 +33,7 @@ The API uses standard HTTP status codes. Error bodies are JSON and carry a reque
     Most issues are explained there.
   </Step>
   <Step title="Check base_url and protocol">
-    `/v1` (OpenAI) vs `/anthropic` (Anthropic); the auth header must match.
+    `/v1` (OpenAI) vs `/v1/messages` (Anthropic); the auth header must match.
   </Step>
   <Step title="Check the model name">
     Confirm `model` exists via the [models endpoint](/en/guides/models).

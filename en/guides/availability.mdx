@@ -5,9 +5,11 @@ description: "Where BearLab serves directly, and how the Asia-Pacific region con
 
 BearLab (bearlab.ai) provides services directly in the **United States and European Union** jurisdictions.
 
-The Asia-Pacific region is served by a **Regional Partner**. API requests from this region must use the dedicated endpoint **`https://bearlab.in`** instead of `bearlab.ai`. Policies for service in this region are set by the Regional Partner. Users in the Asia-Pacific region are responsible for compliance with applicable local laws.
+The Asia-Pacific region is served by a **Regional Partner**. API requests from this region must use the dedicated domain **`https://bearlab.in`** instead of `https://bearlab.ai`. Policies for service in this region are set by the Regional Partner. Users in the Asia-Pacific region are responsible for compliance with applicable local laws.
 
-| Region | Endpoint |
+| Region | API domain |
 | --- | --- |
-| US / EU | `https://bearlab.ai/v1` · `https://bearlab.ai/anthropic` |
-| Asia-Pacific | `https://bearlab.in/v1` · `https://bearlab.in/anthropic` |
+| US / EU | `https://bearlab.ai` |
+| Asia-Pacific | `https://bearlab.in` |
+
+OpenAI base_url = domain + `/v1` (endpoint `/v1/chat/completions`); Anthropic base_url = domain (endpoint `/v1/messages`). See [Chat Completions](/en/guides/chat).

@@ -5,9 +5,11 @@ description: "जहां BearLab सीधे serves करता है, औ�
 
 BearLab (bearlab.ai) **United States और European Union** jurisdictions में सीधे services provide करता है।
 
-Asia-Pacific region एक **Regional Partner** द्वारा serve किया जाता है। इस region से API requests को `bearlab.ai` के बजाय dedicated endpoint **`https://bearlab.in`** का उपयोग करना चाहिए। इस region में service के लिए policies Regional Partner द्वारा set किए जाते हैं। Asia-Pacific region में users applicable local laws के साथ compliance के लिए responsible हैं।
+Asia-Pacific region एक **Regional Partner** द्वारा serve किया जाता है। इस region से API requests को `https://bearlab.ai` के बजाय समर्पित डोमेन **`https://bearlab.in`** का उपयोग करना चाहिए। इस region में service के लिए policies Regional Partner द्वारा set किए जाते हैं। Asia-Pacific region में users applicable local laws के साथ compliance के लिए responsible हैं।
 
-| Region | Endpoint |
+| Region | API domain |
 | --- | --- |
-| US / EU | `https://bearlab.ai/v1` · `https://bearlab.ai/anthropic` |
-| Asia-Pacific | `https://bearlab.in/v1` · `https://bearlab.in/anthropic` |
+| US / EU | `https://bearlab.ai` |
+| Asia-Pacific | `https://bearlab.in` |
+
+OpenAI base_url = domain + `/v1` (endpoint `/v1/chat/completions`); Anthropic base_url = domain (endpoint `/v1/messages`). [Chat Completions](/hi/guides/chat) देखें।

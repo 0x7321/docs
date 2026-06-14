@@ -7,14 +7,16 @@ description: "One key for every leading conversational model. OpenAI, Anthropic,
 
 BearLab serves the **United States and European Union** jurisdictions directly.
 
-<Warning>
-The **Asia-Pacific** region is served by a Regional Partner, and API requests from that region must use the dedicated endpoint `https://bearlab.in` instead of `bearlab.ai`.
-</Warning>
+<Tip>
+The **Asia-Pacific** region is served by a Regional Partner, and API requests from that region must use the dedicated domain `https://bearlab.in` instead of `https://bearlab.ai`.
+</Tip>
 
-| Region | Endpoint |
+| Region | API domain |
 | --- | --- |
-| US / EU | `https://bearlab.ai/v1` · `https://bearlab.ai/anthropic` |
-| Asia-Pacific | `https://bearlab.in/v1` · `https://bearlab.in/anthropic` |
+| US / EU | `https://bearlab.ai` |
+| Asia-Pacific | `https://bearlab.in` |
+
+OpenAI base_url = domain + `/v1` (endpoint `/v1/chat/completions`); Anthropic base_url = domain (endpoint `/v1/messages`). See [Chat Completions](/en/guides/chat).
 
 See [Service Availability](/en/guides/availability).
 
@@ -30,7 +32,7 @@ The interface is compatible with both the OpenAI and Anthropic protocols, so exi
     What BearLab is and what it does.
   </Card>
   <Card title="Chat Completions" icon="comments" href="/en/guides/chat" cta="See the API">
-    OpenAI-compatible `/v1` and Anthropic-compatible `/anthropic`.
+    OpenAI-compatible `/v1` and Anthropic-compatible `/v1/messages`.
   </Card>
   <Card title="Integrations" icon="plug" href="/en/integrations/cursor" cta="Connect">
     Cursor, Claude Code, Cline, Codex, and SDKs, ready to plug in.

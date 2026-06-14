@@ -27,7 +27,7 @@ To address this, include a previous request's ID in later requests. The system w
 ```python
 import anthropic
 
-client = anthropic.Anthropic(base_url="https://bearlab.ai/anthropic", api_key="API_KEY")
+client = anthropic.Anthropic(base_url="https://bearlab.ai", api_key="API_KEY")
 
 response = client.messages.create(
     model="claude-sonnet-4-5",
