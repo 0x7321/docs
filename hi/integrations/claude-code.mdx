@@ -1,33 +1,47 @@
 ---
 title: "Claude Code"
-description: "Anthropic के Claude Code CLI में BearLab का उपयोग करें।"
+description: "Anthropic के official Claude Code CLI में BearLab AI का उपयोग करें।"
 ---
 
-[Claude Code](https://docs.claude.com/claude-code) Anthropic का official command-line coding tool है, Anthropic-compatible protocol के माध्यम से connected।
+[Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview) Anthropic का official AI coding CLI है, जो natively Anthropic protocol के through connect होता है।
+
+## Supported Models
+
+| Model | ID | Best For |
+| --- | --- | --- |
+| Claude Opus 4.8 | `claude-opus-4-8` | सबसे मजबूत reasoning, complex architecture |
+| Claude Sonnet 4.6 | `claude-sonnet-4-6` | Balanced performance, daily coding |
+| Claude Haiku 4.5 | `claude-haiku-4-5` | सबसे तेज, lightweight completions |
 
 ## Configuration
 
-Environment variables को Anthropic-compatible endpoint पर point करें:
+Environment variables को platform endpoint पर point करें:
 
 ```bash
 export ANTHROPIC_BASE_URL="https://bearlab.ai"
-export ANTHROPIC_AUTH_TOKEN="YOUR_API_KEY"
+export ANTHROPIC_API_KEY="YOUR_API_KEY"
 
 claude
 ```
 
-- `ANTHROPIC_BASE_URL`: Anthropic-compatible address (note `/v1/messages`, कोई `/v1` नहीं)।
-- `ANTHROPIC_AUTH_TOKEN`: आपकी API key।
+`ANTHROPIC_API_KEY` और `ANTHROPIC_AUTH_TOKEN` दोनों recognized हैं और पूरी तरह equivalent हैं — कोई भी use करें।
 
-## इसे persist करें
+## Model Override (Optional)
 
-दो lines को `~/.zshrc` या `~/.bashrc` में add करें:
+```bash
+export ANTHROPIC_MODEL="claude-sonnet-4-6"           # Main model override करें
+export ANTHROPIC_SMALL_FAST_MODEL="claude-haiku-4-5" # Fast sub-tasks model override करें
+```
+
+Set न करने पर Claude Code अपना default model selection logic use करता है।
+
+## Persist करें
 
 ```bash
 echo 'export ANTHROPIC_BASE_URL="https://bearlab.ai"' >> ~/.zshrc
-echo 'export ANTHROPIC_AUTH_TOKEN="YOUR_API_KEY"' >> ~/.zshrc
+echo 'export ANTHROPIC_API_KEY="YOUR_API_KEY"' >> ~/.zshrc
 ```
 
-<Warning>
-  एक Claude model (e.g. `claude-sonnet-4-5`) का उपयोग करें जो [models endpoint](/hi/guides/models) में exist करता है। यदि auth fail होता है, तो confirm करें कि आपने `ANTHROPIC_AUTH_TOKEN` का उपयोग किया, `ANTHROPIC_API_KEY` का नहीं।
-</Warning>
+<Note>
+  `ANTHROPIC_BASE_URL` में platform root domain set करें — `/v1` suffix नहीं। Model IDs [models endpoint](/hi/guides/models) में exist होने चाहिए।
+</Note>

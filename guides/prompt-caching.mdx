@@ -34,7 +34,7 @@ client = anthropic.Anthropic(
 
 # 第一次請求
 response = client.messages.create(
-    model="claude-sonnet-4-5",
+    model="claude-sonnet-4-6",
     max_tokens=1024,
     messages=[{"role": "user", "content": "Hello!"}],
 )
@@ -42,7 +42,7 @@ response_id = response.id
 
 # 第二次請求 —— 帶上 response id 以留在同一渠道
 response2 = client.messages.create(
-    model="claude-sonnet-4-5",
+    model="claude-sonnet-4-6",
     max_tokens=1024,
     messages=[
         {"role": "user", "content": "Hello!"},

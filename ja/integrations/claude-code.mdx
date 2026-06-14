@@ -1,33 +1,47 @@
 ---
 title: "Claude Code"
-description: "AnthropicのClaude Code CLIでBearLabを使用します。"
+description: "AnthropicのClaude Code CLIでBearLab AIを使用します。"
 ---
 
-[Claude Code](https://docs.claude.com/claude-code)はAnthropicの公式コマンドラインコーディングツールで、Anthropic互換プロトコル経由で接続されます。
+[Claude Code](https://docs.anthropic.com/ja/docs/claude-code/overview) はAnthropicの公式AIコーディングCLIで、Anthropicプロトコルをネイティブに使用して接続します。
+
+## サポートモデル
+
+| モデル | ID | 用途 |
+| --- | --- | --- |
+| Claude Opus 4.8 | `claude-opus-4-8` | 最高推論、複雑なアーキテクチャ |
+| Claude Sonnet 4.6 | `claude-sonnet-4-6` | バランス性能、日常開発向け |
+| Claude Haiku 4.5 | `claude-haiku-4-5` | 最速、軽量補完・クイック応答 |
 
 ## 設定
 
-環境変数をAnthropicコンパチブルエンドポイントに向けます:
+環境変数をプラットフォームエンドポイントに向けます:
 
 ```bash
 export ANTHROPIC_BASE_URL="https://bearlab.ai"
-export ANTHROPIC_AUTH_TOKEN="YOUR_API_KEY"
+export ANTHROPIC_API_KEY="YOUR_API_KEY"
 
 claude
 ```
 
-- `ANTHROPIC_BASE_URL`: Anthropic互換アドレス(`/v1/messages`に注意、`/v1`なし)。
-- `ANTHROPIC_AUTH_TOKEN`: APIキー。
+`ANTHROPIC_API_KEY` と `ANTHROPIC_AUTH_TOKEN` はどちらも認識され、完全に同等です。どちらでも使用できます。
+
+## モデルを指定する（オプション）
+
+```bash
+export ANTHROPIC_MODEL="claude-sonnet-4-6"           # メインモデルをオーバーライド
+export ANTHROPIC_SMALL_FAST_MODEL="claude-haiku-4-5" # 内部高速サブタスク用モデルをオーバーライド
+```
+
+設定しない場合、Claude Code は自身のデフォルトモデル選択ロジックを使用します。
 
 ## 永続化
 
-2つの行を`~/.zshrc`または`~/.bashrc`に追加します:
-
 ```bash
 echo 'export ANTHROPIC_BASE_URL="https://bearlab.ai"' >> ~/.zshrc
-echo 'export ANTHROPIC_AUTH_TOKEN="YOUR_API_KEY"' >> ~/.zshrc
+echo 'export ANTHROPIC_API_KEY="YOUR_API_KEY"' >> ~/.zshrc
 ```
 
-<Warning>
-  Claudeモデル(例. `claude-sonnet-4-5`)を使用してください。[modelsエンドポイント](/ja/guides/models)に存在していないモデルです。認証が失敗した場合は、`ANTHROPIC_AUTH_TOKEN`を使用していることを確認してください。`ANTHROPIC_API_KEY`ではありません。
-</Warning>
+<Note>
+  `ANTHROPIC_BASE_URL` にはプラットフォームのルートドメインを設定します（`/v1` は不要）。モデルIDは[modelsエンドポイント](/ja/guides/models)に存在するものを使用してください。
+</Note>

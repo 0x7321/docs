@@ -1,33 +1,47 @@
 ---
 title: "Claude Code"
-description: "Utilisez BearLab dans l'outil de ligne de commande Claude Code d'Anthropic."
+description: "Utilisez BearLab AI dans le CLI officiel Claude Code d'Anthropic."
 ---
 
-[Claude Code](https://docs.claude.com/claude-code) est l'outil officiel de codage en ligne de commande d'Anthropic, connecté via le protocole compatible Anthropic.
+[Claude Code](https://docs.anthropic.com/fr/docs/claude-code/overview) est le CLI de codage IA officiel d'Anthropic, se connectant nativement via le protocole Anthropic.
+
+## Modèles supportés
+
+| Modèle | ID | Idéal pour |
+| --- | --- | --- |
+| Claude Opus 4.8 | `claude-opus-4-8` | Raisonnement le plus puissant, architecture complexe |
+| Claude Sonnet 4.6 | `claude-sonnet-4-6` | Performance équilibrée, développement quotidien |
+| Claude Haiku 4.5 | `claude-haiku-4-5` | Le plus rapide, complétion légère |
 
 ## Configuration
 
-Pointez les variables d'environnement vers le point de terminaison compatible Anthropic :
+Pointez les variables d'environnement vers le point de terminaison de la plateforme :
 
 ```bash
 export ANTHROPIC_BASE_URL="https://bearlab.ai"
-export ANTHROPIC_AUTH_TOKEN="YOUR_API_KEY"
+export ANTHROPIC_API_KEY="YOUR_API_KEY"
 
 claude
 ```
 
-- `ANTHROPIC_BASE_URL` : l'adresse compatible Anthropic (remarquez `/v1/messages`, pas `/v1`).
-- `ANTHROPIC_AUTH_TOKEN` : votre clé API.
+`ANTHROPIC_API_KEY` et `ANTHROPIC_AUTH_TOKEN` sont tous les deux reconnus et totalement équivalents — utilisez l'un ou l'autre.
+
+## Spécifier le modèle (optionnel)
+
+```bash
+export ANTHROPIC_MODEL="claude-sonnet-4-6"           # Remplace le modèle principal
+export ANTHROPIC_SMALL_FAST_MODEL="claude-haiku-4-5" # Remplace le modèle rapide interne
+```
+
+Sans configuration, Claude Code utilise sa propre logique de sélection de modèle.
 
 ## Rendre persistant
 
-Ajoutez les deux lignes à `~/.zshrc` ou `~/.bashrc` :
-
 ```bash
 echo 'export ANTHROPIC_BASE_URL="https://bearlab.ai"' >> ~/.zshrc
-echo 'export ANTHROPIC_AUTH_TOKEN="YOUR_API_KEY"' >> ~/.zshrc
+echo 'export ANTHROPIC_API_KEY="YOUR_API_KEY"' >> ~/.zshrc
 ```
 
-<Warning>
-  Utilisez un modèle Claude (par ex. `claude-sonnet-4-5`) qui existe dans le [point de terminaison des modèles](/fr/guides/models). Si l'authentification échoue, confirmez que vous avez utilisé `ANTHROPIC_AUTH_TOKEN`, pas `ANTHROPIC_API_KEY`.
-</Warning>
+<Note>
+  Définissez `ANTHROPIC_BASE_URL` sur le domaine racine de la plateforme, sans suffixe `/v1`. Les IDs de modèles doivent exister dans le [point de terminaison des modèles](/fr/guides/models).
+</Note>

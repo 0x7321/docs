@@ -3,31 +3,45 @@ title: "Claude Code"
 description: "在 Anthropic 官方 Claude Code CLI 中使用 BearLab AI。"
 ---
 
-[Claude Code](https://docs.claude.com/claude-code) 是 Anthropic 官方命令行编程工具，走 Anthropic 兼容协议接入。
+[Claude Code](https://docs.anthropic.com/zh-CN/docs/claude-code/overview) 是 Anthropic 官方 AI 编程 CLI，原生走 Anthropic 协议接入。
+
+## 支持的模型
+
+| 模型 | ID | 适用场景 |
+| --- | --- | --- |
+| Claude Opus 4.8 | `claude-opus-4-8` | 最强推理，复杂架构与深度任务 |
+| Claude Sonnet 4.6 | `claude-sonnet-4-6` | 均衡性能，日常开发首选 |
+| Claude Haiku 4.5 | `claude-haiku-4-5` | 最快，轻量补全与快速问答 |
 
 ## 配置
 
-通过环境变量指向平台的 Anthropic 兼容端点：
+通过环境变量指向平台端点：
 
 ```bash
 export ANTHROPIC_BASE_URL="https://bearlab.ai"
-export ANTHROPIC_AUTH_TOKEN="YOUR_API_KEY"
+export ANTHROPIC_API_KEY="YOUR_API_KEY"
 
 claude
 ```
 
-- `ANTHROPIC_BASE_URL`：平台的 Anthropic 兼容地址（注意是 `/v1/messages`，不带 `/v1`）。
-- `ANTHROPIC_AUTH_TOKEN`：你的 API Key。
+`ANTHROPIC_API_KEY` 与 `ANTHROPIC_AUTH_TOKEN` 均被识别，效果完全相同，任选其一即可。
+
+## 指定模型（可选）
+
+```bash
+export ANTHROPIC_MODEL="claude-sonnet-4-6"           # 覆盖默认主力模型
+export ANTHROPIC_SMALL_FAST_MODEL="claude-haiku-4-5" # 覆盖内部快速小任务用模型
+```
+
+不设定时，Claude Code 使用自身默认的模型选择逻辑。
 
 ## 持久化
 
-把上面两行写进 `~/.zshrc` 或 `~/.bashrc` 即可长期生效：
-
 ```bash
 echo 'export ANTHROPIC_BASE_URL="https://bearlab.ai"' >> ~/.zshrc
-echo 'export ANTHROPIC_AUTH_TOKEN="YOUR_API_KEY"' >> ~/.zshrc
+echo 'export ANTHROPIC_API_KEY="YOUR_API_KEY"' >> ~/.zshrc
 ```
 
-<Warning>
-  模型名用 Claude 系列（如 `claude-sonnet-4-5`），需在 [模型接口](/zh-Hans/guides/models) 中存在。若提示鉴权失败，确认用的是 `ANTHROPIC_AUTH_TOKEN` 而非 `ANTHROPIC_API_KEY`。
-</Warning>
+<Note>
+  `ANTHROPIC_BASE_URL` 填平台根域，不加 `/v1`。模型 ID 必须是 [模型接口](/zh-Hans/guides/models) 中真实存在的 ID。
+</Note>

@@ -1,35 +1,43 @@
 ---
 title: "OpenAI Codex CLI"
-description: "OpenAI के Codex CLI में BearLab का उपयोग करें।"
+description: "OpenAI के Codex CLI में BearLab AI का उपयोग करें।"
 ---
 
 [Codex CLI](https://github.com/openai/codex) OpenAI का official command-line coding agent है, एक custom provider के माध्यम से connected।
 
+## Recommended Models
+
+| Model | ID | Best For |
+| --- | --- | --- |
+| Claude Sonnet 4.6 | `claude-sonnet-4-6` | Coding tasks, balanced speed and capability |
+| o4-mini | `o4-mini` | Fast reasoning, debugging और explanation |
+| GPT-4o | `gpt-4o` | General-purpose coding |
+
 ## Configuration
 
-`~/.codex/config.toml` को edit करें और BearLab को point करने वाला एक provider add करें:
+`~/.codex/config.toml` को edit करें और BearLab को point करने वाला provider add करें:
 
 ```toml
-model = "gpt-4o"
+model = "claude-sonnet-4-6"
 model_provider = "bearlab"
 
 # Third-party providers को response storage को disable करना चाहिए
 disable_response_storage = true
 
 [model_providers.bearlab]
-name = "BearLab"
+name = "BearLab AI"
 base_url = "https://bearlab.ai/v1"
 env_key = "BEARLAB_API_KEY"
 wire_api = "responses"
 ```
 
-फिर key को export करें और run करें:
+Key export करें और run करें:
 
 ```bash
 export BEARLAB_API_KEY="YOUR_API_KEY"
 codex
 ```
 
-<Warning>
-  OpenAI-compatible address (`/v1`) का उपयोग करें। Third-party providers को `wire_api = "responses"` (Codex द्वारा समर्थित एकमात्र protocol) और `disable_response_storage = true` set करना चाहिए, अन्यथा कुछ features error होते हैं। `model` [models endpoint](/hi/guides/models) में exist करने चाहिए।
-</Warning>
+<Note>
+  `/v1` से ending वाला OpenAI-compatible address use करें। Third-party providers को `wire_api = "responses"` और `disable_response_storage = true` set करना चाहिए। `model` [models endpoint](/hi/guides/models) में exist होना चाहिए।
+</Note>

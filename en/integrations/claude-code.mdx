@@ -1,33 +1,47 @@
 ---
 title: "Claude Code"
-description: "Use BearLab in Anthropic's Claude Code CLI."
+description: "Use BearLab AI in Anthropic's official Claude Code CLI."
 ---
 
-[Claude Code](https://docs.claude.com/claude-code) is Anthropic's official command-line coding tool, connected through the Anthropic-compatible protocol.
+[Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview) is Anthropic's official AI coding CLI, connecting natively through the Anthropic protocol.
+
+## Supported Models
+
+| Model | ID | Best For |
+| --- | --- | --- |
+| Claude Opus 4.8 | `claude-opus-4-8` | Strongest reasoning, complex architecture |
+| Claude Sonnet 4.6 | `claude-sonnet-4-6` | Balanced performance, everyday coding |
+| Claude Haiku 4.5 | `claude-haiku-4-5` | Fastest, lightweight completions |
 
 ## Configuration
 
-Point environment variables at the Anthropic-compatible endpoint:
+Point environment variables at the platform endpoint:
 
 ```bash
 export ANTHROPIC_BASE_URL="https://bearlab.ai"
-export ANTHROPIC_AUTH_TOKEN="YOUR_API_KEY"
+export ANTHROPIC_API_KEY="YOUR_API_KEY"
 
 claude
 ```
 
-- `ANTHROPIC_BASE_URL`: the Anthropic-compatible address (note `/v1/messages`, no `/v1`).
-- `ANTHROPIC_AUTH_TOKEN`: your API key.
+Both `ANTHROPIC_API_KEY` and `ANTHROPIC_AUTH_TOKEN` are recognized and fully equivalent — use either one.
 
-## Persist it
+## Override Model (Optional)
 
-Add the two lines to `~/.zshrc` or `~/.bashrc`:
+```bash
+export ANTHROPIC_MODEL="claude-sonnet-4-6"           # Override the main model
+export ANTHROPIC_SMALL_FAST_MODEL="claude-haiku-4-5" # Override Claude Code's fast sub-tasks model
+```
+
+If unset, Claude Code uses its own default model selection logic.
+
+## Persist
 
 ```bash
 echo 'export ANTHROPIC_BASE_URL="https://bearlab.ai"' >> ~/.zshrc
-echo 'export ANTHROPIC_AUTH_TOKEN="YOUR_API_KEY"' >> ~/.zshrc
+echo 'export ANTHROPIC_API_KEY="YOUR_API_KEY"' >> ~/.zshrc
 ```
 
-<Warning>
-  Use a Claude model (e.g. `claude-sonnet-4-5`) that exists in the [models endpoint](/en/guides/models). If auth fails, confirm you used `ANTHROPIC_AUTH_TOKEN`, not `ANTHROPIC_API_KEY`.
-</Warning>
+<Note>
+  Set `ANTHROPIC_BASE_URL` to the platform root — no `/v1` suffix. Model IDs must exist in the [models endpoint](/en/guides/models).
+</Note>

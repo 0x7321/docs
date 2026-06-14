@@ -5,13 +5,20 @@ description: "在 OpenAI 官方 Codex CLI 中使用 BearLab AI。"
 
 [Codex CLI](https://github.com/openai/codex) 是 OpenAI 官方命令列程式設計代理，透過自定義 provider 接入平臺。
 
+## 推薦模型
+
+| 模型 | ID | 適用場景 |
+| --- | --- | --- |
+| Claude Sonnet 4.6 | `claude-sonnet-4-6` | 程式設計首選，速度與能力均衡 |
+| o4-mini | `o4-mini` | 快速推理，適合除錯與解釋 |
+| GPT-4o | `gpt-4o` | 通用程式設計任務 |
+
 ## 配置
 
-編輯 `~/.codex/config.toml`，新增一個指向平臺的 provider：
+編輯 `~/.codex/config.toml`，新增指向平臺的 provider：
 
 ```toml
-# 預設模型與 provider
-model = "gpt-4o"
+model = "claude-sonnet-4-6"
 model_provider = "bearlab"
 
 # 第三方 provider 必須關閉響應儲存
@@ -24,13 +31,13 @@ env_key = "BEARLAB_API_KEY"
 wire_api = "responses"
 ```
 
-然後匯出金鑰並執行：
+匯出金鑰後執行：
 
 ```bash
 export BEARLAB_API_KEY="YOUR_API_KEY"
 codex
 ```
 
-<Warning>
-  `base_url` 用 OpenAI 相容地址（`/v1`）。第三方 provider 必須設 `wire_api = "responses"`（Codex 唯一支援的協議）與 `disable_response_storage = true`，否則部分功能會報錯。`model` 必須是 [模型介面](/guides/models) 中存在的 ID。
-</Warning>
+<Note>
+  `base_url` 用 `/v1` 結尾的 OpenAI 相容地址。第三方 provider 必須設 `wire_api = "responses"` 與 `disable_response_storage = true`。`model` 必須是 [模型介面](/guides/models) 中存在的 ID。
+</Note>

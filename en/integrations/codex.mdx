@@ -1,35 +1,43 @@
 ---
 title: "OpenAI Codex CLI"
-description: "Use BearLab in OpenAI's Codex CLI."
+description: "Use BearLab AI in OpenAI's Codex CLI."
 ---
 
 [Codex CLI](https://github.com/openai/codex) is OpenAI's official command-line coding agent, connected through a custom provider.
+
+## Recommended Models
+
+| Model | ID | Best For |
+| --- | --- | --- |
+| Claude Sonnet 4.6 | `claude-sonnet-4-6` | Coding tasks, balanced speed and capability |
+| o4-mini | `o4-mini` | Fast reasoning, debugging and explanation |
+| GPT-4o | `gpt-4o` | General-purpose coding |
 
 ## Configuration
 
 Edit `~/.codex/config.toml` and add a provider pointing at BearLab:
 
 ```toml
-model = "gpt-4o"
+model = "claude-sonnet-4-6"
 model_provider = "bearlab"
 
 # Third-party providers must disable response storage
 disable_response_storage = true
 
 [model_providers.bearlab]
-name = "BearLab"
+name = "BearLab AI"
 base_url = "https://bearlab.ai/v1"
 env_key = "BEARLAB_API_KEY"
 wire_api = "responses"
 ```
 
-Then export the key and run:
+Export the key and run:
 
 ```bash
 export BEARLAB_API_KEY="YOUR_API_KEY"
 codex
 ```
 
-<Warning>
-  Use the OpenAI-compatible address (`/v1`). Third-party providers must set `wire_api = "responses"` (the only protocol Codex supports) and `disable_response_storage = true`, or some features error. `model` must exist in the [models endpoint](/en/guides/models).
-</Warning>
+<Note>
+  Use the OpenAI-compatible address ending in `/v1`. Third-party providers must set `wire_api = "responses"` and `disable_response_storage = true`. `model` must exist in the [models endpoint](/en/guides/models).
+</Note>

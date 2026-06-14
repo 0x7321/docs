@@ -30,14 +30,14 @@ import anthropic
 client = anthropic.Anthropic(base_url="https://bearlab.ai", api_key="API_KEY")
 
 response = client.messages.create(
-    model="claude-sonnet-4-5",
+    model="claude-sonnet-4-6",
     max_tokens=1024,
     messages=[{"role": "user", "content": "Hello!"}],
 )
 response_id = response.id
 
 response2 = client.messages.create(
-    model="claude-sonnet-4-5",
+    model="claude-sonnet-4-6",
     max_tokens=1024,
     messages=[
         {"role": "user", "content": "Hello!"},

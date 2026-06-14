@@ -5,13 +5,20 @@ description: "在 OpenAI 官方 Codex CLI 中使用 BearLab AI。"
 
 [Codex CLI](https://github.com/openai/codex) 是 OpenAI 官方命令行编程代理，通过自定义 provider 接入平台。
 
+## 推荐模型
+
+| 模型 | ID | 适用场景 |
+| --- | --- | --- |
+| Claude Sonnet 4.6 | `claude-sonnet-4-6` | 编程首选，速度与能力均衡 |
+| o4-mini | `o4-mini` | 快速推理，适合调试与解释 |
+| GPT-4o | `gpt-4o` | 通用编程任务 |
+
 ## 配置
 
-编辑 `~/.codex/config.toml`，新增一个指向平台的 provider：
+编辑 `~/.codex/config.toml`，新增指向平台的 provider：
 
 ```toml
-# 默认模型与 provider
-model = "gpt-4o"
+model = "claude-sonnet-4-6"
 model_provider = "bearlab"
 
 # 第三方 provider 必须关闭响应存储
@@ -24,13 +31,13 @@ env_key = "BEARLAB_API_KEY"
 wire_api = "responses"
 ```
 
-然后导出密钥并运行：
+导出密钥后运行：
 
 ```bash
 export BEARLAB_API_KEY="YOUR_API_KEY"
 codex
 ```
 
-<Warning>
-  `base_url` 用 OpenAI 兼容地址（`/v1`）。第三方 provider 必须设 `wire_api = "responses"`（Codex 唯一支持的协议）与 `disable_response_storage = true`，否则部分功能会报错。`model` 必须是 [模型接口](/zh-Hans/guides/models) 中存在的 ID。
-</Warning>
+<Note>
+  `base_url` 用 `/v1` 结尾的 OpenAI 兼容地址。第三方 provider 必须设 `wire_api = "responses"` 与 `disable_response_storage = true`。`model` 必须是 [模型接口](/zh-Hans/guides/models) 中存在的 ID。
+</Note>

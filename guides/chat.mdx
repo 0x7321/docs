@@ -42,7 +42,7 @@ description: "對話補全介面的完整說明：請求引數、流式輸出、
       -H "anthropic-version: 2023-06-01" \
       -H "Content-Type: application/json" \
       -d '{
-        "model": "claude-sonnet-4-5",
+        "model": "claude-sonnet-4-6",
         "max_tokens": 1024,
         "system": "你是一個簡潔的助手。",
         "messages": [{"role": "user", "content": "你好"}]
@@ -171,7 +171,7 @@ OpenAI 與 Anthropic 協議都支援工具呼叫。
     }]
 
     msg = client.messages.create(
-        model="claude-sonnet-4-5",
+        model="claude-sonnet-4-6",
         max_tokens=1024,
         tools=tools,
         messages=[{"role": "user", "content": "What's the weather in London?"}],
