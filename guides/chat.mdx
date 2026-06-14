@@ -3,7 +3,11 @@ title: "对话补全"
 description: "对话补全接口的完整说明：请求参数、流式输出、多轮对话与双协议差异。"
 ---
 
-对话补全是核心接口。提供 OpenAI 与 Anthropic 两套兼容实现，共用同一密钥。
+对话补全是核心接口。提供 OpenAI、Anthropic、Gemini 三套兼容实现，共用同一密钥。
+
+<Note>
+  亚太区域用户:接口地址请改用 `https://bearlab.in`，而非 `bearlab.ai`。详见 [服务区域](/guides/availability)。
+</Note>
 
 ## 端点
 
@@ -11,6 +15,7 @@ description: "对话补全接口的完整说明：请求参数、流式输出、
 | --- | --- |
 | OpenAI 兼容 | `POST https://bearlab.ai/v1/chat/completions` |
 | Anthropic 兼容 | `POST https://bearlab.ai/anthropic/v1/messages` |
+| Gemini 原生 | `base_url=https://bearlab.ai`，`api_version=v1beta`（Google genai SDK） |
 
 ## 基本请求
 
@@ -116,6 +121,88 @@ for chunk in stream:
 ```
 
 `usage` 中的 token 数即本次计费依据，详见 [计费与充值](/guides/pricing)。
+
+## 工具调用（Function Calling）
+
+OpenAI 与 Anthropic 协议都支持工具调用。
+
+<Tabs>
+  <Tab title="OpenAI 兼容">
+    ```python
+    from openai import OpenAI
+
+    client = OpenAI(base_url="https://bearlab.ai/v1", api_key="YOUR_API_KEY")
+
+    tools = [{
+        "type": "function",
+        "function": {
+            "name": "get_weather",
+            "description": "Get the current weather for a city",
+            "parameters": {
+                "type": "object",
+                "properties": {"city": {"type": "string"}},
+                "required": ["city"],
+            },
+        },
+    }]
+
+    resp = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": "What's the weather in London?"}],
+        tools=tools,
+    )
+    print(resp.choices[0].message)
+    ```
+  </Tab>
+  <Tab title="Anthropic 兼容">
+    ```python
+    import anthropic
+
+    client = anthropic.Anthropic(base_url="https://bearlab.ai/anthropic", api_key="YOUR_API_KEY")
+
+    tools = [{
+        "name": "get_weather",
+        "description": "Get the current weather for a city",
+        "input_schema": {
+            "type": "object",
+            "properties": {"city": {"type": "string"}},
+            "required": ["city"],
+        },
+    }]
+
+    msg = client.messages.create(
+        model="claude-sonnet-4-5",
+        max_tokens=1024,
+        tools=tools,
+        messages=[{"role": "user", "content": "What's the weather in London?"}],
+    )
+    print(msg.content)
+    ```
+  </Tab>
+</Tabs>
+
+## Gemini 原生协议
+
+Gemini 模型可直接用 Google AI Studio 的原生格式调用，无需转成 OpenAI 格式，适合已在用 `genai` SDK 的项目。
+
+```python
+from google import genai
+from google.genai import types
+
+client = genai.Client(
+    api_key="YOUR_API_KEY",
+    http_options=types.HttpOptions(api_version="v1beta", base_url="https://bearlab.ai"),
+)
+
+resp = client.models.generate_content(model="gemini-2.5-pro", contents="你好")
+print(resp.text)
+```
+
+<Warning>
+  1. `base_url` 设为 `https://bearlab.ai`（不带 `/v1beta` 后缀，SDK 会自动追加）
+  2. `api_version` 设为 `v1beta`
+  3. 依赖：Python `pip install google-genai`、Node.js `npm install @google/genai`
+</Warning>
 
 <Tip>
   重复的长前缀（固定 system 提示、长文档）可启用 [提示词缓存](/guides/prompt-caching)，显著降低重复部分的费用。

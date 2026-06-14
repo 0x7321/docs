@@ -1,43 +1,58 @@
 ---
 title: "提示词缓存"
-description: "用提示词缓存降低重复内容的费用，并保持会话路由一致。"
+description: "用提示词缓存降低重复内容的成本，并用请求 ID 保持会话路由一致以提升命中率。"
 ---
 
-当多次请求共享相同的长前缀（固定 system 提示、长文档、代码库上下文）时，**提示词缓存**可让重复部分以更低价格计费，并加快响应。
+## 什么是提示词缓存
 
-## 工作方式
+很多模型供应商（包括 Anthropic Claude 和 OpenAI）原生支持提示词缓存。当同一段上下文被重复发送时，供应商会复用此前的计算结果，**降低延迟和 token 成本**。
 
-- 缓存按**前缀**匹配：只有从开头开始**完全一致**的部分才会命中。
-- 命中部分按 `cached_input` 价格计费（通常显著低于普通输入价）。
-- 缓存有**有效期**，长时间不复用会失效，需重新建立。
+## 缓存的限制
 
-## OpenAI 协议
+**缓存不能跨账户共享**，这是供应商侧的限制，不是平台限制。
 
-OpenAI 兼容接口在满足长度阈值时**自动**尝试缓存，无需额外参数。命中情况体现在响应 `usage` 的缓存相关字段中。
-
-## Anthropic 协议
-
-Anthropic 兼容接口需显式用 `cache_control` 标记要缓存的内容块：
-
-```json
-{
-  "model": "claude-sonnet-4-5",
-  "max_tokens": 1024,
-  "system": [
-    {
-      "type": "text",
-      "text": "（很长的固定指令 / 文档……）",
-      "cache_control": {"type": "ephemeral"}
-    }
-  ],
-  "messages": [{"role": "user", "content": "基于以上内容回答……"}]
-}
-```
-
-<Tip>
-  把**不变内容放前面**（system、长文档），把变化内容放后面（用户最新提问），以最大化前缀命中。前缀越长、复用越频繁，省得越多。
-</Tip>
+作为多渠道中转平台，我们无法保证同一账户连续两次请求一定路由到同一后端渠道。若被发到不同渠道，已有缓存无法复用，命中率下降、成本上升。
 
 ## 保持路由一致
 
-同一会话的多轮请求最好命中同一上游，以复用缓存。可通过在请求间传递一致的会话标识 / 请求 ID 来提升路由稳定性（具体头部以控制台说明为准）。
+为此，你可以在后续请求里带上前一次请求的 ID，系统会尽量把新请求路由到同一渠道，最大化缓存复用。两种方式：
+
+| 请求头 | 取值来源 | 有效期 |
+| --- | --- | --- |
+| `X-Request-Id` | 上一次响应返回的请求 ID 头 | 5 分钟 |
+| `X-Response-Id` | 上一次响应 JSON 里的会话 ID（如 Claude 的 `message.id`） | 5 分钟 |
+
+### 示例
+
+```python
+import anthropic
+
+client = anthropic.Anthropic(
+    base_url="https://bearlab.ai/anthropic",
+    api_key="API_KEY",
+)
+
+# 第一次请求
+response = client.messages.create(
+    model="claude-sonnet-4-5",
+    max_tokens=1024,
+    messages=[{"role": "user", "content": "Hello!"}],
+)
+response_id = response.id
+
+# 第二次请求 —— 带上 response id 以留在同一渠道
+response2 = client.messages.create(
+    model="claude-sonnet-4-5",
+    max_tokens=1024,
+    messages=[
+        {"role": "user", "content": "Hello!"},
+        {"role": "assistant", "content": response.content[0].text},
+        {"role": "user", "content": "Continue our conversation..."},
+    ],
+    extra_headers={"X-Response-Id": response_id},
+)
+```
+
+## 使用建议
+
+把**不变内容放前面**（system、长文档），变化内容放后面（用户最新提问），以最大化前缀命中。前缀越长、复用越频繁，省得越多；一次性请求无需缓存。

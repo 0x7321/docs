@@ -3,14 +3,14 @@ title: "错误处理"
 description: "常见 HTTP 状态码、含义与排查方法。"
 ---
 
-接口遵循标准 HTTP 状态码，错误响应体为 JSON，通常形如：
+接口遵循标准 HTTP 状态码，错误响应体为 JSON，并带一个请求 ID 头（用于排查与[缓存路由](/guides/prompt-caching)），通常形如：
 
 ```json
 {
   "error": {
-    "message": "具体错误描述",
-    "type": "invalid_request_error",
-    "code": "..."
+    "code": "",
+    "message": "具体错误描述（含 request id）",
+    "type": "bearlab_api_error"
   }
 }
 ```
@@ -19,13 +19,12 @@ description: "常见 HTTP 状态码、含义与排查方法。"
 
 | 状态码 | 含义 | 常见原因与排查 |
 | --- | --- | --- |
-| `400` | 请求格式错误 | 参数缺失 / 类型错误；Anthropic 协议漏填 `max_tokens`。 |
-| `401` | 鉴权失败 | 密钥错误 / 已删除，或鉴权头用错（`Bearer` 与 `x-api-key` 混用）。 |
-| `402` | 余额不足 | 账户余额耗尽，[充值](/guides/pricing)后恢复。 |
-| `403` | 无权限 | 密钥被禁用，或无权访问该模型 / 分组。 |
-| `404` | 资源不存在 | 路径写错，或 `model` 名称不存在。 |
-| `429` | 触发限速 | 见 [速率限制](/guides/rate-limits)，退避重试。 |
-| `5xx` | 上游 / 平台异常 | 上游临时故障，稍后重试或锁定其他[供应商](/guides/providers)。 |
+| `400` | 参数错误 | 参数缺失 / 类型错误；Anthropic 协议漏填 `max_tokens`。按 `message` 修正。 |
+| `401` | 鉴权失败 | API Key 未正确设置（密钥错误 / 已删除，或 `Bearer` 与 `x-api-key` 混用）。 |
+| `403` | 余额不足或无权限 | 余额耗尽；或无权访问该模型 / 分组。最常见的无权限是**该模型需要实名认证**。 |
+| `429` | 触发限速 | RPM / RPD / TPM / TPD 等达上限，见 [速率限制](/guides/rate-limits)；也可能是参数错误导致反复重试触发。 |
+| `503` / `504` | 系统负载高 | 稍后重试；对话请求可改用流式 `"stream": true`。 |
+| `500` | 服务未知错误 | 带上 request id 联系客服排查。 |
 
 ## 排查清单
 

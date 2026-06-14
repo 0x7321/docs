@@ -35,6 +35,7 @@
             "group": "账户",
             "pages": [
               "guides/pricing",
+              "guides/user-levels",
               "guides/rate-limits",
               "guides/errors",
               "guides/availability"
