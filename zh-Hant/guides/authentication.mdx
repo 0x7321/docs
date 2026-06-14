@@ -1,0 +1,48 @@
+---
+title: "鑑權與金鑰"
+description: "如何建立、傳遞和管理 API Key。"
+---
+
+所有請求都透過 API Key 鑑權。金鑰在 [控制檯](https://bearlab.ai) 的「令牌 / API Keys」頁建立，形如 `sk-xxxxxxxx`。
+
+<Note>
+  亞太區域使用者:介面地址請改用 `https://bearlab.in`，而非 `bearlab.ai`。詳見 [服務區域](/zh-Hant/guides/availability)。
+</Note>
+
+## 如何傳遞金鑰
+
+兩套協議的鑑權頭不同：
+
+| 協議 | 請求頭 |
+| --- | --- |
+| OpenAI 相容 | `Authorization: Bearer YOUR_API_KEY` |
+| Anthropic 相容 | `x-api-key: YOUR_API_KEY` |
+
+<CodeGroup>
+```bash OpenAI 相容
+curl https://bearlab.ai/v1/chat/completions \
+  -H "Authorization: Bearer YOUR_API_KEY" ...
+```
+
+```bash Anthropic 相容
+curl https://bearlab.ai/anthropic/v1/messages \
+  -H "x-api-key: YOUR_API_KEY" ...
+```
+</CodeGroup>
+
+## 金鑰管理建議
+
+- **一處一金鑰**：為不同專案 / 客戶端分別建立金鑰，方便單獨停用和統計用量。
+- **設定額度上限**：可在建立時給單個金鑰設定可用額度，降低洩露風險。
+- **不要硬編碼**：用環境變數注入，不要寫進程式碼倉庫。
+- **洩露即吊銷**：懷疑洩露時，在控制檯刪除該金鑰並新建。
+
+## 常見鑒權錯誤
+
+| 現象 | 原因 |
+| --- | --- |
+| `401 Unauthorized` | 金鑰錯誤、已刪除，或鑑權頭寫錯（Bearer / x-api-key 混用）。 |
+| `403 Forbidden` | 金鑰被禁用，或無權訪問該模型 / 分組。 |
+| `402` 餘額不足 | 賬戶餘額耗盡，需充值。詳見 [計費與充值](/zh-Hant/guides/pricing)。 |
+
+更多狀態碼見 [錯誤處理](/zh-Hant/guides/errors)。

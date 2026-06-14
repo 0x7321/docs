@@ -1,0 +1,48 @@
+---
+title: "錯誤處理"
+description: "常見 HTTP 狀態碼、含義與排查方法。"
+---
+
+介面遵循標準 HTTP 狀態碼，錯誤響應體為 JSON，並帶一個請求 ID 頭（用於排查與[快取路由](/zh-Hant/guides/prompt-caching)），通常形如：
+
+```json
+{
+  "error": {
+    "code": "",
+    "message": "具體錯誤描述（含 request id）",
+    "type": "bearlab_api_error"
+  }
+}
+```
+
+## 常見狀態碼
+
+| 狀態碼 | 含義 | 常見原因與排查 |
+| --- | --- | --- |
+| `400` | 引數錯誤 | 引數缺失 / 型別錯誤；Anthropic 協議漏填 `max_tokens`。按 `message` 修正。 |
+| `401` | 鑑權失敗 | API Key 未正確設定（金鑰錯誤 / 已刪除，或 `Bearer` 與 `x-api-key` 混用）。 |
+| `403` | 餘額不足或無許可權 | 餘額耗盡；或無權訪問該模型 / 分組。最常見的無許可權是**該模型需要實名認證**。 |
+| `429` | 觸發限速 | RPM / RPD / TPM / TPD 等達上限，見 [速率限制](/zh-Hant/guides/rate-limits)；也可能是引數錯誤導致反覆重試觸發。 |
+| `503` / `504` | 系統負載高 | 稍後重試；對話請求可改用流式 `"stream": true`。 |
+| `500` | 服務未知錯誤 | 帶上 request id 聯絡客服排查。 |
+
+## 排查清單
+
+<Steps>
+  <Step title="先看 error.message">
+    大多數問題描述裡已寫明原因。
+  </Step>
+  <Step title="核對 base_url 與協議">
+    `/v1`（OpenAI）還是 `/anthropic`（Anthropic），鑑權頭要匹配。
+  </Step>
+  <Step title="核對模型名">
+    用 [模型介面](/zh-Hant/guides/models) 確認 `model` 拼寫存在。
+  </Step>
+  <Step title="檢查餘額 / 重試">
+    `402` 即餘額問題；`5xx` / `429` 用指數退避重試，持續失敗再聯絡客服。
+  </Step>
+</Steps>
+
+<Note>
+  `stream: true` 時，錯誤可能在建立連線後以 SSE 事件返回。客戶端應處理流中途出現的 `error` 事件，而不僅依賴 HTTP 狀態碼。
+</Note>

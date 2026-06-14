@@ -1,0 +1,80 @@
+---
+title: "官方 SDK（Python / Node）"
+description: "用 OpenAI 或 Anthropic 官方 SDK 接入 北極熊實驗室。"
+---
+
+官方 SDK 只需改 `base_url` 和金鑰即可指向平臺。
+
+## OpenAI SDK
+
+<CodeGroup>
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="YOUR_API_KEY",
+    base_url="https://bearlab.ai/v1",
+)
+
+resp = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "你好"}],
+)
+print(resp.choices[0].message.content)
+```
+
+```javascript Node.js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "YOUR_API_KEY",
+  baseURL: "https://bearlab.ai/v1",
+});
+
+const resp = await client.chat.completions.create({
+  model: "gpt-4o",
+  messages: [{ role: "user", content: "你好" }],
+});
+console.log(resp.choices[0].message.content);
+```
+</CodeGroup>
+
+## Anthropic SDK
+
+<CodeGroup>
+```python Python
+from anthropic import Anthropic
+
+client = Anthropic(
+    api_key="YOUR_API_KEY",
+    base_url="https://bearlab.ai/anthropic",
+)
+
+msg = client.messages.create(
+    model="claude-sonnet-4-5",
+    max_tokens=1024,
+    messages=[{"role": "user", "content": "你好"}],
+)
+print(msg.content[0].text)
+```
+
+```javascript Node.js
+import Anthropic from "@anthropic-ai/sdk";
+
+const client = new Anthropic({
+  apiKey: "YOUR_API_KEY",
+  baseURL: "https://bearlab.ai/anthropic",
+});
+
+const msg = await client.messages.create({
+  model: "claude-sonnet-4-5",
+  max_tokens: 1024,
+  messages: [{ role: "user", content: "你好" }],
+});
+console.log(msg.content[0].text);
+```
+</CodeGroup>
+
+<Tip>
+  任何支援「自定義 OpenAI Base URL」的工具（LobeChat、Chatbox、Continue、Zed、沉浸式翻譯等）都同理：Base URL 設為 `https://bearlab.ai/v1`，金鑰填你的 Key 即可。
+</Tip>

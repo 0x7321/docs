@@ -1,0 +1,150 @@
+---
+title: "模型與定價介面"
+description: "公開免鑑權介面，列出所有可用對話模型及其公開價格，遵循 OpenRouter Providers 規範。"
+---
+
+`/v1/models/pricing` 是一個**公開、免鑑權**的聚合介面，返回平臺當前所有可用對話模型及其公開價格。響應嚴格遵循 [OpenRouter Providers 規範](https://openrouter.ai/docs/guides/community/for-providers)，可被 OpenRouter、第三方比價工具或任意自定義客戶端直接讀取。
+
+<Note>
+  亞太區域使用者:介面地址請改用 `https://bearlab.in`，而非 `bearlab.ai`。詳見 [服務區域](/zh-Hant/guides/availability)。
+</Note>
+
+<Note>
+  這是「公開價格」入口，不攜帶使用者身份。返回的是匿名上下文下 `default` 分組的價格。要查詢某個已登入使用者的實際成交價（分組、等級折扣等），請用控制檯內的定價頁。
+</Note>
+
+## 何時使用
+
+| 場景 | 說明 |
+| --- | --- |
+| 第三方比價 | OpenRouter 等聚合器抓取模型目錄與公開價格 |
+| 客戶端展示 | App、機器人、SDK 需要渲染模型列表 |
+| 監控 | 跟蹤模型目錄或價格隨時間的變化 |
+
+## 端點
+
+| 項 | 值 |
+| --- | --- |
+| **URL** | `https://bearlab.ai/v1/models/pricing` |
+| **方法** | `GET` |
+| **鑑權** | 無（公開） |
+| **限流** | 嚴格的單 IP 關鍵介面限流 |
+| **快取** | 60 秒程序內快取；響應帶 `Cache-Control: public, max-age=60` |
+
+### 請求示例
+
+<CodeGroup>
+```bash cURL
+curl https://bearlab.ai/v1/models/pricing
+```
+
+```python Python
+import requests
+
+resp = requests.get("https://bearlab.ai/v1/models/pricing", timeout=10)
+data = resp.json()["data"]
+for m in data[:3]:
+    print(m["id"], m["pricing"])
+```
+
+```javascript Node.js
+const resp = await fetch("https://bearlab.ai/v1/models/pricing");
+const { data } = await resp.json();
+console.log(data.slice(0, 3).map(m => ({ id: m.id, pricing: m.pricing })));
+```
+</CodeGroup>
+
+## 響應結構
+
+頂層始終包裹在 `data` 陣列裡：
+
+```json
+{
+  "data": [
+    {
+      "id": "gpt-4o",
+      "name": "GPT-4o",
+      "created": 1715558400,
+      "input_modalities": ["text"],
+      "output_modalities": ["text"],
+      "context_length": 128000,
+      "max_output_length": 16384,
+      "pricing": {
+        "prompt": "0.0000025",
+        "completion": "0.00001",
+        "request": "0",
+        "input_cache_read": "0.00000125"
+      },
+      "supported_sampling_parameters": [
+        "temperature", "top_p", "frequency_penalty", "presence_penalty",
+        "stop", "seed", "max_tokens", "response_format",
+        "tools", "tool_choice", "logprobs"
+      ],
+      "supported_features": ["tools", "json_mode", "structured_outputs", "logprobs"]
+    }
+  ]
+}
+```
+
+### 模型欄位
+
+| 欄位 | 型別 | 說明 |
+| --- | --- | --- |
+| `id` | `string` | 模型唯一標識，呼叫 `/v1/chat/completions` 時填這個值 |
+| `name` | `string` | 展示名（如 `GPT-4o`），未配置時回退為 `id` |
+| `created` | `int64` | 模型釋出時間（Unix 秒） |
+| `input_modalities` / `output_modalities` | `string[]` | 輸入/輸出模態，至少包含 `text` |
+| `context_length` | `int` | 最大上下文視窗（token） |
+| `max_output_length` | `int` | 單次最大輸出 token 數 |
+| `pricing` | `Pricing` | 價格物件，見下 |
+| `pricing_tiers` | `Pricing[]` | 階梯價（最多一項；按上下文長度閾值觸發） |
+| `supported_sampling_parameters` | `string[]` | 支援的取樣引數 |
+| `supported_features` | `string[]` | 支援的能力標記，見下 |
+
+### 價格欄位
+
+價格均為 **USD 字串**，token 類按 token 計價。
+
+| 欄位 | 單位 | 說明 |
+| --- | --- | --- |
+| `prompt` | USD / 輸入 token | 輸入單價 |
+| `completion` | USD / 輸出 token | 輸出單價 |
+| `request` | USD / 次 | 每次請求的固定費（多數對話模型為 `"0"`） |
+| `internal_reasoning` | USD / 推理 token | 推理 token 價（o 系 / Claude thinking） |
+| `input_cache_read` | USD / token | 命中快取的讀取價（通常更低） |
+| `input_cache_write` | USD / token | 快取寫入價 |
+| `web_search` | USD / 次 | 內建聯網搜尋工具費 |
+
+<Note>
+  值為 `"0"` 可能表示「免費」或「該模型不適用此維度」。請結合 `supported_features` 與 `supported_sampling_parameters` 判斷能力，不要只看價格。
+</Note>
+
+### `supported_features` 取值
+
+| 值 | 含義 |
+| --- | --- |
+| `tools` | 函式呼叫 / 工具使用 |
+| `reasoning` | 返回推理 token（`reasoning_content` / `thinking`） |
+| `json_mode` | 支援 JSON 模式輸出 |
+| `structured_outputs` | 支援 schema 約束的結構化輸出 |
+| `logprobs` | 返回 token 對數機率 |
+| `web_search` | 內建聯網搜尋工具 |
+
+## 階梯價
+
+部分模型在超過某個上下文長度閾值後改用另一檔單價（如 Gemini 2.5 Pro 在 ≥128K token 時翻倍）。上層檔位透過 `pricing_tiers` 暴露：`pricing` 是基礎檔，`pricing_tiers[0]` 是上層檔，當總輸入 token ≥ `min_context` 時整體套用上層檔價格（取滿足條件中閾值最高的一檔，非累進）。
+
+## 快取與更新節奏
+
+| 方面 | 行為 |
+| --- | --- |
+| 服務端快取 | 60 秒程序內快取，後臺改價 1 分鐘內生效 |
+| 客戶端快取 | `Cache-Control: public, max-age=60`，CDN / 瀏覽器可安全快取 |
+| 建議輪詢 | 最多每 5 分鐘一次，激進輪詢會被限流 |
+
+## 與其它介面的區別
+
+| 介面 | 用途 | 鑑權 |
+| --- | --- | --- |
+| `/v1/models/pricing` | 本介面：OpenRouter 格式的公開價格 | 公開 |
+| `/v1/models` | OpenAI SDK 相容的模型 id 列表 | 需令牌 |

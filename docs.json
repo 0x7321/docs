@@ -70,6 +70,64 @@
         ]
       },
       {
+        "language": "zh-Hant",
+        "tabs": [
+          {
+            "tab": "文件",
+            "groups": [
+              {
+                "group": "開始",
+                "pages": [
+                  "zh-Hant/index",
+                  "zh-Hant/guides/introduction",
+                  "zh-Hant/guides/quickstart",
+                  "zh-Hant/guides/authentication"
+                ]
+              },
+              {
+                "group": "對話 API",
+                "pages": [
+                  "zh-Hant/guides/chat",
+                  "zh-Hant/guides/models",
+                  "zh-Hant/guides/prompt-caching",
+                  "zh-Hant/guides/providers"
+                ]
+              },
+              {
+                "group": "帳戶",
+                "pages": [
+                  "zh-Hant/guides/pricing",
+                  "zh-Hant/guides/user-levels",
+                  "zh-Hant/guides/rate-limits",
+                  "zh-Hant/guides/errors",
+                  "zh-Hant/guides/availability"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "客戶端接入",
+            "groups": [
+              {
+                "group": "編輯器 / CLI",
+                "pages": [
+                  "zh-Hant/integrations/cursor",
+                  "zh-Hant/integrations/claude-code",
+                  "zh-Hant/integrations/cline",
+                  "zh-Hant/integrations/codex"
+                ]
+              },
+              {
+                "group": "SDK",
+                "pages": [
+                  "zh-Hant/integrations/sdk"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
         "language": "en",
         "tabs": [
           {

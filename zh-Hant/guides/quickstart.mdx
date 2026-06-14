@@ -1,0 +1,71 @@
+---
+title: "快速開始"
+description: "5 分鐘內建立金鑰併發出第一個對話請求。"
+---
+
+只需三步即可呼叫模型。
+
+<Note>
+  亞太區域使用者:API 介面地址請改用 `https://bearlab.in`（`/v1`、`/anthropic`），而非 `bearlab.ai`。詳見 [服務區域](/zh-Hant/guides/availability)。
+</Note>
+
+<Steps>
+  <Step title="註冊並充值">
+    前往 [控制檯](https://bearlab.ai) 註冊賬號，在「錢包」頁完成充值。新使用者可先小額充值測試。
+  </Step>
+  <Step title="建立 API Key">
+    進入「令牌 / API Keys」頁，點選「新建」，複製生成的 `sk-...` 金鑰並妥善保管。金鑰只在建立時完整顯示一次。
+  </Step>
+  <Step title="發起第一個請求">
+    把下面示例裡的 `YOUR_API_KEY` 換成你的金鑰即可。
+  </Step>
+</Steps>
+
+## 呼叫示例
+
+<Tabs>
+  <Tab title="OpenAI 相容">
+    ```bash
+    curl https://bearlab.ai/v1/chat/completions \
+      -H "Authorization: Bearer YOUR_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "gpt-4o",
+        "messages": [{"role": "user", "content": "用一句話介紹你自己"}]
+      }'
+    ```
+  </Tab>
+  <Tab title="Anthropic 相容">
+    ```bash
+    curl https://bearlab.ai/anthropic/v1/messages \
+      -H "x-api-key: YOUR_API_KEY" \
+      -H "anthropic-version: 2023-06-01" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "claude-sonnet-4-5",
+        "max_tokens": 256,
+        "messages": [{"role": "user", "content": "用一句話介紹你自己"}]
+      }'
+    ```
+  </Tab>
+  <Tab title="Python (OpenAI SDK)">
+    ```python
+    from openai import OpenAI
+
+    client = OpenAI(
+        api_key="YOUR_API_KEY",
+        base_url="https://bearlab.ai/v1",
+    )
+
+    resp = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": "用一句話介紹你自己"}],
+    )
+    print(resp.choices[0].message.content)
+    ```
+  </Tab>
+</Tabs>
+
+<Tip>
+  想知道支援哪些模型、價格多少？見 [模型與定價介面](/zh-Hant/guides/models)。要接入 Cursor / Claude Code？見 [客戶端接入](/zh-Hant/integrations/cursor)。
+</Tip>

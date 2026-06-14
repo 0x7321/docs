@@ -1,0 +1,26 @@
+---
+title: "Cursor"
+description: "在 Cursor 中使用 北極熊實驗室 的對話模型。"
+---
+
+[Cursor](https://cursor.com) 是流行的 AI 程式碼編輯器。透過 OpenAI 相容介面接入 北極熊實驗室。
+
+## 配置步驟
+
+<Steps>
+  <Step title="開啟模型設定">
+    開啟 **Settings → Models**。
+  </Step>
+  <Step title="覆蓋 Base URL">
+    找到 **OpenAI API Key** 區域，展開 **Override OpenAI Base URL**，填寫：
+    - **Base URL**：`https://bearlab.ai/v1`
+    - **API Key**：你的 `sk-...` 金鑰
+  </Step>
+  <Step title="新增模型並驗證">
+    在模型列表中新增你要用的模型名（如 `gpt-4o`、`claude-sonnet-4-5`），儲存後點選 **Verify** 驗證連通。
+  </Step>
+</Steps>
+
+<Note>
+  Cursor 僅走 OpenAI 相容協議，Base URL 用 `/v1` 結尾。新增的模型名必須是 [模型介面](/zh-Hant/guides/models) 中真實存在的 ID。驗證失敗時，先用 [快速開始](/zh-Hant/guides/quickstart) 的 curl 確認金鑰可用。
+</Note>
