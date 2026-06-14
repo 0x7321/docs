@@ -11,14 +11,10 @@ BearLab AI面向**美國與歐盟**司法管轄區直接提供服務。
 **亞太區域**由區域合作伙伴提供服務，該區域的 API 請求須改用專用網域 `https://bearlab.in`，而非 `https://bearlab.ai`。
 </Tip>
 
-| 區域 | 協議 | base_url | 端點 |
+| 區域 | API 域名 | OpenAI | Anthropic |
 | --- | --- | --- | --- |
-| 美國 / 歐盟 | OpenAI | `https://bearlab.ai/v1` | `POST /v1/chat/completions` |
-| 美國 / 歐盟 | Anthropic | `https://bearlab.ai` | `POST /v1/messages` |
-| 亞太區域 | OpenAI | `https://bearlab.in/v1` | `POST /v1/chat/completions` |
-| 亞太區域 | Anthropic | `https://bearlab.in` | `POST /v1/messages` |
-
-詳見 [對話補全](/guides/chat)。
+| 美國 / 歐盟 | `https://bearlab.ai` | `https://bearlab.ai/v1/chat/completions` | `https://bearlab.ai/v1/messages` |
+| 亞太區域 | `https://bearlab.in` | `https://bearlab.in/v1/chat/completions` | `https://bearlab.in/v1/messages` |
 
 詳見 [服務區域](/guides/availability)。
 

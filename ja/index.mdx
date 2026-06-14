@@ -11,14 +11,10 @@ BearLabは**米国およびヨーロッパ連合**の管轄区域に直接サー
 **アジア太平洋**地域は地域パートナーによってサービスされており、その地域からのAPIリクエストは、`https://bearlab.ai` の代わりに専用ドメイン `https://bearlab.in` を使用する必要があります。
 </Tip>
 
-| 地域 | プロトコル | base_url | エンドポイント |
+| 地域 | API ドメイン | OpenAI | Anthropic |
 | --- | --- | --- | --- |
-| 米国 / EU | OpenAI | `https://bearlab.ai/v1` | `POST /v1/chat/completions` |
-| 米国 / EU | Anthropic | `https://bearlab.ai` | `POST /v1/messages` |
-| アジア太平洋 | OpenAI | `https://bearlab.in/v1` | `POST /v1/chat/completions` |
-| アジア太平洋 | Anthropic | `https://bearlab.in` | `POST /v1/messages` |
-
-[チャット完了](/ja/guides/chat) を参照。
+| 米国 / EU | `https://bearlab.ai` | `https://bearlab.ai/v1/chat/completions` | `https://bearlab.ai/v1/messages` |
+| アジア太平洋 | `https://bearlab.in` | `https://bearlab.in/v1/chat/completions` | `https://bearlab.in/v1/messages` |
 
 [サービス提供地域](/ja/guides/availability)を参照してください。
 
