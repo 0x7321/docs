@@ -67,7 +67,12 @@
             ]
           }
         ],
-        "default": true
+        "default": true,
+        "banner": {
+          "content": "亞太地區 API 請改用 **https://bearlab.in**(而非 bearlab.ai)。",
+          "type": "warning",
+          "dismissible": true
+        }
       },
       {
         "language": "zh-Hans",
@@ -125,7 +130,12 @@
               }
             ]
           }
-        ]
+        ],
+        "banner": {
+          "content": "亚太地区 API 请改用 **https://bearlab.in**(而非 bearlab.ai)。",
+          "type": "warning",
+          "dismissible": true
+        }
       },
       {
         "language": "en",
@@ -183,7 +193,12 @@
               }
             ]
           }
-        ]
+        ],
+        "banner": {
+          "content": "Asia-Pacific: use **https://bearlab.in** for API requests, not bearlab.ai.",
+          "type": "warning",
+          "dismissible": true
+        }
       },
       {
         "language": "fr",
@@ -241,7 +256,12 @@
               }
             ]
           }
-        ]
+        ],
+        "banner": {
+          "content": "Asie-Pacifique : utilisez **https://bearlab.in** pour les requêtes API, et non bearlab.ai.",
+          "type": "warning",
+          "dismissible": true
+        }
       },
       {
         "language": "ja",
@@ -299,7 +319,12 @@
               }
             ]
           }
-        ]
+        ],
+        "banner": {
+          "content": "アジア太平洋地域の API は **https://bearlab.in** をご利用ください(bearlab.ai ではありません)。",
+          "type": "warning",
+          "dismissible": true
+        }
       },
       {
         "language": "hi",
@@ -357,7 +382,12 @@
               }
             ]
           }
-        ]
+        ],
+        "banner": {
+          "content": "एशिया-प्रशांत: API के लिए bearlab.ai नहीं, **https://bearlab.in** का उपयोग करें।",
+          "type": "warning",
+          "dismissible": true
+        }
       }
     ]
   },
