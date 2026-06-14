@@ -67,15 +67,7 @@
             ]
           }
         ],
-        "default": true,
-        "banner": {
-          "content": "亞太地區 API 域名:https://bearlab.in",
-          "color": {
-            "light": "#000000",
-            "dark": "#1A1A1A"
-          },
-          "dismissible": true
-        }
+        "default": true
       },
       {
         "language": "zh-Hans",
@@ -133,15 +125,7 @@
               }
             ]
           }
-        ],
-        "banner": {
-          "content": "亚太地区 API 域名:https://bearlab.in",
-          "color": {
-            "light": "#000000",
-            "dark": "#1A1A1A"
-          },
-          "dismissible": true
-        }
+        ]
       },
       {
         "language": "en",
@@ -199,15 +183,7 @@
               }
             ]
           }
-        ],
-        "banner": {
-          "content": "Asia-Pacific API domain: https://bearlab.in",
-          "color": {
-            "light": "#000000",
-            "dark": "#1A1A1A"
-          },
-          "dismissible": true
-        }
+        ]
       },
       {
         "language": "fr",
@@ -265,15 +241,7 @@
               }
             ]
           }
-        ],
-        "banner": {
-          "content": "Domaine API Asie-Pacifique : https://bearlab.in",
-          "color": {
-            "light": "#000000",
-            "dark": "#1A1A1A"
-          },
-          "dismissible": true
-        }
+        ]
       },
       {
         "language": "ja",
@@ -331,15 +299,7 @@
               }
             ]
           }
-        ],
-        "banner": {
-          "content": "アジア太平洋の API ドメイン: https://bearlab.in",
-          "color": {
-            "light": "#000000",
-            "dark": "#1A1A1A"
-          },
-          "dismissible": true
-        }
+        ]
       },
       {
         "language": "hi",
@@ -397,15 +357,7 @@
               }
             ]
           }
-        ],
-        "banner": {
-          "content": "एशिया-प्रशांत API डोमेन: https://bearlab.in",
-          "color": {
-            "light": "#000000",
-            "dark": "#1A1A1A"
-          },
-          "dismissible": true
-        }
+        ]
       }
     ]
   },
