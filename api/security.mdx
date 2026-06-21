@@ -1,0 +1,119 @@
+---
+title: "安全验证"
+description: "OAuth 绑定状态、KYC 认证状态与 Passkey 绑定管理。"
+---
+
+## OAuth 绑定状态 `GET /api/user/binding/status`
+
+```bash
+curl https://bearlab.ai/api/user/binding/status \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```json 回應
+{
+  "data": {
+    "discord": false,
+    "email": false,
+    "github": false,
+    "google": false,
+    "linuxdo": true,
+    "oidc": false,
+    "phone": false,
+    "wechat": false
+  }
+}
+```
+
+---
+
+## KYC 认证状态 `GET /api/user/verify/self`
+
+```bash
+curl https://bearlab.ai/api/user/verify/self \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+| `type` 值 | 说明 |
+| --- | --- |
+| `""` | 未认证 |
+| `"personal"` | 个人认证 |
+| `"enterprise"` | 企业认证 |
+| `"passport"` | 护照认证 |
+
+| `status` 值 | 说明 |
+| --- | --- |
+| `""` | 未提交 |
+| `"PROCESSING"` | 审核中 |
+| `"SUCCESS"` | 已通过 |
+| `"FAIL"` | 已拒绝 |
+
+---
+
+## Passkey 状态 `GET /api/user/passkey`
+
+```bash
+curl https://bearlab.ai/api/user/passkey \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```json 回應
+{ "data": { "enabled": false } }
+```
+
+---
+
+## 删除 Passkey `DELETE /api/user/passkey`
+
+```bash
+curl -X DELETE https://bearlab.ai/api/user/passkey \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+---
+
+## 开始注册 Passkey `POST /api/user/passkey/register/begin`
+
+```bash
+curl -X POST https://bearlab.ai/api/user/passkey/register/begin \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+---
+
+## 完成注册 Passkey `POST /api/user/passkey/register/finish`
+
+| 请求体字段 | 必填 | 说明 |
+| --- | --- | --- |
+| `credential` | ✓ | WebAuthn 注册凭证响应对象 |
+
+```bash
+curl -X POST https://bearlab.ai/api/user/passkey/register/finish \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"credential":{}}'
+```
+
+---
+
+## 开始验证 Passkey `POST /api/user/passkey/verify/begin`
+
+```bash
+curl -X POST https://bearlab.ai/api/user/passkey/verify/begin \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+---
+
+## 完成验证 Passkey `POST /api/user/passkey/verify/finish`
+
+| 请求体字段 | 必填 | 说明 |
+| --- | --- | --- |
+| `credential` | ✓ | WebAuthn 验证凭证响应对象 |
+
+```bash
+curl -X POST https://bearlab.ai/api/user/passkey/verify/finish \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"credential":{}}'
+```

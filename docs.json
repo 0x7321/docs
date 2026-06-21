@@ -70,58 +70,93 @@
             "tab": "API 參考",
             "groups": [
               {
-                "group": "帳號",
+                "group": "管理接口",
                 "pages": [
                   "api/auth",
-                  "api/account"
-                ]
-              },
-              {
-                "group": "API 金鑰",
-                "pages": [
-                  "api/tokens"
-                ]
-              },
-              {
-                "group": "呼叫記錄",
-                "pages": [
-                  "api/logs"
-                ]
-              },
-              {
-                "group": "用量分析",
-                "pages": [
-                  "api/usage"
-                ]
-              },
-              {
-                "group": "付款與訂單",
-                "pages": [
-                  "api/billing"
-                ]
-              },
-              {
-                "group": "發票",
-                "pages": [
-                  "api/invoice"
-                ]
-              },
-              {
-                "group": "邀請返利",
-                "pages": [
-                  "api/affiliate"
-                ]
-              },
-              {
-                "group": "工單",
-                "pages": [
-                  "api/tickets"
-                ]
-              },
-              {
-                "group": "設定與通知",
-                "pages": [
-                  "api/settings"
+                  {
+                    "group": "用户管理",
+                    "expanded": false,
+                    "pages": [
+                      "api/account"
+                    ]
+                  },
+                  {
+                    "group": "令牌管理",
+                    "expanded": false,
+                    "pages": [
+                      "api/tokens"
+                    ]
+                  },
+                  {
+                    "group": "日志",
+                    "expanded": false,
+                    "pages": [
+                      "api/logs"
+                    ]
+                  },
+                  {
+                    "group": "数据统计",
+                    "expanded": false,
+                    "pages": [
+                      "api/usage"
+                    ]
+                  },
+                  {
+                    "group": "充值",
+                    "expanded": false,
+                    "pages": [
+                      "api/recharge"
+                    ]
+                  },
+                  {
+                    "group": "兑换码",
+                    "expanded": false,
+                    "pages": [
+                      "api/redeem"
+                    ]
+                  },
+                  {
+                    "group": "安全验证",
+                    "expanded": false,
+                    "pages": [
+                      "api/security"
+                    ]
+                  },
+                  {
+                    "group": "两步验证",
+                    "expanded": false,
+                    "pages": [
+                      "api/two-factor"
+                    ]
+                  },
+                  {
+                    "group": "工单",
+                    "expanded": false,
+                    "pages": [
+                      "api/tickets"
+                    ]
+                  },
+                  {
+                    "group": "发票",
+                    "expanded": false,
+                    "pages": [
+                      "api/invoice"
+                    ]
+                  },
+                  {
+                    "group": "邀请返利",
+                    "expanded": false,
+                    "pages": [
+                      "api/affiliate"
+                    ]
+                  },
+                  {
+                    "group": "设置与通知",
+                    "expanded": false,
+                    "pages": [
+                      "api/settings"
+                    ]
+                  }
                 ]
               }
             ]

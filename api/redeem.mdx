@@ -1,0 +1,43 @@
+---
+title: "兑换码"
+description: "兑换充值码与验证优惠码。"
+---
+
+## 兑换码充值 `POST /api/user/topup`
+
+| 请求体字段 | 必填 | 说明 |
+| --- | --- | --- |
+| `key` | ✓ | 兑换码 / 充值码 |
+
+```bash
+curl -X POST https://bearlab.ai/api/user/topup \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"key":"TOPUP-CODE-XXXX"}'
+```
+
+---
+
+## 验证优惠码 `POST /api/user/promo/validate`
+
+| 请求体字段 | 必填 | 说明 |
+| --- | --- | --- |
+| `code` | ✓ | 要验证的优惠码 |
+
+<Warning>
+无效优惠码时 `success` 仍可能为 `true`，需要检查 `data.valid`。
+</Warning>
+
+```bash
+curl -X POST https://bearlab.ai/api/user/promo/validate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"code":"PROMO123"}'
+```
+
+```json 回應（無效碼）
+{
+  "data": { "message": "Invalid promo code", "valid": false },
+  "success": true
+}
+```
