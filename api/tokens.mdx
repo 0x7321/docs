@@ -1,0 +1,81 @@
+---
+title: "API 金鑰管理"
+description: "建立、更新、刪除與列出 API Key（Token）。"
+---
+
+## Token 列表 `GET /api/token/`
+
+| 參數 | 說明 |
+| --- | --- |
+| `p` | 頁碼 |
+| `page_size` | 每頁數量 |
+| `keyword` | 名稱模糊搜尋 |
+
+查詢當前帳號所有 API Key。
+
+```bash
+curl "https://bearlab.ai/api/token/?p=1&page_size=10" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+返回 items 陣列，`key` 已脫敏（首 4 + 末 4 位），`status` 1=啟用/2=禁用/3=過期，`expired_time: -1` 永不過期。
+
+---
+
+## 建立 Token `POST /api/token/`
+
+建立成功回應 `data: null`，不返回 key 明文，需再 GET 列表取值。
+
+```bash
+curl -X POST https://bearlab.ai/api/token/ \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"my-token","expired_time":-1,"remain_quota":-1,"unlimited_quota":true,"model_limits_enabled":false,"group":"","model_limits":"","allow_ips":null,"exclude_ips":null}'
+```
+
+---
+
+## 更新 Token `PUT /api/token/`
+
+Token ID 放在請求體（非 URL）。PUT 返回完整物件含 `user_id`；`allow_ips` 為 `null`。
+
+```bash
+curl -X PUT https://bearlab.ai/api/token/ \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"id":10633,"name":"renamed","expired_time":-1,"remain_quota":-1,"unlimited_quota":true,"model_limits_enabled":false,"group":"","model_limits":""}'
+```
+
+---
+
+## 刪除 Token `DELETE /api/token/{id}/`
+
+伺服器返回 307 重定向，curl 需加 `-L`。路徑必須帶尾部斜杠。
+
+```bash
+curl -X DELETE -L https://bearlab.ai/api/token/10623/ \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+---
+
+## 批次刪除 `POST /api/token/batch`
+
+```bash
+curl -X POST https://bearlab.ai/api/token/batch \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"ids": [10623, 10624]}'
+```
+
+---
+
+## 可用分組 `GET /api/token/group`
+
+返回所有可設定到 Token 的分組（共 31 個）。
+
+---
+
+## 分組費率 `GET /api/token/providers-by-vendor`
+
+在 /api/token/group 基礎上額外包含 ratio（GroupRatio）。

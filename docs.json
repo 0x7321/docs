@@ -65,6 +65,65 @@
                 ]
               }
             ]
+          },
+          {
+            "tab": "API 參考",
+            "groups": [
+              {
+                "group": "帳號",
+                "pages": [
+                  "api/account"
+                ]
+              },
+              {
+                "group": "API 金鑰",
+                "pages": [
+                  "api/tokens"
+                ]
+              },
+              {
+                "group": "呼叫記錄",
+                "pages": [
+                  "api/logs"
+                ]
+              },
+              {
+                "group": "用量分析",
+                "pages": [
+                  "api/usage"
+                ]
+              },
+              {
+                "group": "付款與訂單",
+                "pages": [
+                  "api/billing"
+                ]
+              },
+              {
+                "group": "發票",
+                "pages": [
+                  "api/invoice"
+                ]
+              },
+              {
+                "group": "邀請返利",
+                "pages": [
+                  "api/affiliate"
+                ]
+              },
+              {
+                "group": "工單",
+                "pages": [
+                  "api/tickets"
+                ]
+              },
+              {
+                "group": "設定與通知",
+                "pages": [
+                  "api/settings"
+                ]
+              }
+            ]
           }
         ],
         "default": true

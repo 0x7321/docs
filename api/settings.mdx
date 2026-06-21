@@ -1,0 +1,265 @@
+---
+title: "設定與通知"
+description: "推播偏好、自動充值、OAuth 綁定、定價資訊與平台配置。"
+---
+
+## 推播設定 `GET /api/push/self`
+
+<Warning>
+`/api/user/setting` 端點在 6.3.13 中**不存在**（GET 和 PUT 均返回 404）。設定讀取走 `/api/user/self`，設定更新走 `POST /api/push/self`。
+</Warning>
+
+<Note>
+`subscription_options` 是**逗號分隔字串**，不是陣列。`notice_email` / `webhook_url` / `webhook_token` 雖然在原始碼中存在，但實際回應中**不包含**這些欄位。
+</Note>
+
+```bash
+curl https://bearlab.ai/api/push/self \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```json 回應
+{
+  "data": {
+    "user_id": 3930,
+    "subscription_options": "quota_push,sale_push,back_push,system_push,price_push,ticket_event",
+    "notice_type": "email",
+    "tip_quota": "1"
+  }
+}
+```
+
+| `subscription_options` 項目 | 說明 |
+| --- | --- |
+| `quota_push` | 餘額提醒 |
+| `sale_push` | 促銷活動 |
+| `back_push` | 服務恢復通知 |
+| `system_push` | 系統公告 |
+| `price_push` | 價格變動 |
+| `ticket_event` | 工單更新 |
+
+---
+
+## 更新推播設定 `POST /api/push/self`
+
+```bash
+curl -X POST https://bearlab.ai/api/push/self \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "notice_type": "email",
+    "notice_email": "user@example.com",
+    "webhook_url": "",
+    "webhook_token": "",
+    "tip_quota": "10"
+  }'
+```
+
+---
+
+## 自動充值設定 `GET /api/auto-recharge/settings`
+
+<Warning>
+路徑使用**連字符** `auto-recharge`。下劃線版本 `/api/auto_recharge/self` 返回 404。
+</Warning>
+
+```bash
+curl https://bearlab.ai/api/auto-recharge/settings \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```json 回應
+{
+  "data": {
+    "enabled": false,
+    "status": "not_configured"
+  }
+}
+```
+
+完整啟用後的欄位：`enabled` / `status` / `threshold_amount` / `target_amount` / `gateway_uuid` / `payment_method_label`
+
+---
+
+## 更新自動充值 `PUT /api/auto-recharge/settings`
+
+```bash
+curl -X PUT https://bearlab.ai/api/auto-recharge/settings \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "enabled": true,
+    "threshold_amount": 10,
+    "target_amount": 50,
+    "gateway_uuid": "98de8f0bc169..."
+  }'
+```
+
+---
+
+## 定價資訊 `GET /api/pricing`
+
+返回所有分組的費率倍率與排序。`model_price` 在本實例為空物件（需平台另行配置）。
+
+<Note>
+`group_info` 和 `level_info` 的欄位名稱為 PascalCase（`GroupRatio`、`DisplayName`、`RequiredDays` 等），與其他端點的 snake_case 風格不一致——這是 Go struct 直接序列化的結果。
+</Note>
+
+```bash
+curl https://bearlab.ai/api/pricing \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```json 回應（部分）
+{
+  "data": {
+    "global_rate_limit": { "groups": {} },
+    "group_info": {
+      "claude-code-special":       { "GroupRatio": 0.09, "Sort": 5 },
+      "claude-kiro-3-slow":        { "GroupRatio": 0.17, "Sort": 7 },
+      "claude-kiro-2":             { "GroupRatio": 0.22, "Sort": 6 },
+      "claude-antigravity":        { "GroupRatio": 0.375, "Sort": 0 },
+      "claude-max":                { "GroupRatio": 0.63, "Sort": 8 },
+      "claude-code-max-special":   { "GroupRatio": 0.6, "Sort": 4 },
+      "claude-code":               { "GroupRatio": 0.7, "Sort": 3 },
+      "claude-aws-3":              { "GroupRatio": 0.85, "Sort": 2 },
+      "claude-aws":                { "GroupRatio": 0.9, "Sort": 1 },
+      "claude-official-relay-unrestricted": { "GroupRatio": 1.1, "Sort": 9 }
+    },
+    "model_price": {}
+  }
+}
+```
+
+---
+
+## License 功能清單 `GET /api/license/features`
+
+返回當前平台已啟用的付費功能清單。
+
+```bash
+curl https://bearlab.ai/api/license/features \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```json 回應
+{
+  "data": {
+    "licenseEnabled": true,
+    "type": "premium",
+    "expirationTime": "9999-12-31T23:59:59.000Z",
+    "features": [
+      "agent",
+      "dynamic_router",
+      "force_stream_mode",
+      "mj_optimization",
+      "custom_x_request_id",
+      "force_429_error",
+      "redirect_enhancement",
+      "invoice_management",
+      "uptime_interpolation"
+    ]
+  }
+}
+```
+
+---
+
+## OAuth 端點
+
+### 取得 OAuth State `GET /api/oauth/state`
+
+每次呼叫返回新的 12 位 base62 state 字串，用於防 CSRF。
+
+| 參數 | 說明 |
+| --- | --- |
+| `aff` | 可選，推薦碼 |
+
+```json 回應
+{ "data": "ZRB4grveaVZc" }
+```
+
+### 自定義 OAuth 提供商 `GET /api/oauth/custom`
+
+<Note>
+未配置自定義 OAuth 時返回 `data: null`。有配置時返回物件陣列。
+</Note>
+
+```json 回應（未配置）
+{ "data": null, "message": "", "success": true }
+```
+
+```json 回應（已配置）
+{
+  "data": [
+    { "name": "Linux Do OAuth", "slug": "LinuxDoOAuth" }
+  ]
+}
+```
+
+### 綁定 Email `POST /api/oauth/email/bind`
+
+<Note>
+若 POST 失敗，系統會降級為 GET 並以 querystring 傳遞 `email` 和 `code`。
+</Note>
+
+```bash
+curl -X POST https://bearlab.ai/api/oauth/email/bind \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com", "code": "123456"}'
+```
+
+---
+
+## 公開資訊端點
+
+這些端點**不需要**鑑權。
+
+| 端點 | 回應 |
+| --- | --- |
+| `GET /api/home_page_content` | `{ "data": { "banner": "", "data": "" } }` |
+| `GET /api/privacy` | `{ "data": "<隱私政策文字>" }` |
+| `GET /api/terms` | `{ "data": "<服務條款文字>" }` |
+| `GET /api/update/` | `{ "data": { "items": [], "page": 1, "page_size": 10, "total": 0 } }` |
+| `GET /api/update/rss?lang=en` | RSS XML（**非 JSON**，不可 `JSON.parse`） |
+
+---
+
+## 開發者應用 `GET /api/app`
+
+```bash
+curl https://bearlab.ai/api/app \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```json 回應
+{ "data": [] }
+```
+
+### 建立應用 `POST /api/app`
+
+```bash
+curl -X POST https://bearlab.ai/api/app \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "myapp",
+    "project_url": "https://example.com",
+    "description": "我的整合應用"
+  }'
+```
+
+---
+
+## 不存在的端點（6.3.13）
+
+以下路由在原始碼中有定義，但 6.3.13 版本未實作，請求均返回 404：
+
+| 路徑 | 說明 |
+| --- | --- |
+| `GET/PUT /api/user/setting` | 設定已改由 `POST /api/push/self` 處理 |
+| `GET/PUT /api/user/security` | 安全設定端點 |
+| `GET /api/2fa/status` | 雙因素認證（6.3.15 引入） |
+| `GET /api/auto_recharge/self` | 正確路徑為 `/api/auto-recharge/settings` |
+| `GET /api/user/self/groups` | 用戶群組查詢 |
