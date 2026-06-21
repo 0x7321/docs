@@ -39,10 +39,10 @@ curl -X POST https://bearlab.ai/api/token/ \
 </Warning>
 
 ```json 回應
-{ "data": null, "success": true }
+{ "data": null, "message": "", "success": true }
 ```
 
 
 <Note>
-来源：请求体来自当前前端/接口契约；创建接口会新增 Token，未用真实账号做成功实测。已实测列表接口不会返回 Key 明文，`key` 字段为脱敏值。
+来源：2026-06-21 线上实测。用本文请求体创建临时 Token 返回 `data: null`、`success: true`；再查列表/详情只能看到脱敏 `key`，不会返回完整模型 API Key。
 </Note>

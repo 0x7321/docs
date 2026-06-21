@@ -1,0 +1,55 @@
+---
+title: "获取个人日志统计"
+description: "GET /api/log/self/stat"
+---
+
+## 请求头
+
+| 请求头 | 必填 | 说明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`，账号访问令牌，形如 `g+...==`，不是令牌管理生成的模型 API Key |
+
+接口：`GET /api/log/self/stat`
+
+获取当前账号的调用统计。
+
+## 查询参数
+
+| 查询参数 | 必填 | 类型 | 说明 |
+| --- | --- | --- | --- |
+| `start_timestamp` |  | integer | 开始时间，Unix 秒 |
+| `end_timestamp` |  | integer | 结束时间，Unix 秒 |
+| `type` |  | integer | 日志类型 |
+
+```bash
+curl "https://bearlab.ai/api/log/self/stat" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json 回应
+{
+  "data": {
+    "quota": 0,
+    "rpm": 0,
+    "tpm": 0,
+    "mpm": 0,
+    "unfinished_count": 0,
+    "unfinished_by_vendor": {}
+  },
+  "message": "",
+  "success": true
+}
+```
+
+| 字段 | 说明 |
+| --- | --- |
+| `quota` | 消耗额度 |
+| `rpm` | 每分钟请求数 |
+| `tpm` | 每分钟 Token 数 |
+| `mpm` | 每分钟 Message 数 |
+| `unfinished_count` | 未完成请求数 |
+| `unfinished_by_vendor` | 按供应商统计的未完成请求 |
+
+<Note>
+来源：2026-06-21 线上实测。`GET /api/log/self/stat` 返回 200，结构为 `{data:{quota,rpm,tpm,mpm,unfinished_count,unfinished_by_vendor},message,success}`。
+</Note>

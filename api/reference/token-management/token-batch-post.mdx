@@ -27,14 +27,14 @@ curl -X POST https://bearlab.ai/api/token/batch \
 ```
 
 <Note>
-前端降級策略：批次刪除失敗時會逐個呼叫 `DELETE /api/token/{id}/`。
+前端降級策略：批次刪除失敗時會逐個呼叫 `DELETE /api/token/{id}`。
 </Note>
 
 ```json 回應
-{ "data": null, "success": true }
+{ "data": 2, "message": "", "success": true }
 ```
 
 
 <Note>
-来源：请求体来自接口契约；批量删除会删除 Token，未做成功实测。
+来源：2026-06-21 线上实测。创建 2 个临时 Token 后调用本接口，返回 `data: 2`，随后 `GET /api/token/{id}` 返回 `record not found`。
 </Note>

@@ -84,8 +84,22 @@
                       "api/reference/token-management/token-id-delete",
                       "api/reference/token-management/token-batch-post",
                       "api/reference/token-management/token-search-get",
-                      "api/reference/token-management/usage-token-get",
+                      "api/reference/token-management/usage-token-get"
+                    ]
+                  },
+                  {
+                    "group": "分组",
+                    "expanded": false,
+                    "pages": [
                       "api/reference/token-management/token-group-get"
+                    ]
+                  },
+                  {
+                    "group": "日志",
+                    "expanded": false,
+                    "pages": [
+                      "api/reference/logs/log-self-get",
+                      "api/reference/logs/log-self-stat-get"
                     ]
                   },
                   {

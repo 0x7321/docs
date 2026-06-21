@@ -1,0 +1,49 @@
+---
+title: "获取个人日志"
+description: "GET /api/log/self"
+---
+
+## 请求头
+
+| 请求头 | 必填 | 说明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`，账号访问令牌，形如 `g+...==`，不是令牌管理生成的模型 API Key |
+
+接口：`GET /api/log/self`
+
+获取当前账号的调用日志。也可通过查询参数做个人日志搜索。
+
+## 查询参数
+
+| 查询参数 | 必填 | 类型 | 说明 |
+| --- | --- | --- | --- |
+| `p` |  | integer | 页码 |
+| `page_size` |  | integer | 每页数量 |
+| `keyword` |  | string | 关键词搜索，实测可用 |
+| `type` |  | integer | 日志类型；实测 `0` 可用 |
+| `model_name` |  | string | 模型名筛选 |
+| `channel` |  | integer | 渠道 ID 筛选 |
+| `start_timestamp` |  | integer | 开始时间，Unix 秒 |
+| `end_timestamp` |  | integer | 结束时间，Unix 秒 |
+
+```bash
+curl "https://bearlab.ai/api/log/self?p=1&page_size=3&keyword=test" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json 回应
+{
+  "data": {
+    "items": [],
+    "page": 1,
+    "page_size": 3,
+    "total": 5
+  },
+  "message": "",
+  "success": true
+}
+```
+
+<Note>
+来源：2026-06-21 线上实测。`GET /api/log/self?p=1&page_size=3`、`keyword=test`、`model_name=claude`、`type=0` 均返回 200，结构为 `{data:{items,page,page_size,total},message,success}`。
+</Note>
