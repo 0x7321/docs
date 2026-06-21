@@ -3,15 +3,21 @@ title: "搜尋 Token"
 description: "GET /api/token/search"
 ---
 
+## 请求头
+
+| 请求头 | 必填 | 说明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`，账号访问令牌，形如 `g+...==`，不是令牌管理生成的模型 API Key |
+
 接口：`GET /api/token/search`
 
-| 參數 | 說明 |
-| --- | --- |
-| `keyword` | 名稱模糊搜尋關鍵字 |
+| 查询参数 | 必填 | 类型 | 说明 |
+| --- | --- | --- | --- |
+| `keyword` | ✓ | string | Token 名称模糊搜索关键字 |
 
 ```bash
 curl "https://bearlab.ai/api/token/search?keyword=my-token" \
-  -H "Authorization: Bearer YOUR_API_KEY"
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
 ```json 回應
@@ -29,4 +35,9 @@ curl "https://bearlab.ai/api/token/search?keyword=my-token" \
 
 <Note>
 Token 列表也接受 `keyword` 參數；若只做搜尋，可直接使用此端點。
+</Note>
+
+
+<Note>
+来源：2026-06-21 线上实测，使用 `YOUR_ACCESS_TOKEN` 请求 `/api/token/search?keyword=x` 返回 200。
 </Note>

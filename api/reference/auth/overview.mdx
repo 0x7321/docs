@@ -1,13 +1,63 @@
 ---
 title: "鉴权体系说明（Auth）"
-description: "Bearer Token、Session 与用户态管理接口鉴权说明。"
+description: "说明账号访问令牌和模型 API Key 的区别，以及每类接口该用哪个 key。"
 ---
 
-管理接口支持两类用户态鉴权：
+BearLab AI 这里有两种完全不同的 Bearer 值，不能混用：
 
-- `Authorization: Bearer YOUR_API_KEY`：文档中的主要调用方式。
-- 登录 Session：用于浏览器登录后的用户操作。
+| 名称 | 本文占位符 | 形态 | 用途 | 来源 |
+| --- | --- | --- | --- | --- |
+| 账号访问令牌 | `YOUR_ACCESS_TOKEN` | 形如 `g+...==` | 调用管理接口：`/api/token/`、`/api/data/self`、`/api/user/self` 等 | 控制台账号访问令牌，或 `GET /api/user/token` 重新生成 |
+| 模型 API Key | `YOUR_MODEL_API_KEY` | 完整密钥值；列表里只会脱敏显示，如 `VrqY**********tE4I` | 调用模型接口，以及 `GET /api/usage/token/` 查询该 Key 自身用量 | 从控制台复制保存；API 列表只返回脱敏值 |
+
+
+<Note>
+`group` 不是密钥，只是创建/更新 Token 时选择的路由分组，例如 `free-play`、`claude-aws`。不要把 `group` 值放进 `Authorization`。`Authorization` 只能放 `YOUR_ACCESS_TOKEN` 或完整的 `YOUR_MODEL_API_KEY`。
+</Note>
 
 <Warning>
-不要在文档、截图或工单中暴露真实 token。`GET /api/user/self` 会返回当前 `access_token` 明文字段。
+本文所有令牌管理接口（例如 `GET /api/token/`、`POST /api/token/`）都使用 `YOUR_ACCESS_TOKEN`。只有 `GET /api/usage/token/` 使用 `YOUR_MODEL_API_KEY`。
+</Warning>
+
+## 管理接口请求头
+
+```http
+Authorization: Bearer YOUR_ACCESS_TOKEN
+```
+
+适用接口：
+
+- `GET /api/token/`
+- `GET /api/token/{id}`
+- `POST /api/token/`
+- `PUT /api/token/`
+- `DELETE /api/token/{id}/`
+- `POST /api/token/batch`
+- `GET /api/token/search`
+- `GET /api/token/group`
+- `GET /api/data/self`
+
+## Token 用量接口请求头
+
+```http
+Authorization: Bearer YOUR_MODEL_API_KEY
+```
+
+只适用于：
+
+- `GET /api/usage/token/`
+
+<Note>
+实测：`YOUR_ACCESS_TOKEN` 调 `/api/usage/token/` 返回 `401 Invalid Token`；无鉴权调用 `/api/token/` 和 `/api/data/self` 返回 `401 No permission`；`YOUR_ACCESS_TOKEN` 调 `/api/token/` 和 `/api/data/self` 返回 200。
+</Note>
+
+## 不要混用
+
+- 想“管理/创建/删除令牌”：用 `YOUR_ACCESS_TOKEN`。
+- 想“用某个生成出来的 Key 调模型”：用 `YOUR_MODEL_API_KEY`。
+- 想“查某个生成出来的 Key 自己还剩多少额度”：用 `YOUR_MODEL_API_KEY` 调 `/api/usage/token/`。
+- 想“查账号整体用量统计”：用 `YOUR_ACCESS_TOKEN` 调 `/api/data/self`。
+
+<Warning>
+不要在文档、截图或工单中暴露真实令牌。`GET /api/user/self` 的响应中包含当前 `access_token` 明文字段。
 </Warning>

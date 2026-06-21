@@ -3,15 +3,36 @@ title: "刪除 Token"
 description: "DELETE /api/token/{id}/"
 ---
 
+## 请求头
+
+| 请求头 | 必填 | 说明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`，账号访问令牌，形如 `g+...==`，不是令牌管理生成的模型 API Key |
+
 接口：`DELETE /api/token/{id}/`
 
-| 路徑參數 | 說明 |
-| --- | --- |
-| `id` | 要刪除的 Token ID |
+刪除指定的 API Key。
 
-伺服器返回 307 重定向，curl 需加 `-L`。路徑必須帶尾部斜杠。
+## 路径参数
+
+| 参数 | 必填 | 类型 | 说明 |
+| --- | --- | --- | --- |
+| `id` | ✓ | integer | 要删除的 Token ID，来自 `GET /api/token/` 的 `data.items[].id` |
+
+<Warning>
+服務端返回 **307 重定向**，curl 需加 `-L` 跟隨；路徑必須帶**尾部斜杠**。
+</Warning>
 
 ```bash
 curl -X DELETE -L https://bearlab.ai/api/token/10623/ \
-  -H "Authorization: Bearer YOUR_API_KEY"
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
+
+```json 回應
+{ "data": null, "success": true }
+```
+
+
+<Note>
+来源：路径和 307 尾斜杠行为来自线上实测/历史实测；删除会移除 Token，未做成功删除实测。
+</Note>

@@ -5,13 +5,33 @@ description: "GET /api/usage/token/"
 
 接口：`GET /api/usage/token/`
 
-此端點使用 API Key 本身鑑權，不是帳號 `access_token`。
+## 请求头
+
+| 请求头 | 必填 | 说明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_MODEL_API_KEY`，令牌管理创建出来的模型 API Key；不要用账号访问令牌 `YOUR_ACCESS_TOKEN` |
+
+查詢該 API Key 自身的額度與已用量。此端點使用 API Key 本身鑑權，不是帳號 `access_token`。
+
+<Warning>
+必须使用令牌管理里创建出来的模型 API Key（本文统一写作 `YOUR_MODEL_API_KEY`，通常以 `sk-...` 形式用于模型调用）。这里不能用账号访问令牌 `YOUR_ACCESS_TOKEN`；用错会返回 `401 Invalid Token`。路径须带尾部斜杠。
+</Warning>
 
 ```bash
 curl https://bearlab.ai/api/usage/token/ \
-  -H "Authorization: Bearer sk-YOUR_API_KEY"
+  -H "Authorization: Bearer YOUR_MODEL_API_KEY"
 ```
 
-<Warning>
-用帳號存取令牌呼叫會返回 `401 Invalid Token`。請使用 `/api/token/` 建立的 API Key。
-</Warning>
+```json 回應（用帳號 access_token 的錯誤示範）
+{
+  "error": {
+    "code": "",
+    "message": "Invalid Token (request id: ...)",
+    "type": "rix_api_error"
+  }
+}
+```
+
+<Note>
+使用正確的 API Key 時返回該 Key 的額度與已用量欄位（源碼推斷，具體欄位未實測）。
+</Note>

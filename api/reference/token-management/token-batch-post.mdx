@@ -3,15 +3,38 @@ title: "批次刪除"
 description: "POST /api/token/batch"
 ---
 
+## 请求头
+
+| 请求头 | 必填 | 说明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`，账号访问令牌，形如 `g+...==`，不是令牌管理生成的模型 API Key |
+
 接口：`POST /api/token/batch`
 
-| 請求體欄位 | 必填 | 說明 |
-| --- | --- | --- |
-| `ids` | ✓ | Token ID 陣列 |
+一次刪除多個 API Key。
+
+## 请求体
+
+| 字段 | 必填 | 类型 | 说明 |
+| --- | --- | --- | --- |
+| `ids` | ✓ | integer[] | 要删除的 Token ID 列表，ID 来自 `GET /api/token/` 的 `data.items[].id` |
 
 ```bash
 curl -X POST https://bearlab.ai/api/token/batch \
-  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"ids": [10623, 10624]}'
 ```
+
+<Note>
+前端降級策略：批次刪除失敗時會逐個呼叫 `DELETE /api/token/{id}/`。
+</Note>
+
+```json 回應
+{ "data": null, "success": true }
+```
+
+
+<Note>
+来源：请求体来自接口契约；批量删除会删除 Token，未做成功实测。
+</Note>

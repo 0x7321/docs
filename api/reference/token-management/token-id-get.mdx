@@ -1,0 +1,47 @@
+---
+title: "获取 Token"
+description: "GET /api/token/{id}"
+---
+
+接口：`GET /api/token/{id}`
+
+根据 Token ID 获取单个令牌配置。此接口是管理接口，使用账号访问令牌 `YOUR_ACCESS_TOKEN`，不是令牌管理生成的模型 API Key。
+
+## 请求头
+
+| 请求头 | 必填 | 说明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN` |
+
+## 路径参数
+
+| 参数 | 必填 | 说明 |
+| --- | --- | --- |
+| `id` | ✓ | Token ID，来自 `GET /api/token/` 的 `data.items[].id` |
+
+```bash
+curl https://bearlab.ai/api/token/10665 \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json 回应
+{
+  "data": {
+    "id": 10665,
+    "key": "VrqY**********tE4I",
+    "status": 1,
+    "name": "token_1782011213954_kjodm1",
+    "expired_time": -1,
+    "remain_quota": "-0.0075",
+    "unlimited_quota": true,
+    "group": "free-play",
+    "model_limits_enabled": false
+  },
+  "message": "",
+  "success": true
+}
+```
+
+<Note>
+来源：2026-06-21 线上实测。`GET /api/token/{id}` 与 `GET /api/token/{id}/` 均返回 200。
+</Note>

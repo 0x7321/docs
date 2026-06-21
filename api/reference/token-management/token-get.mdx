@@ -3,19 +3,63 @@ title: "Token 列表"
 description: "GET /api/token/"
 ---
 
+## 请求头
+
+| 请求头 | 必填 | 说明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`，账号访问令牌，形如 `g+...==`，不是令牌管理生成的模型 API Key |
+
 接口：`GET /api/token/`
 
-| 參數 | 說明 |
-| --- | --- |
-| `p` | 頁碼 |
-| `page_size` | 每頁數量 |
-| `keyword` | 名稱模糊搜尋 |
+列出當前帳號的所有 API Key。
 
-查詢當前帳號所有 API Key。
+| 查询参数 | 必填 | 类型 | 说明 |
+| --- | --- | --- | --- |
+| `p` |  | integer | 页码 |
+| `page_size` |  | integer | 每页数量 |
+| `keyword` |  | string | 名称模糊搜索 |
+| `token` |  | string | Key 前缀筛选 |
 
 ```bash
 curl "https://bearlab.ai/api/token/?p=1&page_size=10" \
-  -H "Authorization: Bearer YOUR_API_KEY"
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
-返回 items 陣列，`key` 已脫敏（首 4 + 末 4 位），`status` 1=啟用/2=禁用/3=過期，`expired_time: -1` 永不過期。
+```json 回應
+{
+  "data": {
+    "items": [
+      {
+        "id": 10623,
+        "key": "ntEH**7nAh",
+        "status": 1,
+        "name": "my-token",
+        "created_time": 1781977779,
+        "accessed_time": 1781977779,
+        "expired_time": -1,
+        "remain_quota": "-1",
+        "unlimited_quota": true,
+        "remain_count": 0,
+        "unlimited_count": false,
+        "group": "",
+        "used_quota": "0",
+        "allow_ips": "",
+        "exclude_ips": "",
+        "rate_limits": ""
+      }
+    ],
+    "page": 1,
+    "page_size": 10,
+    "total": 7
+  }
+}
+```
+
+<Note>
+`status`：1=啟用、2=禁用、3=過期。`expired_time: -1` 表示永不過期。回應中的 `key` 已脫敏（首 4 + 末 4 位）。
+</Note>
+
+
+<Note>
+来源：2026-06-21 线上实测，使用 `YOUR_ACCESS_TOKEN` 请求 `/api/token/?p=1&page_size=1` 返回 200。
+</Note>

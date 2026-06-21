@@ -3,25 +3,46 @@ title: "建立 Token"
 description: "POST /api/token/"
 ---
 
+## 请求头
+
+| 请求头 | 必填 | 说明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`，账号访问令牌，形如 `g+...==`，不是令牌管理生成的模型 API Key |
+
 接口：`POST /api/token/`
 
-| 請求體欄位 | 必填 | 說明 |
-| --- | --- | --- |
-| `name` | ✓ | Token 名稱 |
-| `expired_time` | ✓ | 過期時間 Unix 秒；`-1` 表示永不過期 |
-| `remain_quota` | ✓ | 初始可用額度；`-1` 搭配 `unlimited_quota: true` 表示不限額 |
-| `unlimited_quota` | ✓ | 是否不限額度 |
-| `model_limits_enabled` | ✓ | 是否啟用模型限制 |
-| `group` |  | 指定分組；空字串表示不指定 |
-| `model_limits` |  | 模型限制配置；空字串表示不限制 |
-| `allow_ips` |  | IP 允許列表；無限制時為 `null` |
-| `exclude_ips` |  | IP 排除列表；無限制時為 `null` |
+建立一個新的 API Key。
 
-建立成功回應 `data: null`，不返回 key 明文，需再 GET 列表取值。
+## 请求体
+
+| 字段 | 必填 | 类型 | 说明 |
+| --- | --- | --- | --- |
+| `name` | ✓ | string | Token 名称 |
+| `expired_time` | ✓ | integer | 过期时间 Unix 秒；`-1` 表示永不过期 |
+| `remain_quota` | ✓ | number/string | 初始额度；`-1` 搭配 `unlimited_quota: true` 表示不限额 |
+| `unlimited_quota` | ✓ | boolean | 是否不限额度 |
+| `model_limits_enabled` | ✓ | boolean | 是否启用模型限制 |
+| `group` |  | string | 分组，来自 `GET /api/token/group` 的 `value`；空字符串表示不指定 |
+| `model_limits` |  | string | 模型限制配置；空字符串表示不限制 |
+| `allow_ips` |  | array/string/null | IP 允许列表；无限制时传 `null` |
+| `exclude_ips` |  | array/string/null | IP 排除列表；无限制时传 `null` |
 
 ```bash
 curl -X POST https://bearlab.ai/api/token/ \
-  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"name":"my-token","expired_time":-1,"remain_quota":-1,"unlimited_quota":true,"model_limits_enabled":false,"group":"","model_limits":"","allow_ips":null,"exclude_ips":null}'
 ```
+
+<Warning>
+建立成功回應 `data: null`，**不返回完整 Key 明文**；`GET /api/token/` 列表里的 `key` 也是脱敏值。需要用户在控制台创建/复制完整模型 API Key，或按当前前端的一次性展示逻辑保存。
+</Warning>
+
+```json 回應
+{ "data": null, "success": true }
+```
+
+
+<Note>
+来源：请求体来自当前前端/接口契约；创建接口会新增 Token，未用真实账号做成功实测。已实测列表接口不会返回 Key 明文，`key` 字段为脱敏值。
+</Note>

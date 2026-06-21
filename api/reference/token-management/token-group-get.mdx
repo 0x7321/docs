@@ -3,6 +3,47 @@ title: "可用分組"
 description: "GET /api/token/group"
 ---
 
+## 请求头
+
+| 请求头 | 必填 | 说明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`，账号访问令牌，形如 `g+...==`，不是令牌管理生成的模型 API Key |
+
 接口：`GET /api/token/group`
 
-返回所有可設定到 Token 的分組（共 31 個）。
+列出所有可设置到 Token 的分组。返回值里的 `value` 用于创建/更新 Token 时的 `group` 字段。
+
+```bash
+curl https://bearlab.ai/api/token/group \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json 回應
+{
+  "data": [
+    {
+      "key": "Claude Antigravity",
+      "value": "claude-antigravity",
+      "displayNameEn": "Claude Antigravity",
+      "description": "",
+      "descriptionEn": "",
+      "official": false,
+      "subGroups": []
+    },
+    {
+      "key": "Claude AWS",
+      "value": "claude-aws",
+      "displayNameEn": "Claude AWS",
+      "description": "",
+      "descriptionEn": "",
+      "official": false,
+      "subGroups": []
+    }
+  ]
+}
+```
+
+
+<Note>
+来源：2026-06-21 线上实测，使用 `YOUR_ACCESS_TOKEN` 请求 `/api/token/group` 返回 200。
+</Note>

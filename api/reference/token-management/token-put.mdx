@@ -3,26 +3,62 @@ title: "更新 Token"
 description: "PUT /api/token/"
 ---
 
+## 请求头
+
+| 请求头 | 必填 | 说明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`，账号访问令牌，形如 `g+...==`，不是令牌管理生成的模型 API Key |
+
 接口：`PUT /api/token/`
 
-| 請求體欄位 | 必填 | 說明 |
-| --- | --- | --- |
-| `id` | ✓ | 要更新的 Token ID，放在 body 中 |
-| `name` | ✓ | Token 名稱 |
-| `expired_time` | ✓ | 過期時間 Unix 秒；`-1` 表示永不過期 |
-| `remain_quota` | ✓ | 剩餘額度 |
-| `unlimited_quota` | ✓ | 是否不限額度 |
-| `model_limits_enabled` | ✓ | 是否啟用模型限制 |
-| `group` |  | 指定分組 |
-| `model_limits` |  | 模型限制配置 |
-| `allow_ips` |  | IP 允許列表；實測可為 `null` |
-| `exclude_ips` |  | IP 排除列表 |
+更新已存在的 API Key。
 
-Token ID 放在請求體（非 URL）。PUT 返回完整物件含 `user_id`；`allow_ips` 為 `null`。
+<Warning>
+Token `id` 放在**請求體**（非 URL）。PUT 返回完整物件並額外包含 `user_id`；`allow_ips` 為 `null`（非空字串）。
+</Warning>
+
+## 请求体
+
+| 字段 | 必填 | 类型 | 说明 |
+| --- | --- | --- | --- |
+| `id` | ✓ | integer | 要更新的 Token ID，放在 body 中，不放在 URL 中 |
+| `name` | ✓ | string | Token 名称 |
+| `expired_time` | ✓ | integer | 过期时间 Unix 秒；`-1` 表示永不过期 |
+| `remain_quota` | ✓ | number/string | 剩余额度 |
+| `unlimited_quota` | ✓ | boolean | 是否不限额度 |
+| `model_limits_enabled` | ✓ | boolean | 是否启用模型限制 |
+| `group` |  | string | 分组，来自 `GET /api/token/group` 的 `value` |
+| `model_limits` |  | string | 模型限制配置 |
+| `allow_ips` |  | array/string/null | IP 允许列表；实测响应可为 `null` |
+| `exclude_ips` |  | array/string/null | IP 排除列表 |
 
 ```bash
 curl -X PUT https://bearlab.ai/api/token/ \
-  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"id":10633,"name":"renamed","expired_time":-1,"remain_quota":-1,"unlimited_quota":true,"model_limits_enabled":false,"group":"","model_limits":""}'
 ```
+
+```json 回應
+{
+  "data": {
+    "id": 10633,
+    "user_id": 3930,
+    "key": "op0O**nBYM",
+    "status": 1,
+    "name": "renamed",
+    "created_time": 1781995744,
+    "accessed_time": 1781995744,
+    "expired_time": -1,
+    "remain_quota": "-1",
+    "unlimited_quota": true,
+    "allow_ips": null,
+    "exclude_ips": null
+  }
+}
+```
+
+
+<Note>
+来源：请求体来自当前前端/接口契约；更新接口会修改 Token，未做真实修改实测。
+</Note>
