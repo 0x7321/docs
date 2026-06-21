@@ -1,0 +1,86 @@
+---
+title: "创建充值订单"
+description: "POST /api/user/order"
+---
+
+## 请求头
+
+| 请求头 | 必填 | 说明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`，账号访问令牌 |
+| `Content-Type` | ✓ | `application/json` |
+
+接口：`POST /api/user/order`
+
+创建充值订单并返回支付跳转信息或二维码信息。充值链接不是 `GET /api/user/self` 返回的，而是这个接口在 `data.data.url` 中返回。
+
+## 请求体
+
+| 字段 | 必填 | 类型 | 说明 |
+| --- | --- | --- | --- |
+| `uuid` | ✓ | string | 支付方式 UUID，来自 `GET /api/user/payment` 的 `data[].uuid` |
+| `amount` | ✓ | number | 充值金额，需满足该支付方式的 `min_amount` / `max_amount` |
+| `promo_code` |  | string | 优惠码；没有则省略 |
+
+```bash
+curl "https://bearlab.ai/api/user/order" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"uuid":"PAYMENT_UUID","amount":10}'
+```
+
+```json 回应：跳转支付
+{
+  "data": {
+    "trade_no": "USR3930NOxxxxxxxx1782010000",
+    "type": 1,
+    "data": {
+      "method": "GET",
+      "url": "https://payment.example/pay",
+      "params": {}
+    }
+  },
+  "message": "",
+  "success": true
+}
+```
+
+```json 回应：扫码支付
+{
+  "data": {
+    "trade_no": "USR3930NOxxxxxxxx1782010000",
+    "type": 2,
+    "data": {
+      "qrcode": "data:image/png;base64,...",
+      "url": "https://payment.example/pay"
+    }
+  },
+  "message": "",
+  "success": true
+}
+```
+
+
+```json 回应：支付网关创建失败
+{
+  "message": "Failed to create payment, please try again later",
+  "success": false
+}
+```
+
+<Warning>
+如果接口返回 `success: false`，不会有支付链接；这表示支付网关侧没有创建成功，不是 `/api/user/self` 缺字段。调用方应展示 `message` 并允许用户更换支付方式或稍后重试。
+</Warning>
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `data.trade_no` | string | 平台订单号，用于轮询订单状态 |
+| `data.type` | integer | `1`=跳转/表单支付，`2`=二维码支付 |
+| `data.data.url` | string | 支付链接；跳转支付必用，二维码支付可作为备用跳转链接 |
+| `data.data.method` | string | 跳转支付提交方式，通常为 `GET` 或 `POST` |
+| `data.data.params` | object | 跳转支付附带参数 |
+| `data.data.qrcode` | string | 二维码内容或图片数据，仅 `type=2` 常见 |
+
+<Note>
+来源：2026-06-21 线上实测与前端调用链：`GET /api/user/payment` → `POST /api/user/order` → `GET /api/user/order/status`。实测 `POST /api/user/order` 返回 200，并包含 `trade_no` 和支付 payload。
+</Note>

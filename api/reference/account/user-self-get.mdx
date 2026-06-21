@@ -1,0 +1,62 @@
+---
+title: "当前账号信息"
+description: "GET /api/user/self"
+---
+
+## 请求头
+
+| 请求头 | 必填 | 说明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`，账号访问令牌，形如 `g+...==`，不是令牌管理生成的模型 API Key |
+
+接口：`GET /api/user/self`
+
+获取当前登录账号资料、余额、等级、充值状态和推送设置。查账号余额时使用这个接口；余额字段在 `data.balance`。
+
+<Warning>
+响应会包含 `access_token` 明文字段。不要把完整响应贴到公开工单、日志或前端错误上报里。
+</Warning>
+
+```bash
+curl "https://bearlab.ai/api/user/self" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json 回应
+{
+  "data": {
+    "username": "linuxdo_3930",
+    "display_name": "rick",
+    "role": 1,
+    "status": 1,
+    "balance": "0.111272",
+    "topup_amount": "0",
+    "topup_count": 0,
+    "topup_enabled": true,
+    "level": "Tier 1",
+    "aff_balance": "0",
+    "created_at": 1781962912,
+    "last_login_at": 1782014804,
+    "push_settings": {
+      "user_id": 3930,
+      "notice_type": "email",
+      "tip_quota": "1"
+    }
+  },
+  "message": "",
+  "success": true
+}
+```
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `data.balance` | string | 当前账号可用余额 |
+| `data.topup_amount` | string | 历史充值额度统计 |
+| `data.topup_count` | integer | 历史充值次数 |
+| `data.topup_enabled` | boolean | 当前账号是否允许充值 |
+| `data.level` | string | 当前用户等级 |
+| `data.aff_balance` | string | 可提现推广余额 |
+
+<Note>
+来源：2026-06-21 线上实测，使用 `YOUR_ACCESS_TOKEN` 请求 `/api/user/self` 返回 200。
+</Note>

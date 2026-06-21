@@ -74,6 +74,24 @@
                 "pages": [
                   "api/reference/auth/overview",
                   {
+                    "group": "账号",
+                    "expanded": true,
+                    "pages": [
+                      "api/reference/account/user-self-get"
+                    ]
+                  },
+                  {
+                    "group": "充值与订单",
+                    "expanded": true,
+                    "pages": [
+                      "api/reference/billing/user-payment-get",
+                      "api/reference/billing/user-order-post",
+                      "api/reference/billing/user-order-status-get",
+                      "api/reference/billing/payment-order-self-get",
+                      "api/reference/billing/user-topup-post"
+                    ]
+                  },
+                  {
                     "group": "令牌管理",
                     "expanded": true,
                     "pages": [

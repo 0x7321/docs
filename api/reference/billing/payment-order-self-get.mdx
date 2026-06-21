@@ -1,0 +1,65 @@
+---
+title: "充值订单列表"
+description: "GET /api/payment/order/self/"
+---
+
+## 请求头
+
+| 请求头 | 必填 | 说明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`，账号访问令牌 |
+
+接口：`GET /api/payment/order/self/`
+
+分页获取当前用户的充值订单历史。该接口用于展示历史充值记录，不负责生成支付链接。
+
+| 查询参数 | 必填 | 类型 | 说明 |
+| --- | --- | --- | --- |
+| `page` |  | integer | 页码；也兼容线上实测的 `page=1` |
+| `page_size` |  | integer | 每页数量 |
+| `order` |  | string | 排序表达式，前端按需传入 |
+| `start_timestamp` |  | integer | 创建时间起点，Unix 秒 |
+| `end_timestamp` |  | integer | 创建时间终点，Unix 秒 |
+| `status` |  | string | 订单状态：`pending`、`success`、`closed`、`failed`、`refunded` |
+| `trade_no` |  | string | 平台订单号筛选 |
+
+```bash
+curl "https://bearlab.ai/api/payment/order/self/?page=1&page_size=5" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json 回应
+{
+  "data": {
+    "items": [
+      {
+        "id": 6701,
+        "gateway_id": 2,
+        "trade_no": "USR3930NO9E0nhH1781976862",
+        "gateway_no": "",
+        "amount": "11",
+        "order_amount": "11",
+        "order_currency": "CNY",
+        "quota": "11",
+        "fee": 0,
+        "discount": 0,
+        "status": "closed",
+        "invoice_status": "unavailable",
+        "promo_code_id": 0,
+        "usage_id": 0,
+        "refund_amount": "0",
+        "created_at": 1781976863
+      }
+    ],
+    "page": 1,
+    "page_size": 5,
+    "total": 2
+  },
+  "message": "",
+  "success": true
+}
+```
+
+<Note>
+来源：2026-06-21 线上实测，`/api/payment/order/self?page=1&page_size=5` 返回 200。前端当前使用 `/api/payment/order/self/?...`，两种路径在线上均按同一接口处理。
+</Note>

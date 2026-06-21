@@ -1,0 +1,44 @@
+---
+title: "兑换充值码"
+description: "POST /api/user/topup"
+---
+
+## 请求头
+
+| 请求头 | 必填 | 说明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`，账号访问令牌 |
+| `Content-Type` | ✓ | `application/json` |
+
+接口：`POST /api/user/topup`
+
+使用兑换码给当前账号充值。这个接口是“兑换码充值”，不是在线支付创建订单。
+
+## 请求体
+
+| 字段 | 必填 | 类型 | 说明 |
+| --- | --- | --- | --- |
+| `key` | ✓ | string | 兑换码 |
+
+```bash
+curl "https://bearlab.ai/api/user/topup" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"key":"REDEMPTION_CODE"}'
+```
+
+```json 回应
+{
+  "data": "10",
+  "message": "",
+  "success": true
+}
+```
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `data` | string / number | 本次兑换增加的额度。前端会把它按金额格式展示。 |
+
+<Note>
+接口形态来自 2026-06-21 前端调用链；成功后前端会刷新 `GET /api/user/self` 的账号余额。
+</Note>

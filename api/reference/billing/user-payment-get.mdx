@@ -1,0 +1,57 @@
+---
+title: "可用充值方式"
+description: "GET /api/user/payment"
+---
+
+## 请求头
+
+| 请求头 | 必填 | 说明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`，账号访问令牌 |
+
+接口：`GET /api/user/payment`
+
+获取当前用户可用的充值网关。创建充值订单前，先调用此接口，取目标网关的 `uuid` 作为 `POST /api/user/order` 的 `uuid` 参数。
+
+```bash
+curl "https://bearlab.ai/api/user/payment" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json 回应
+{
+  "data": [
+    {
+      "type": "epay",
+      "uuid": "98de8f0bc169463c8679b6fc38baa749",
+      "name": "微信",
+      "name_en": "微信",
+      "icon": "wxpay",
+      "fixed_fee": 0,
+      "min_amount": "10",
+      "max_amount": "10000",
+      "percent_fee": 0,
+      "currency": "CNY",
+      "sort": 1,
+      "require_verification": false,
+      "display_language": "all",
+      "enable_invoice": false
+    }
+  ],
+  "message": "",
+  "success": true
+}
+```
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `uuid` | string | 支付方式 UUID，创建订单时传给 `POST /api/user/order` 的 `uuid` |
+| `name` / `name_en` | string | 支付方式显示名 |
+| `icon` | string | 前端图标标识，例如 `wxpay`、`alipay` |
+| `min_amount` / `max_amount` | string | 单笔充值金额范围 |
+| `currency` | string | 充值币种，线上实测为 `CNY` |
+| `require_verification` | boolean | 是否要求实名/验证后才能使用该网关 |
+
+<Note>
+来源：2026-06-21 线上实测，`/api/user/payment` 返回微信、支付宝两种充值方式。
+</Note>
