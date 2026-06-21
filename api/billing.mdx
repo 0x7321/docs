@@ -98,6 +98,12 @@ curl "https://bearlab.ai/api/payment/order/self?page=1&page_size=10" \
 
 建立充值訂單，返回支付跳轉連結。
 
+| 請求體欄位 | 必填 | 說明 |
+| --- | --- | --- |
+| `uuid` | ✓ | 付款方式 UUID，來自 `/api/user/payment` |
+| `amount` | ✓ | 充值金額 |
+| `promo_code` |  | 優惠碼，可省略或空字串 |
+
 ```bash
 curl -X POST https://bearlab.ai/api/user/order \
   -H "Authorization: Bearer YOUR_API_KEY" \
@@ -136,6 +142,10 @@ curl "https://bearlab.ai/api/user/order/status?trade_no=USR3930NOxxx" \
 
 ## 兌換碼充值 `POST /api/user/topup`
 
+| 請求體欄位 | 必填 | 說明 |
+| --- | --- | --- |
+| `key` | ✓ | 兌換碼 / 充值碼 |
+
 ```bash
 curl -X POST https://bearlab.ai/api/user/topup \
   -H "Authorization: Bearer YOUR_API_KEY" \
@@ -146,6 +156,10 @@ curl -X POST https://bearlab.ai/api/user/topup \
 ---
 
 ## 驗證優惠碼 `POST /api/user/promo/validate`
+
+| 請求體欄位 | 必填 | 說明 |
+| --- | --- | --- |
+| `code` | ✓ | 要驗證的優惠碼 |
 
 <Warning>
 回應欄位為 `message` + `valid`（**不是** `valid` + `discount` + `type`）。無效優惠碼時 `success` 仍為 `true`，須檢查 `valid` 欄位。

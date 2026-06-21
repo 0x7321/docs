@@ -4,7 +4,7 @@ description: "申請、查詢與下載 API 平台發票。"
 ---
 
 <Note>
-發票功能需平台已啟用 `invoice_management` License 功能。分頁使用 `page_size` / `total`，與工單系統（`size` / `total_count`）不同。
+發票功能需平台已啟用。分頁使用 `page_size` / `total`，與工單（`size` / `total_count`）不同。
 </Note>
 
 ## 我的發票 `GET /api/invoice/self`
@@ -97,6 +97,10 @@ curl -X POST https://bearlab.ai/api/invoice/submit \
 ---
 
 ## 發票下載連結 `GET /api/invoice/download-link/{id}`
+
+| 路徑參數 | 說明 |
+| --- | --- |
+| `id` | 發票 ID |
 
 ```bash
 curl https://bearlab.ai/api/invoice/download-link/123 \

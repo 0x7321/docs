@@ -24,6 +24,18 @@ curl "https://bearlab.ai/api/token/?p=1&page_size=10" \
 
 ## 建立 Token `POST /api/token/`
 
+| 請求體欄位 | 必填 | 說明 |
+| --- | --- | --- |
+| `name` | ✓ | Token 名稱 |
+| `expired_time` | ✓ | 過期時間 Unix 秒；`-1` 表示永不過期 |
+| `remain_quota` | ✓ | 初始可用額度；`-1` 搭配 `unlimited_quota: true` 表示不限額 |
+| `unlimited_quota` | ✓ | 是否不限額度 |
+| `model_limits_enabled` | ✓ | 是否啟用模型限制 |
+| `group` |  | 指定分組；空字串表示不指定 |
+| `model_limits` |  | 模型限制配置；空字串表示不限制 |
+| `allow_ips` |  | IP 允許列表；無限制時為 `null` |
+| `exclude_ips` |  | IP 排除列表；無限制時為 `null` |
+
 建立成功回應 `data: null`，不返回 key 明文，需再 GET 列表取值。
 
 ```bash
@@ -36,6 +48,19 @@ curl -X POST https://bearlab.ai/api/token/ \
 ---
 
 ## 更新 Token `PUT /api/token/`
+
+| 請求體欄位 | 必填 | 說明 |
+| --- | --- | --- |
+| `id` | ✓ | 要更新的 Token ID，放在 body 中 |
+| `name` | ✓ | Token 名稱 |
+| `expired_time` | ✓ | 過期時間 Unix 秒；`-1` 表示永不過期 |
+| `remain_quota` | ✓ | 剩餘額度 |
+| `unlimited_quota` | ✓ | 是否不限額度 |
+| `model_limits_enabled` | ✓ | 是否啟用模型限制 |
+| `group` |  | 指定分組 |
+| `model_limits` |  | 模型限制配置 |
+| `allow_ips` |  | IP 允許列表；實測可為 `null` |
+| `exclude_ips` |  | IP 排除列表 |
 
 Token ID 放在請求體（非 URL）。PUT 返回完整物件含 `user_id`；`allow_ips` 為 `null`。
 
@@ -50,6 +75,10 @@ curl -X PUT https://bearlab.ai/api/token/ \
 
 ## 刪除 Token `DELETE /api/token/{id}/`
 
+| 路徑參數 | 說明 |
+| --- | --- |
+| `id` | 要刪除的 Token ID |
+
 伺服器返回 307 重定向，curl 需加 `-L`。路徑必須帶尾部斜杠。
 
 ```bash
@@ -60,6 +89,10 @@ curl -X DELETE -L https://bearlab.ai/api/token/10623/ \
 ---
 
 ## 批次刪除 `POST /api/token/batch`
+
+| 請求體欄位 | 必填 | 說明 |
+| --- | --- | --- |
+| `ids` | ✓ | Token ID 陣列 |
 
 ```bash
 curl -X POST https://bearlab.ai/api/token/batch \
@@ -76,6 +109,45 @@ curl -X POST https://bearlab.ai/api/token/batch \
 
 ---
 
-## 分組費率 `GET /api/token/providers-by-vendor`
+## 搜尋 Token `GET /api/token/search`
 
-在 /api/token/group 基礎上額外包含 ratio（GroupRatio）。
+| 參數 | 說明 |
+| --- | --- |
+| `keyword` | 名稱模糊搜尋關鍵字 |
+
+```bash
+curl "https://bearlab.ai/api/token/search?keyword=my-token" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```json 回應
+{
+  "data": {
+    "items": [],
+    "page": 1,
+    "page_size": 10,
+    "total": 0
+  },
+  "message": "",
+  "success": true
+}
+```
+
+<Note>
+Token 列表也接受 `keyword` 參數；若只做搜尋，可直接使用此端點。
+</Note>
+
+---
+
+## Token 用量 `GET /api/usage/token/`
+
+此端點使用 API Key 本身鑑權，不是帳號 `access_token`。
+
+```bash
+curl https://bearlab.ai/api/usage/token/ \
+  -H "Authorization: Bearer sk-YOUR_API_KEY"
+```
+
+<Warning>
+用帳號存取令牌呼叫會返回 `401 Invalid Token`。請使用 `/api/token/` 建立的 API Key。
+</Warning>

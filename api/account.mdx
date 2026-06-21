@@ -127,50 +127,6 @@ curl https://bearlab.ai/api/user/logout \
 
 ---
 
-## 平台狀態 `GET /api/status`
-
-公開端點，無需鑑權。返回平台基本設定。
-
-```bash
-curl https://bearlab.ai/api/status
-```
-
-```json 回應
-{
-  "data": {
-    "enable_checkin": false,
-    "exchange_rate": 1,
-    "api_address": "https://bearlab.ai",
-    "default_currency_zh": "CNY",
-    "version": "v6.3.13"
-  }
-}
-```
-
----
-
-## 使用者等級 `GET /api/level`
-
-返回各等級的所需條件與可用 group。
-
-```bash
-curl https://bearlab.ai/api/level \
-  -H "Authorization: Bearer YOUR_API_KEY"
-```
-
-```json 回應（部分）
-{
-  "data": {
-    "Tier 1": {
-      "RequiredDays": 0,
-      "RequiredAmount": 0,
-      "AllowedGroups": ["claude-code-max-special", "claude-max", "default"]
-    }
-  }
-}
-```
-
----
 
 ## 可用模型列表 `GET /api/user/models`
 
@@ -269,11 +225,148 @@ curl https://bearlab.ai/api/user/models \
 
 ---
 
+## 2FA 狀態 `GET /api/user/2fa/status`
+
+返回當前使用者的兩步驗證狀態。
+
+```bash
+curl https://bearlab.ai/api/user/2fa/status \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```json 回應
+{ "data": { "enabled": false, "locked": false }, "message": "", "success": true }
+```
+
+---
+
+## 初始化 2FA `POST /api/user/2fa/setup`
+
+產生 TOTP secret 與 QR Code 資料。呼叫後仍需用 `POST /api/user/2fa/enable` 驗證動態碼才會啟用。
+
+```bash
+curl -X POST https://bearlab.ai/api/user/2fa/setup \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+---
+
+## 啟用 2FA `POST /api/user/2fa/enable`
+
+| 請求體欄位 | 必填 | 說明 |
+| --- | --- | --- |
+| `code` | ✓ | TOTP App 中的 6 位動態碼 |
+
+```bash
+curl -X POST https://bearlab.ai/api/user/2fa/enable \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"code":"123456"}'
+```
+
+---
+
+## 停用 2FA `POST /api/user/2fa/disable`
+
+| 請求體欄位 | 必填 | 說明 |
+| --- | --- | --- |
+| `code` | ✓ | 6 位動態碼或備用碼 |
+
+```bash
+curl -X POST https://bearlab.ai/api/user/2fa/disable \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"code":"123456"}'
+```
+
+---
+
+## 重新產生 2FA 備用碼 `POST /api/user/2fa/backup_codes`
+
+| 請求體欄位 | 必填 | 說明 |
+| --- | --- | --- |
+| `code` | ✓ | 6 位動態碼或備用碼 |
+
+```bash
+curl -X POST https://bearlab.ai/api/user/2fa/backup_codes \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"code":"123456"}'
+```
+
+---
+
 ## Passkey 狀態 `GET /api/user/passkey`
+
+```bash
+curl https://bearlab.ai/api/user/passkey \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
 
 ```json 回應
 { "data": { "enabled": false } }
 ```
+
+---
+
+## 刪除 Passkey `DELETE /api/user/passkey`
+
+```bash
+curl -X DELETE https://bearlab.ai/api/user/passkey \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+---
+
+## 開始註冊 Passkey `POST /api/user/passkey/register/begin`
+
+```bash
+curl -X POST https://bearlab.ai/api/user/passkey/register/begin \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+---
+
+## 完成註冊 Passkey `POST /api/user/passkey/register/finish`
+
+| 請求體欄位 | 必填 | 說明 |
+| --- | --- | --- |
+| `credential` | ✓ | WebAuthn 註冊憑證回應物件 |
+
+```bash
+curl -X POST https://bearlab.ai/api/user/passkey/register/finish \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"credential":{}}'
+```
+
+---
+
+## 開始驗證 Passkey `POST /api/user/passkey/verify/begin`
+
+```bash
+curl -X POST https://bearlab.ai/api/user/passkey/verify/begin \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+---
+
+## 完成驗證 Passkey `POST /api/user/passkey/verify/finish`
+
+| 請求體欄位 | 必填 | 說明 |
+| --- | --- | --- |
+| `credential` | ✓ | WebAuthn 驗證憑證回應物件 |
+
+```bash
+curl -X POST https://bearlab.ai/api/user/passkey/verify/finish \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"credential":{}}'
+```
+
+<Note>
+本實例目前回應 Passkey 登入未啟用，表示路由存在但平台設定未開啟。
+</Note>
 
 ---
 

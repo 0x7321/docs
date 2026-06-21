@@ -112,6 +112,10 @@ curl "https://bearlab.ai/api/user/aff/withdrawals?p=1&page_size=10" \
 
 ## 修改邀請碼 `PUT /api/user/aff/code`
 
+| 請求體欄位 | 必填 | 說明 |
+| --- | --- | --- |
+| `aff_code` | ✓ | 新邀請碼 |
+
 ```bash
 curl -X PUT https://bearlab.ai/api/user/aff/code \
   -H "Authorization: Bearer YOUR_API_KEY" \
@@ -136,6 +140,11 @@ curl -X POST https://bearlab.ai/api/user/aff/convert \
 
 ## 申請提現 `POST /api/user/aff/withdraw`
 
+| 請求體欄位 | 必填 | 說明 |
+| --- | --- | --- |
+| `amount` | ✓ | 提現金額 |
+| `payment_info` | ✓ | 收款資訊物件；如 `{ "alipay": "user@example.com" }` |
+
 ```bash
 curl -X POST https://bearlab.ai/api/user/aff/withdraw \
   -H "Authorization: Bearer YOUR_API_KEY" \
@@ -146,14 +155,4 @@ curl -X POST https://bearlab.ai/api/user/aff/withdraw \
       "alipay": "user@example.com"
     }
   }'
-```
-
----
-
-## 返利公告 `GET /api/aff_notice`
-
-返回平台返利活動公告文字。
-
-```json 回應（推斷）
-{ "data": "<公告內容>" }
 ```

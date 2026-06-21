@@ -72,6 +72,7 @@
               {
                 "group": "帳號",
                 "pages": [
+                  "api/auth",
                   "api/account"
                 ]
               },
