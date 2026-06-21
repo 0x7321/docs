@@ -1,0 +1,20 @@
+---
+title: "開始 Passkey 登入"
+description: "POST /api/user/passkey/login/begin"
+---
+
+接口：`POST /api/user/passkey/login/begin`
+
+| 請求體欄位 | 必填 | 說明 |
+| --- | --- | --- |
+| `username` | ✓ | 使用者名稱 |
+
+```bash
+curl -X POST https://bearlab.ai/api/user/passkey/login/begin \
+  -H "Content-Type: application/json" \
+  -d '{"username":"YOUR_USERNAME"}'
+```
+
+<Note>
+本实例目前返回 Passkey 登录未启用，表示路由存在但平台设置未开启。
+</Note>

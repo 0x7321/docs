@@ -1,0 +1,26 @@
+---
+title: "OAuth 绑定状态"
+description: "GET /api/user/binding/status"
+---
+
+接口：`GET /api/user/binding/status`
+
+```bash
+curl https://bearlab.ai/api/user/binding/status \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```json 回應
+{
+  "data": {
+    "discord": false,
+    "email": false,
+    "github": false,
+    "google": false,
+    "linuxdo": true,
+    "oidc": false,
+    "phone": false,
+    "wechat": false
+  }
+}
+```

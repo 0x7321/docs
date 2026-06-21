@@ -1,0 +1,23 @@
+---
+title: "簽到記錄"
+description: "GET /api/user/checkin-history"
+---
+
+接口：`GET /api/user/checkin-history`
+
+<Note>
+`user_id` 在此端點可見，而 `/api/user/self` 不返回 `id` 欄位。
+</Note>
+
+```json 回應
+{
+  "data": [
+    {
+      "id": 15987,
+      "user_id": 3930,
+      "check_in_at": "2026-06-20T00:00:00+08:00",
+      "quota": "0.0128"
+    }
+  ]
+}
+```

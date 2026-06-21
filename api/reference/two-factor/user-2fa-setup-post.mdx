@@ -1,0 +1,13 @@
+---
+title: "初始化 2FA"
+description: "POST /api/user/2fa/setup"
+---
+
+接口：`POST /api/user/2fa/setup`
+
+产生 TOTP secret 与 QR Code 数据。调用后仍需用 `POST /api/user/2fa/enable` 验证动态码才会启用。
+
+```bash
+curl -X POST https://bearlab.ai/api/user/2fa/setup \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```

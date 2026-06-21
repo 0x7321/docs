@@ -1,0 +1,27 @@
+---
+title: "建立 Token"
+description: "POST /api/token/"
+---
+
+接口：`POST /api/token/`
+
+| 請求體欄位 | 必填 | 說明 |
+| --- | --- | --- |
+| `name` | ✓ | Token 名稱 |
+| `expired_time` | ✓ | 過期時間 Unix 秒；`-1` 表示永不過期 |
+| `remain_quota` | ✓ | 初始可用額度；`-1` 搭配 `unlimited_quota: true` 表示不限額 |
+| `unlimited_quota` | ✓ | 是否不限額度 |
+| `model_limits_enabled` | ✓ | 是否啟用模型限制 |
+| `group` |  | 指定分組；空字串表示不指定 |
+| `model_limits` |  | 模型限制配置；空字串表示不限制 |
+| `allow_ips` |  | IP 允許列表；無限制時為 `null` |
+| `exclude_ips` |  | IP 排除列表；無限制時為 `null` |
+
+建立成功回應 `data: null`，不返回 key 明文，需再 GET 列表取值。
+
+```bash
+curl -X POST https://bearlab.ai/api/token/ \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"my-token","expired_time":-1,"remain_quota":-1,"unlimited_quota":true,"model_limits_enabled":false,"group":"","model_limits":"","allow_ips":null,"exclude_ips":null}'
+```

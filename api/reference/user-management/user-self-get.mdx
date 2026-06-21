@@ -1,0 +1,63 @@
+---
+title: "取得當前使用者"
+description: "GET /api/user/self"
+---
+
+接口：`GET /api/user/self`
+
+返回登入帳號的完整資訊（50+ 欄位）。
+
+<Warning>
+`user.id` 不存在於此回應中。`user_id` 僅在 `/api/user/checkin-history` 和 `PUT /api/token/` 回應中可見。回應中含有 `access_token` 明文欄位（即當前 Bearer token 本身）及 `DeletedAt` 欄位（GORM 軟刪除欄位，正常情況下為 `null`）。
+</Warning>
+
+```bash
+curl https://bearlab.ai/api/user/self \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```json 回應
+{
+  "data": {
+    "username": "linuxdo_3930",
+    "display_name": "rick",
+    "role": 1,
+    "status": 1,
+    "email": "",
+    "phone": "",
+    "linuxdo_id": "298",
+    "access_token": "...",
+    "balance": "0.062772",
+    "topup_amount": "0",
+    "topup_count": 0,
+    "aff_code": "6ZQF",
+    "aff_count": 0,
+    "aff_earned": "0",
+    "aff_balance": "0",
+    "inviter_id": 0,
+    "created_at": 1781962912,
+    "last_login_at": 1781977127,
+    "level": "Tier 1",
+    "group_ratio": "",
+    "model_ratio": "",
+    "rate_limits": "",
+    "agent_user_id": 1,
+    "topup_enabled": true,
+    "model_limits_enabled": false,
+    "allow_multi_login": true,
+    "avatar": "Upstream.svg",
+    "language": "en",
+    "credit_enabled": false,
+    "credit_limit": "0",
+    "credit_billed": "0",
+    "credit_cycle_type": "monthly",
+    "push_settings": { "tip_quota": "0" },
+    "verify_info": {
+      "type": "",
+      "status": "",
+      "created_at": "0001-01-01T00:00:00Z"
+    }
+  },
+  "success": true
+}
+```

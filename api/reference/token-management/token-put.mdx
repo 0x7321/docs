@@ -1,0 +1,28 @@
+---
+title: "更新 Token"
+description: "PUT /api/token/"
+---
+
+接口：`PUT /api/token/`
+
+| 請求體欄位 | 必填 | 說明 |
+| --- | --- | --- |
+| `id` | ✓ | 要更新的 Token ID，放在 body 中 |
+| `name` | ✓ | Token 名稱 |
+| `expired_time` | ✓ | 過期時間 Unix 秒；`-1` 表示永不過期 |
+| `remain_quota` | ✓ | 剩餘額度 |
+| `unlimited_quota` | ✓ | 是否不限額度 |
+| `model_limits_enabled` | ✓ | 是否啟用模型限制 |
+| `group` |  | 指定分組 |
+| `model_limits` |  | 模型限制配置 |
+| `allow_ips` |  | IP 允許列表；實測可為 `null` |
+| `exclude_ips` |  | IP 排除列表 |
+
+Token ID 放在請求體（非 URL）。PUT 返回完整物件含 `user_id`；`allow_ips` 為 `null`。
+
+```bash
+curl -X PUT https://bearlab.ai/api/token/ \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"id":10633,"name":"renamed","expired_time":-1,"remain_quota":-1,"unlimited_quota":true,"model_limits_enabled":false,"group":"","model_limits":""}'
+```

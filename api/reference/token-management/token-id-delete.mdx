@@ -1,0 +1,17 @@
+---
+title: "刪除 Token"
+description: "DELETE /api/token/{id}/"
+---
+
+接口：`DELETE /api/token/{id}/`
+
+| 路徑參數 | 說明 |
+| --- | --- |
+| `id` | 要刪除的 Token ID |
+
+伺服器返回 307 重定向，curl 需加 `-L`。路徑必須帶尾部斜杠。
+
+```bash
+curl -X DELETE -L https://bearlab.ai/api/token/10623/ \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```

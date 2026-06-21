@@ -1,0 +1,27 @@
+---
+title: "更新自動充值"
+description: "PUT /api/auto-recharge/settings"
+---
+
+接口：`PUT /api/auto-recharge/settings`
+
+| 請求體欄位 | 必填 | 說明 |
+| --- | --- | --- |
+| `enabled` | ✓ | 是否啟用自動充值 |
+| `threshold_amount` | 啟用時必填 | 觸發充值的餘額閾值 |
+| `target_amount` | 啟用時必填 | 充值後目標餘額 |
+| `gateway_uuid` | 啟用時必填 | 付款方式 UUID，來自 `/api/user/payment` |
+
+```bash
+curl -X PUT https://bearlab.ai/api/auto-recharge/settings \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "enabled": true,
+    "threshold_amount": 10,
+    "target_amount": 50,
+    "gateway_uuid": "98de8f0bc169..."
+  }'
+```
+
+---

@@ -1,0 +1,18 @@
+---
+title: "重設密碼"
+description: "POST /api/user/reset"
+---
+
+接口：`POST /api/user/reset`
+
+| 請求體欄位 | 必填 | 說明 |
+| --- | --- | --- |
+| `email` | ✓ | 帳號郵箱 |
+| `token` | ✓ | 重設密碼郵件中的 token |
+| `password` | ✓ | 新密碼 |
+
+```bash
+curl -X POST https://bearlab.ai/api/user/reset \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com","token":"RESET_TOKEN","password":"NEW_PASSWORD"}'
+```

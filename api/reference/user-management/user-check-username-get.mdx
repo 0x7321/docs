@@ -1,0 +1,16 @@
+---
+title: "檢查用戶名可用性"
+description: "GET /api/user/check-username"
+---
+
+接口：`GET /api/user/check-username`
+
+| 參數 | 必填 | 說明 |
+| --- | --- | --- |
+| `username` | ✓ | 要檢查的用戶名 |
+
+```json 回應
+{
+  "data": { "available": false, "reason": "taken" }
+}
+```

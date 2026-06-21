@@ -1,0 +1,15 @@
+---
+title: "2FA 状态"
+description: "GET /api/user/2fa/status"
+---
+
+接口：`GET /api/user/2fa/status`
+
+```bash
+curl https://bearlab.ai/api/user/2fa/status \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```json 回應
+{ "data": { "enabled": false, "locked": false }, "message": "", "success": true }
+```

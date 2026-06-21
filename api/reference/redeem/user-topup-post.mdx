@@ -1,0 +1,17 @@
+---
+title: "兑换码充值"
+description: "POST /api/user/topup"
+---
+
+接口：`POST /api/user/topup`
+
+| 请求体字段 | 必填 | 说明 |
+| --- | --- | --- |
+| `key` | ✓ | 兑换码 / 充值码 |
+
+```bash
+curl -X POST https://bearlab.ai/api/user/topup \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"key":"TOPUP-CODE-XXXX"}'
+```

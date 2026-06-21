@@ -1,0 +1,19 @@
+---
+title: "我的邀請碼"
+description: "GET /api/user/aff"
+---
+
+接口：`GET /api/user/aff`
+
+<Warning>
+此端點**只返回邀請碼字串**，不含統計數據。完整資訊請用 `GET /api/user/aff/stats`。
+</Warning>
+
+```bash
+curl https://bearlab.ai/api/user/aff \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```json 回應
+{ "data": "6ZQF" }
+```

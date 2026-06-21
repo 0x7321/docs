@@ -1,0 +1,17 @@
+---
+title: "批次刪除"
+description: "POST /api/token/batch"
+---
+
+接口：`POST /api/token/batch`
+
+| 請求體欄位 | 必填 | 說明 |
+| --- | --- | --- |
+| `ids` | ✓ | Token ID 陣列 |
+
+```bash
+curl -X POST https://bearlab.ai/api/token/batch \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"ids": [10623, 10624]}'
+```

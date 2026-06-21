@@ -1,0 +1,28 @@
+---
+title: "使用者註冊"
+description: "POST /api/user/register"
+---
+
+接口：`POST /api/user/register`
+
+| 請求體欄位 | 必填 | 說明 |
+| --- | --- | --- |
+| `username` | ✓ | 使用者名稱 |
+| `password` | ✓ | 密碼 |
+| `email` | ✓ | 郵箱 |
+| `verification_code` | ✓ | 郵箱驗證碼 |
+| `aff_code` |  | 邀請碼，可空字串 |
+
+```bash
+curl -X POST https://bearlab.ai/api/user/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"YOUR_USERNAME","password":"YOUR_PASSWORD","email":"user@example.com","verification_code":"123456","aff_code":""}'
+```
+
+```json 回應（需要 CAPTCHA 時）
+{
+  "data": { "need_captcha": true },
+  "message": "Please complete the verification",
+  "success": false
+}
+```

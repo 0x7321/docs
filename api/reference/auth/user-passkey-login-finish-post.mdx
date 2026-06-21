@@ -1,0 +1,20 @@
+---
+title: "完成 Passkey 登入"
+description: "POST /api/user/passkey/login/finish"
+---
+
+接口：`POST /api/user/passkey/login/finish`
+
+| 請求體欄位 | 必填 | 說明 |
+| --- | --- | --- |
+| `credential` | ✓ | WebAuthn 登入憑證回應物件 |
+
+```bash
+curl -X POST https://bearlab.ai/api/user/passkey/login/finish \
+  -H "Content-Type: application/json" \
+  -d '{"credential":{}}'
+```
+
+<Note>
+本實例目前回應 Passkey 登入未啟用，表示路由存在但平台設定未開啟。
+</Note>

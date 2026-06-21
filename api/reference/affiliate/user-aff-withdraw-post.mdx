@@ -1,0 +1,23 @@
+---
+title: "申請提現"
+description: "POST /api/user/aff/withdraw"
+---
+
+接口：`POST /api/user/aff/withdraw`
+
+| 請求體欄位 | 必填 | 說明 |
+| --- | --- | --- |
+| `amount` | ✓ | 提現金額 |
+| `payment_info` | ✓ | 收款資訊物件；如 `{ "alipay": "user@example.com" }` |
+
+```bash
+curl -X POST https://bearlab.ai/api/user/aff/withdraw \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 10,
+    "payment_info": {
+      "alipay": "user@example.com"
+    }
+  }'
+```

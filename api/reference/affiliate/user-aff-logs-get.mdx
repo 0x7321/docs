@@ -1,0 +1,31 @@
+---
+title: "返利記錄"
+description: "GET /api/user/aff/logs"
+---
+
+接口：`GET /api/user/aff/logs`
+
+<Warning>
+回應資料鍵為 `logs`，**不是** `items`。分頁使用 `page` / `page_size` / `total`。
+</Warning>
+
+| 參數 | 說明 |
+| --- | --- |
+| `page` | 頁碼 |
+| `page_size` | 每頁數量 |
+
+```bash
+curl "https://bearlab.ai/api/user/aff/logs?page=1&page_size=20" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```json 回應
+{
+  "data": {
+    "logs": [],
+    "page": 1,
+    "page_size": 5,
+    "total": 0
+  }
+}
+```

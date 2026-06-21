@@ -72,89 +72,153 @@
               {
                 "group": "管理接口",
                 "pages": [
-                  "api/auth",
+                  "api/reference/auth/overview",
+                  {
+                    "group": "用户登陆注册",
+                    "expanded": false,
+                    "pages": [
+                      "api/reference/auth/user-login-post",
+                      "api/reference/auth/user-login-2fa-post",
+                      "api/reference/auth/user-logout-get",
+                      "api/reference/auth/user-register-post",
+                      "api/reference/auth/verification-get",
+                      "api/reference/auth/reset-password-get",
+                      "api/reference/auth/user-reset-post",
+                      "api/reference/auth/user-passkey-login-begin-post",
+                      "api/reference/auth/user-passkey-login-finish-post"
+                    ]
+                  },
                   {
                     "group": "用户管理",
                     "expanded": false,
                     "pages": [
-                      "api/account"
+                      "api/reference/user-management/user-self-get",
+                      "api/reference/user-management/user-self-put",
+                      "api/reference/user-management/user-avatar-put",
+                      "api/reference/user-management/user-token-get",
+                      "api/reference/user-management/user-models-get",
+                      "api/reference/user-management/user-models-groups-get",
+                      "api/reference/user-management/user-check-username-get",
+                      "api/reference/user-management/user-checkin-history-get"
                     ]
                   },
                   {
                     "group": "令牌管理",
                     "expanded": false,
                     "pages": [
-                      "api/tokens"
+                      "api/reference/token-management/token-get",
+                      "api/reference/token-management/token-post",
+                      "api/reference/token-management/token-put",
+                      "api/reference/token-management/token-id-delete",
+                      "api/reference/token-management/token-batch-post",
+                      "api/reference/token-management/token-group-get",
+                      "api/reference/token-management/token-search-get",
+                      "api/reference/token-management/usage-token-get"
                     ]
                   },
                   {
                     "group": "日志",
                     "expanded": false,
                     "pages": [
-                      "api/logs"
+                      "api/reference/logs/log-self-get",
+                      "api/reference/logs/log-self-stat-get"
                     ]
                   },
                   {
                     "group": "数据统计",
                     "expanded": false,
                     "pages": [
-                      "api/usage"
+                      "api/reference/usage/data-self-get"
                     ]
                   },
                   {
                     "group": "充值",
                     "expanded": false,
                     "pages": [
-                      "api/recharge"
+                      "api/reference/recharge/user-payment-get",
+                      "api/reference/recharge/payment-order-self-get",
+                      "api/reference/recharge/user-order-post",
+                      "api/reference/recharge/user-order-status-get"
                     ]
                   },
                   {
                     "group": "兑换码",
                     "expanded": false,
                     "pages": [
-                      "api/redeem"
+                      "api/reference/redeem/user-topup-post",
+                      "api/reference/redeem/user-promo-validate-post"
                     ]
                   },
                   {
                     "group": "安全验证",
                     "expanded": false,
                     "pages": [
-                      "api/security"
+                      "api/reference/security/user-binding-status-get",
+                      "api/reference/security/user-verify-self-get",
+                      "api/reference/security/user-passkey-get",
+                      "api/reference/security/user-passkey-delete",
+                      "api/reference/security/user-passkey-register-begin-post",
+                      "api/reference/security/user-passkey-register-finish-post",
+                      "api/reference/security/user-passkey-verify-begin-post",
+                      "api/reference/security/user-passkey-verify-finish-post"
                     ]
                   },
                   {
                     "group": "两步验证",
                     "expanded": false,
                     "pages": [
-                      "api/two-factor"
+                      "api/reference/two-factor/user-2fa-status-get",
+                      "api/reference/two-factor/user-2fa-setup-post",
+                      "api/reference/two-factor/user-2fa-enable-post",
+                      "api/reference/two-factor/user-2fa-disable-post",
+                      "api/reference/two-factor/user-2fa-backup-codes-post"
                     ]
                   },
                   {
                     "group": "工单",
                     "expanded": false,
                     "pages": [
-                      "api/tickets"
+                      "api/reference/tickets/ticket-get",
+                      "api/reference/tickets/ticket-stats-get",
+                      "api/reference/tickets/ticket-unread-count-get",
+                      "api/reference/tickets/ticket-id-get",
+                      "api/reference/tickets/ticket-post",
+                      "api/reference/tickets/ticket-id-reply-post",
+                      "api/reference/tickets/ticket-id-status-put"
                     ]
                   },
                   {
                     "group": "发票",
                     "expanded": false,
                     "pages": [
-                      "api/invoice"
+                      "api/reference/invoice/invoice-self-get",
+                      "api/reference/invoice/invoice-available-orders-get",
+                      "api/reference/invoice/invoice-latest-info-get",
+                      "api/reference/invoice/invoice-submit-post",
+                      "api/reference/invoice/invoice-download-link-id-get"
                     ]
                   },
                   {
                     "group": "邀请返利",
                     "expanded": false,
                     "pages": [
-                      "api/affiliate"
+                      "api/reference/affiliate/user-aff-get",
+                      "api/reference/affiliate/user-aff-stats-get",
+                      "api/reference/affiliate/user-aff-logs-get",
+                      "api/reference/affiliate/user-aff-withdrawals-get",
+                      "api/reference/affiliate/user-aff-code-put",
+                      "api/reference/affiliate/user-aff-convert-post",
+                      "api/reference/affiliate/user-aff-withdraw-post"
                     ]
                   },
                   {
                     "group": "设置与通知",
                     "expanded": false,
                     "pages": [
-                      "api/settings"
+                      "api/reference/settings/push-self-get",
+                      "api/reference/settings/push-self-post",
+                      "api/reference/settings/auto-recharge-settings-get",
+                      "api/reference/settings/auto-recharge-settings-put"
                     ]
                   }
                 ]

@@ -1,0 +1,41 @@
+---
+title: "推播設定"
+description: "GET /api/push/self"
+---
+
+接口：`GET /api/push/self`
+
+<Warning>
+`/api/user/setting` 端點在 6.3.13 中不存在（GET 和 PUT 均返回 404）。設定讀取走 `/api/user/self` 或 `/api/push/self`，設定更新走 `POST /api/push/self`。
+</Warning>
+
+<Note>
+`subscription_options` 是逗號分隔字串，不是陣列。`notice_email` / `webhook_url` / `webhook_token` 雖然在原始碼中存在，但實際回應中不包含這些欄位。
+</Note>
+
+```bash
+curl https://bearlab.ai/api/push/self \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```json 回應
+{
+  "data": {
+    "user_id": 3930,
+    "subscription_options": "quota_push,sale_push,back_push,system_push,price_push,ticket_event",
+    "notice_type": "email",
+    "tip_quota": "1"
+  },
+  "message": "",
+  "success": true
+}
+```
+
+| `subscription_options` 項目 | 說明 |
+| --- | --- |
+| `quota_push` | 餘額提醒 |
+| `sale_push` | 促銷活動 |
+| `back_push` | 服務恢復通知 |
+| `system_push` | 系統公告 |
+| `price_push` | 價格變動 |
+| `ticket_event` | 工單更新 |

@@ -1,0 +1,17 @@
+---
+title: "模型分組映射"
+description: "GET /api/user/models_groups"
+---
+
+接口：`GET /api/user/models_groups`
+
+返回每個模型對應的可用 group 列表。
+
+```json 回應（部分）
+{
+  "data": {
+    "claude-haiku-4-5": ["claude-code-max-special", "claude-max", "default"],
+    "claude-opus-4-6": ["claude-antigravity", "claude-aws"]
+  }
+}
+```

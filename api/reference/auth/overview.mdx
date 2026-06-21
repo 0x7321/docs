@@ -1,0 +1,13 @@
+---
+title: "鉴权体系说明（Auth）"
+description: "Bearer Token、Session 与用户态管理接口鉴权说明。"
+---
+
+管理接口支持两类用户态鉴权：
+
+- `Authorization: Bearer YOUR_API_KEY`：文档中的主要调用方式。
+- 登录 Session：用于浏览器登录后的用户操作。
+
+<Warning>
+不要在文档、截图或工单中暴露真实 token。`GET /api/user/self` 会返回当前 `access_token` 明文字段。
+</Warning>

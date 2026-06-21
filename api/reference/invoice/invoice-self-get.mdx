@@ -1,0 +1,27 @@
+---
+title: "我的發票"
+description: "GET /api/invoice/self"
+---
+
+接口：`GET /api/invoice/self`
+
+| 參數 | 說明 |
+| --- | --- |
+| `page` | 頁碼 |
+| `page_size` | 每頁數量 |
+
+```bash
+curl "https://bearlab.ai/api/invoice/self?page=1&page_size=10" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```json 回應
+{
+  "data": {
+    "items": [],
+    "page": 1,
+    "page_size": 5,
+    "total": 0
+  }
+}
+```

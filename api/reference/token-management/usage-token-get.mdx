@@ -1,0 +1,17 @@
+---
+title: "Token 用量"
+description: "GET /api/usage/token/"
+---
+
+接口：`GET /api/usage/token/`
+
+此端點使用 API Key 本身鑑權，不是帳號 `access_token`。
+
+```bash
+curl https://bearlab.ai/api/usage/token/ \
+  -H "Authorization: Bearer sk-YOUR_API_KEY"
+```
+
+<Warning>
+用帳號存取令牌呼叫會返回 `401 Invalid Token`。請使用 `/api/token/` 建立的 API Key。
+</Warning>

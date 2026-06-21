@@ -1,0 +1,40 @@
+---
+title: "即時統計"
+description: "GET /api/log/self/stat"
+---
+
+接口：`GET /api/log/self/stat`
+
+返回指定時間範圍內的用量彙總。
+
+| 參數 | 說明 |
+| --- | --- |
+| `start_timestamp` | 開始時間（Unix 秒） |
+| `end_timestamp` | 結束時間（Unix 秒） |
+| `type` | 同上 |
+
+```bash
+curl "https://bearlab.ai/api/log/self/stat?start_timestamp=1781900000&end_timestamp=1782000000" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```json 回應
+{
+  "data": {
+    "quota": 0,
+    "rpm": 0,
+    "tpm": 0,
+    "mpm": 0,
+    "unfinished_count": 0,
+    "unfinished_by_vendor": {}
+  }
+}
+```
+
+| 欄位 | 說明 |
+| --- | --- |
+| `quota` | 消耗額度 |
+| `rpm` | 每分鐘請求數 |
+| `tpm` | 每分鐘 Token 數 |
+| `mpm` | 每分鐘 Message 數 |
+| `unfinished_count` | 未完成請求數 |

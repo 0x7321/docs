@@ -1,0 +1,32 @@
+---
+title: "搜尋 Token"
+description: "GET /api/token/search"
+---
+
+接口：`GET /api/token/search`
+
+| 參數 | 說明 |
+| --- | --- |
+| `keyword` | 名稱模糊搜尋關鍵字 |
+
+```bash
+curl "https://bearlab.ai/api/token/search?keyword=my-token" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```json 回應
+{
+  "data": {
+    "items": [],
+    "page": 1,
+    "page_size": 10,
+    "total": 0
+  },
+  "message": "",
+  "success": true
+}
+```
+
+<Note>
+Token 列表也接受 `keyword` 參數；若只做搜尋，可直接使用此端點。
+</Note>
