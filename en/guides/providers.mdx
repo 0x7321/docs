@@ -1,56 +1,134 @@
 ---
 title: "Providers & Routing"
-description: "Each model is backed by multiple providers. Configure routing in your token or override it per request."
+description: "Each model is backed by upstream providers grouped into routing groups. Configure routing in your token or override it per request."
 ---
 
-Each model may be backed by **multiple providers**, service nodes organized by source and cost with different price multipliers and model coverage. The system selects an available provider based on your token configuration; if one fails or times out, it retries another, transparent to your code.
+Every model on BearLab AI is served by one or more **upstream providers** (vendors). Behind a single model name, the gateway routes your request to a healthy provider node; if one fails or times out, it retries another, transparent to your code. Providers are organized into **routing groups**, and your token decides which group(s) it can draw from.
 
-## Available providers
+<Note>
+BearLab AI is a unified gateway built on New API. The provider catalog below is generated from the live pricing data for this account, so it reflects exactly which vendors and model families are reachable with your key.
+</Note>
 
-| ID | Name | Description |
+## Base URLs
+
+Pick the region closest to you. Both regions expose the same models and the same provider routing.
+
+| Region | OpenAI-compatible base URL | Anthropic base URL |
 | --- | --- | --- |
-| `official` | Official | A provider group bundling direct connections to major official platforms (OpenAI, Anthropic, Google); highest stability |
-| `official_cheap` | Official (Discounted) | Cost-optimized official channels; high stability at a lower price |
-| `mix` | Mixed | Multi-source mixed channels; lowest price, widest coverage |
+| Americas / EU | `https://bearlab.ai/v1` | `https://bearlab.ai` (messages at `/v1/messages`) |
+| Asia-Pacific | `https://bearlab.space/v1` | `https://bearlab.space` (messages at `/v1/messages`) |
 
-`official` is a **provider group** bundling nodes from the major official platforms; selecting it routes and fails over across all official nodes without specifying each vendor.
+Authentication is identical everywhere: send your API key as a Bearer token.
 
-### How to choose
+```
+Authorization: Bearer sk-...
+```
 
-| Need | Recommended config |
-| --- | --- |
-| Maximum stability, price not a concern | `official` |
-| Good stability, better value | `official_cheap` |
-| Lowest cost, minor instability acceptable | `mix` |
-| Discounted official first, fall back to mixed | `official_cheap,mix` |
+## Providers covered
 
-## Configuring in a token
+Each provider corresponds to an upstream vendor route. The table is built from the live model-to-vendor mapping; counts are the number of model variants currently priced under that provider.
 
-When creating or editing a token you set its default routing:
+| Provider | Upstream vendor | Model families | Variants | Protocols |
+| --- | --- | --- | --- | --- |
+| Anthropic | Anthropic (incl. Bedrock / Kiro relays) | Claude (Opus, Sonnet, Haiku) | 30 | OpenAI + Anthropic |
+| Google | Google Gemini | Gemini 2.5 / 3 / 3.1 / 3.5 (Pro, Flash, image, CLI variants) | 79 | OpenAI + Gemini |
+| OpenAI | OpenAI | GPT-5.x, GPT-image-2 | 23 | OpenAI |
+| xAI | xAI | Grok 4 / 4.1 / 4.2 / 4.3 | 10 | OpenAI |
+| Alibaba Bailian (aggregator) | Alibaba Cloud Bailian | Qwen, GLM, DeepSeek, Kimi, MiniMax | 18 | OpenAI + Anthropic |
 
-- **Provider list**: empty (recommended) routes across all available providers; a single one restricts to it; multiple (comma-separated) are tried in order or by sort strategy.
-- **Provider-only mode**: off (default) prioritizes specified providers but falls back; on strictly limits to them and returns an error if all fail.
+<Note>
+Some model families are reachable through more than one provider. For example, the national models (Qwen / GLM / DeepSeek / Kimi / MiniMax) are all served through the **Alibaba Bailian** aggregator rather than separate native vendor routes. The gateway picks an available route for you, so you rarely need to name a specific provider.
+</Note>
+
+## Routing groups
+
+Providers are exposed to your token through **routing groups**. Your account's available groups include, among others:
+
+<CardGroup cols={2}>
+  <Card title="default" icon="layer-group">
+    The everyday group: GPT-5.x, Gemini 3.x, and the Bailian-routed national models (Qwen / GLM / DeepSeek / Kimi).
+  </Card>
+  <Card title="auto" icon="shuffle">
+    Priority-order failover. The platform picks an available group per request instead of pinning one, so traffic shifts across upstreams (Claude, Gemini, GPT, DeepSeek, GLM, Kimi, Qwen, MiniMax) when one is saturated.
+  </Card>
+  <Card title="claudecode / claude*" icon="robot">
+    Claude-focused groups (`claudecode`, `claudecode特价`, `claudeAWS*`, `claudekiro*`, `claude反重力`) backing the Anthropic provider with different cost tiers.
+  </Card>
+  <Card title="gemini* / grok / 国产" icon="sparkles">
+    Vendor-scoped groups: `gemini-guan` / `gemini2` for Google, `grok` for xAI, `国产` for the Bailian national-model bundle.
+  </Card>
+</CardGroup>
+
+<Warning>
+Group access is bound to your key. Naming a group or provider you do not have permission for in a request will not unlock it — the gateway only routes within what your token is entitled to.
+</Warning>
+
+## Configuring routing in a token
+
+When you create or edit a token you set its default routing:
+
+- **Provider / group list**: leave empty (recommended) to route across everything your key can reach; set a single entry to restrict to it; set multiple (comma-separated) to try them in order or by the sort strategy.
+- **Provider-only mode**: off (default) prioritizes the listed providers but falls back to others; on strictly limits to them and returns an error if all fail.
 - **Sort strategy**: manual (default), latency, price, or throughput.
 
 ## Overriding per request
 
-Override token settings for a single request via headers:
+Override your token's defaults for a single request via headers:
 
 | Header | Effect |
 | --- | --- |
-| `X-Provider-Order` | Providers and order for this request |
-| `X-Provider-Only` | `"true"` enables strict mode, no fallback |
+| `X-Provider-Order` | Providers/groups and order to use for this request |
+| `X-Provider-Only` | `"true"` enables strict mode (no fallback) |
 | `X-Provider-Sort` | Override sort strategy (`latency` / `price` / `throughput`) |
-| `X-Provider-Ignore` | Providers to skip, stacked on token config |
+| `X-Provider-Ignore` | Providers to skip, stacked on the token config |
 
-> Providers specified via headers are still subject to your account permissions.
+> Providers and groups requested via headers are still subject to your account permissions.
 
 ### Example
 
-```bash
+<CodeGroup>
+
+```bash Americas / EU (bearlab.ai)
 curl https://bearlab.ai/v1/chat/completions \
-  -H "Authorization: Bearer sk-your-token" \
-  -H "X-Provider-Order: official_cheap,mix" \
+  -H "Authorization: Bearer sk-..." \
   -H "Content-Type: application/json" \
-  -d '{"model": "gpt-4o", "messages": [{"role": "user", "content": "Hello"}]}'
+  -H "X-Provider-Sort: latency" \
+  -d '{
+    "model": "gpt-5.5",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
 ```
+
+```bash Asia-Pacific (bearlab.space)
+curl https://bearlab.space/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -H "X-Provider-Sort: latency" \
+  -d '{
+    "model": "gpt-5.5",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+</CodeGroup>
+
+## Discovering live providers
+
+The list above is a snapshot. To see exactly which models your key can reach right now, query the models endpoint — the gateway auto-detects the protocol from your auth headers:
+
+<CodeGroup>
+
+```bash OpenAI protocol
+curl https://bearlab.ai/v1/models \
+  -H "Authorization: Bearer sk-..."
+```
+
+```bash Anthropic protocol
+curl https://bearlab.ai/v1/models \
+  -H "x-api-key: sk-..." \
+  -H "anthropic-version: 2023-06-01"
+```
+
+</CodeGroup>
+
+Each entry includes `id`, `owned_by`, and `supported_endpoint_types`, so you can tell which protocols a given model accepts before you call it. See [Models](/en/guides/models) for the full catalog and [Pricing](/en/guides/pricing) for per-model rates.

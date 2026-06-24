@@ -1,40 +1,98 @@
 ---
-title: "BearLab"
-description: "One key for every leading conversational model. OpenAI, Anthropic, Google, and DeepSeek through a single API."
+title: "BearLab AI"
+description: "One key for every leading conversational model. OpenAI, Anthropic, Google, DeepSeek, and more through a single API."
 ---
 
-## Service availability
-
-BearLab serves the **United States and European Union** jurisdictions directly.
-
-| Region | API domain | OpenAI | Anthropic |
-| --- | --- | --- | --- |
-| US / EU | `https://bearlab.ai` | `https://bearlab.ai/v1/chat/completions` | `https://bearlab.ai/v1/messages` |
-| Asia-Pacific | `https://bearlab.in` | `https://bearlab.in/v1/chat/completions` | `https://bearlab.in/v1/messages` |
-
-### Asia-Pacific
-
-The Asia-Pacific region is served by a **Regional Partner based in India**.
-
-API requests from this region must use the dedicated domain `https://bearlab.in` instead of `https://bearlab.ai`.
-
-Policies for service in this region are set by the Regional Partner, and users are responsible for compliance with applicable local laws.
-
-See [Service Availability](/en/guides/availability).
-
-BearLab (BearLab.ai) brings conversational models from dozens of providers under one API. Create one key, set one `base_url`, and call the latest models from OpenAI, Anthropic, Google, and DeepSeek without registering and topping up separately with each vendor.
+BearLab AI (bearlab.ai) brings conversational models from dozens of providers under one API. Create one key, set one `base_url`, and call the latest models from OpenAI, Anthropic, Google, DeepSeek, and others without registering and topping up separately with each vendor.
 
 The interface is compatible with both the OpenAI and Anthropic protocols, so existing code usually works with a one-line `base_url` change.
 
+## Regional base URLs
+
+Pick the base URL for your region and keep the same API key across both.
+
+| Region | API domain | OpenAI-compatible | Anthropic-compatible |
+| --- | --- | --- | --- |
+| US / EU | `https://bearlab.ai` | `https://bearlab.ai/v1/chat/completions` | `https://bearlab.ai/v1/messages` |
+| Asia-Pacific | `https://bearlab.space` | `https://bearlab.space/v1/chat/completions` | `https://bearlab.space/v1/messages` |
+
+<Note>
+  Asia-Pacific users should use the dedicated domain `https://bearlab.space` instead of `https://bearlab.ai`. Your `sk-...` key works the same on both. See [Service Availability](/en/guides/availability).
+</Note>
+
+## Two protocols, one key
+
+- **OpenAI-compatible** — `POST <base_url>/v1/chat/completions`, authenticate with `Authorization: Bearer sk-...`.
+- **Anthropic-compatible** — `POST <base_url>/v1/messages`, send `x-api-key: sk-...` and `anthropic-version: 2023-06-01`.
+
+<Tabs>
+  <Tab title="OpenAI-compatible (US / EU)">
+    ```bash
+    curl https://bearlab.ai/v1/chat/completions \
+      -H "Authorization: Bearer sk-..." \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "gpt-5.5",
+        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+      }'
+    ```
+  </Tab>
+  <Tab title="OpenAI-compatible (Asia-Pacific)">
+    ```bash
+    curl https://bearlab.space/v1/chat/completions \
+      -H "Authorization: Bearer sk-..." \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "gpt-5.5",
+        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+      }'
+    ```
+  </Tab>
+  <Tab title="Anthropic-compatible (US / EU)">
+    ```bash
+    curl https://bearlab.ai/v1/messages \
+      -H "x-api-key: sk-..." \
+      -H "anthropic-version: 2023-06-01" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "claude-opus-4-7",
+        "max_tokens": 256,
+        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+      }'
+    ```
+  </Tab>
+  <Tab title="Anthropic-compatible (Asia-Pacific)">
+    ```bash
+    curl https://bearlab.space/v1/messages \
+      -H "x-api-key: sk-..." \
+      -H "anthropic-version: 2023-06-01" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "claude-opus-4-7",
+        "max_tokens": 256,
+        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+## Get started
+
 <CardGroup cols={2}>
   <Card title="Quickstart" icon="rocket" href="/en/guides/quickstart" cta="Get started">
-    Create a key and make your first request in 5 minutes.
+    Create a key and make your first request in five minutes.
   </Card>
   <Card title="Introduction" icon="circle-info" href="/en/guides/introduction" cta="Learn more">
-    What BearLab is and what it does.
+    What BearLab AI is and what it does.
   </Card>
   <Card title="Chat Completions" icon="comments" href="/en/guides/chat" cta="See the API">
-    OpenAI-compatible `/v1` and Anthropic-compatible `/v1/messages`.
+    OpenAI-compatible `/v1/chat/completions` and Anthropic-compatible `/v1/messages`.
+  </Card>
+  <Card title="Models" icon="layer-group" href="/en/guides/models" cta="Browse models">
+    The full catalog you can call with a single key.
+  </Card>
+  <Card title="Pricing" icon="tag" href="/en/guides/pricing" cta="See pricing">
+    How model ratios and billing work.
   </Card>
   <Card title="Integrations" icon="plug" href="/en/integrations/cursor" cta="Connect">
     Cursor, Claude Code, Cline, Codex, and SDKs, ready to plug in.

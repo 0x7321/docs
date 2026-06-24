@@ -1,21 +1,39 @@
 ---
 title: "Cline / Roo Code"
-description: "Use BearLab in the Cline or Roo Code VS Code extensions."
+description: "Use BearLab AI in the Cline or Roo Code VS Code extensions."
 ---
 
-[Cline](https://github.com/cline/cline) and its enhanced fork [Roo Code](https://github.com/RooVetGit/Roo-Code) are VS Code AI coding extensions, connected through the OpenAI-compatible interface.
+[Cline](https://github.com/cline/cline) and its enhanced fork [Roo Code](https://github.com/RooVetGit/Roo-Code) are VS Code AI coding extensions. Connect them to BearLab AI through the OpenAI-compatible interface.
 
 <Steps>
   <Step title="Select the provider">
     In the extension settings, set API Provider to **OpenAI Compatible**.
   </Step>
   <Step title="Fill in connection details">
-    - **Base URL**: `https://bearlab.ai/v1`
+    - **Base URL**: use the endpoint for your region
+
+      <Tabs>
+        <Tab title="US / EU">
+          ```
+          https://bearlab.ai/v1
+          ```
+        </Tab>
+        <Tab title="Asia-Pacific">
+          ```
+          https://bearlab.space/v1
+          ```
+        </Tab>
+      </Tabs>
+
     - **API Key**: your `sk-...` key
-    - **Model ID**: e.g. `claude-sonnet-4-6` or `gpt-4o`
+    - **Model ID**: an exact model id from the [models endpoint](/en/guides/models), e.g. `claude-sonnet-4-6`, `gpt-5.4`, or `deepseek-v4-pro`
   </Step>
 </Steps>
 
 <Note>
-  Choose **OpenAI Compatible**, not Anthropic, with a `/v1` base URL. The Model ID must exist in the [models endpoint](/en/guides/models).
+  Choose **OpenAI Compatible**, not Anthropic, and keep the `/v1` suffix on the Base URL. Cline calls `POST /v1/chat/completions` with your key in the `Authorization: Bearer sk-...` header.
 </Note>
+
+<Warning>
+  The **Model ID** must match an id returned by the [models endpoint](/en/guides/models) exactly. Names like `gpt-4o` that are not in that list are not valid model ids and requests will be rejected.
+</Warning>

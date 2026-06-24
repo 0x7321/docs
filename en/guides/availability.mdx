@@ -1,19 +1,106 @@
 ---
 title: "Service Availability"
-description: "Where BearLab serves directly, and how the Asia-Pacific region connects."
+description: "Where BearLab AI serves directly, and which regional base URL to use."
 ---
 
-BearLab (bearlab.ai) provides services directly in the **United States and European Union** jurisdictions.
+BearLab AI exposes the same gateway through two regional base URLs. Pick the one that matches where your requests originate, then point every OpenAI-compatible or Anthropic call at that domain.
 
-### Asia-Pacific
+| Region | Base URL |
+| --- | --- |
+| United States / European Union | `https://bearlab.ai` |
+| Asia-Pacific | `https://bearlab.space` |
 
-The Asia-Pacific region is served by a **Regional Partner based in India**.
+<Note>
+The two regions share the same API surface, model catalog, and pricing. Only the host changes — your API key, request bodies, and model IDs stay identical across both.
+</Note>
 
-API requests from this region must use the dedicated domain `https://bearlab.in` instead of `https://bearlab.ai`.
+## Choosing a region
 
-Policies for service in this region are set by the Regional Partner, and users are responsible for compliance with applicable local laws.
+<Steps>
+  <Step title="Identify where your traffic comes from">
+    Use the domain closest to your client or server. US/EU traffic should target `https://bearlab.ai`; clients in Asia-Pacific should target `https://bearlab.space` for lower latency.
+  </Step>
+  <Step title="Set your base URL">
+    Configure your SDK or HTTP client to use the regional base URL plus the protocol path below.
+  </Step>
+  <Step title="Authenticate">
+    Send your BearLab AI API key as a Bearer token in the `Authorization` header. The same `sk-...` key works against both regions.
+  </Step>
+</Steps>
 
-| Region | API domain | OpenAI | Anthropic |
+## Base URLs per protocol
+
+BearLab AI speaks two request formats. The path you append depends on which one you use.
+
+| Protocol | Path | US / EU | Asia-Pacific |
 | --- | --- | --- | --- |
-| US / EU | `https://bearlab.ai` | `https://bearlab.ai/v1/chat/completions` | `https://bearlab.ai/v1/messages` |
-| Asia-Pacific | `https://bearlab.in` | `https://bearlab.in/v1/chat/completions` | `https://bearlab.in/v1/messages` |
+| OpenAI-compatible | `/v1/chat/completions` | `https://bearlab.ai/v1/chat/completions` | `https://bearlab.space/v1/chat/completions` |
+| Anthropic | `/v1/messages` | `https://bearlab.ai/v1/messages` | `https://bearlab.space/v1/messages` |
+
+For OpenAI SDKs, set the base URL to `<domain>/v1`. For Anthropic SDKs, set the base URL to `<domain>` (the SDK appends `/v1/messages` itself).
+
+## Quick examples
+
+<CodeGroup>
+
+```bash US / EU (OpenAI-compatible)
+curl https://bearlab.ai/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash Asia-Pacific (OpenAI-compatible)
+curl https://bearlab.space/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash US / EU (Anthropic)
+curl https://bearlab.ai/v1/messages \
+  -H "x-api-key: sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-7",
+    "max_tokens": 1024,
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash Asia-Pacific (Anthropic)
+curl https://bearlab.space/v1/messages \
+  -H "x-api-key: sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-7",
+    "max_tokens": 1024,
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+</CodeGroup>
+
+<Note>
+The Anthropic endpoint accepts the native Claude header style (`x-api-key` plus `anthropic-version`). A standard `Authorization: Bearer sk-...` header is also accepted for both protocols.
+</Note>
+
+## Switching regions
+
+Migrating between regions only requires changing the host in your base URL. Nothing else in your integration changes:
+
+- Keep the same API key (`sk-...`).
+- Keep the same model IDs — see [Models](/en/guides/models) for the full catalog.
+- Keep the same request and response bodies.
+
+<Warning>
+Use a single region per client where possible. Mixing `bearlab.ai` and `bearlab.space` in one application adds no benefit and makes latency harder to reason about — pick the host closest to your traffic and stay on it.
+</Warning>

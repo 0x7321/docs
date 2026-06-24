@@ -1,23 +1,90 @@
 ---
 title: "User Levels"
-description: "The difference between Tier 1 and Tier 2, and how to upgrade."
+description: "How model groups gate access, what your token's group controls, and how to call models from a different group."
 ---
 
-The platform has two user levels, mainly affecting [rate limits](/en/guides/rate-limits) and discounts.
+On BearLab AI, what you can call is decided by **model groups**, not by a numeric "tier". Every API key belongs to a group, and a model is only callable if your group is on that model's allow-list. This is the standard new-api group mechanism: a key in one group can only reach the channels and models assigned to that group.
 
-| Tier | How to get it | Rate limit |
-| --- | --- | --- |
-| **Tier 1** | Default after registration | 5 RPM |
-| **Tier 2** | Automatic after any top-up | No limit |
+<Note>
+  Asia-Pacific users: use `https://bearlab.space` in place of `https://bearlab.ai` in every example below. See [Service Availability](/en/guides/availability).
+</Note>
 
-## Tier 1
+## How groups gate access
 
-All new accounts start at Tier 1, limited to **5 RPM** (5 requests per minute), suitable for light testing.
+Each model carries an `enable_groups` allow-list. Your API key (token) carries a group. The match between the two is the whole access rule:
 
-## Tier 2
+| Concept | What it controls |
+| --- | --- |
+| **User group** | The group assigned to your account. The default group your keys inherit. |
+| **Token group** | The group set on an individual API key. May differ from your user group; `auto` means "pick an available group in priority order". |
+| **Model `enable_groups`** | The list of groups allowed to call that model. If your token's group is not in it, the model is not callable and does not appear in your `/v1/models` list. |
 
-After **any top-up**, your account is automatically upgraded to Tier 2 with no rate limit. The upgrade is immediate, with no manual request. Higher levels may also receive price discounts; see [Pricing](/en/guides/pricing).
+The catalog returned by [`/v1/models`](/en/guides/models#fetch-the-live-list) is always filtered to your token's group, so the live list is the authoritative answer to "what can this key call".
 
-## Check your level
+## The `auto` group
 
-Sign in and go to Dashboard, Profile Settings to view your current level.
+A token set to the `auto` group does not pin a single group. The platform selects an available group in priority order for each request, which provides cross-group failover when one upstream is saturated. Use `auto` when you want resilience and don't need to force a specific group; use a named group when you must target a known model set or price.
+
+## Groups on this platform
+
+The token used to generate these docs sees the **`default` group** — the baseline mixed catalog spanning every model family (see [Model Catalog](/en/guides/models)). Other groups expose larger or specialized model sets. The groups available for token assignment are:
+
+| Group | What it carries |
+| --- | --- |
+| `default` | Baseline mixed catalog (largest single group, spanning every model family) |
+| `openai` | OpenAI / GPT-family models |
+| `grok` | xAI Grok models |
+| `gemini`, `gemini-guan`, `gemini次数`, `gemini-cli`, `gemini-image` | Gemini routes (standard, official, per-request, CLI, image) |
+| `claudecode`, `claudecode特价`, `claude次数`, `claude逆向`, `claude官转纯`, `ccmax特价`, `claude max` | Claude/Anthropic routes (Claude Code, discounted, per-request, official, etc.) |
+| `claudeAWS`, `claudeAWS2`, `claudeAWS3`, `claudekiro2`, `claudekiro3缓`, `claude反重力` | Claude via alternate upstreams (AWS Bedrock, Kiro, antigravity) |
+| `codex2`, `codex3`, `codext12` | Codex / coding-tuned routes |
+| `国产` | Domestic models (DeepSeek, GLM, Qwen, Kimi, MiniMax, etc.) |
+
+<Note>
+  Group names and membership change as channels are added or retired. Treat the table above as a snapshot. Your own `/v1/models` response, scoped to your key's group, is always the source of truth.
+</Note>
+
+## Groups and pricing
+
+Groups isolate billing as well as access: the same model can carry a different effective price across groups, because each group can apply its own billing multiplier on top of the model base price and the provider multiplier. Choosing a group is therefore both an access decision and a price decision.
+
+See [Pricing & Billing](/en/guides/pricing) for how the model base price and [provider](/en/guides/providers) multiplier combine, and [Rate Limits](/en/guides/rate-limits) for the limits that apply per group.
+
+## Set or change a token's group
+
+Pick a group when you create an API key, or edit an existing key's group, in **Dashboard, API Tokens**. To use a model from a different group, assign your token to a group whose `enable_groups` includes that model.
+
+<Steps>
+  <Step title="Open API Tokens">
+    Sign in and go to Dashboard, API Tokens.
+  </Step>
+  <Step title="Choose a group">
+    On the token's Group field, select a named group, or `auto` for priority-order failover.
+  </Step>
+  <Step title="Verify with /v1/models">
+    Call the live model list with that key and confirm the model you want is present.
+
+    <Tabs>
+      <Tab title="US / EU (bearlab.ai)">
+        ```bash
+        curl https://bearlab.ai/v1/models \
+          -H "Authorization: Bearer sk-..."
+        ```
+      </Tab>
+      <Tab title="Asia-Pacific (bearlab.space)">
+        ```bash
+        curl https://bearlab.space/v1/models \
+          -H "Authorization: Bearer sk-..."
+        ```
+      </Tab>
+    </Tabs>
+  </Step>
+</Steps>
+
+## When a model is out of your group
+
+If you send a `model` whose `enable_groups` does not include your token's group, the request is rejected — the key cannot reach that channel. Fix it by switching the token to a group that includes the model, or by calling a model that your current group already carries.
+
+<Tip>
+  Check your current account group under Dashboard, Profile Settings. Check a specific key's group under Dashboard, API Tokens.
+</Tip>

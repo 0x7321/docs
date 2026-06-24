@@ -1,123 +1,179 @@
 ---
-title: "Models & Pricing API"
-description: "A public, unauthenticated endpoint listing all available conversational models and their published prices, following the OpenRouter Providers specification."
+title: "Model Catalog"
+description: "Every model available to your API key, grouped by family, and how model groups gate access."
 ---
 
-`/v1/models/pricing` is a **public, unauthenticated** aggregation endpoint that returns every conversational model currently available along with its published price. The response follows the [OpenRouter Providers specification](https://openrouter.ai/docs/guides/community/for-providers), so it can be ingested by OpenRouter, third-party price aggregators, or any custom client.
+This page lists the models your API key can call, grouped by family. Pass a model's exact `id` in the `model` field of a chat request.
 
 <Note>
-  Asia-Pacific users: use the dedicated domain `https://bearlab.in` instead of `https://bearlab.ai`. See [Service Availability](/en/guides/availability).
+  Asia-Pacific users: use the dedicated domain `https://bearlab.space` instead of `https://bearlab.ai`. See [Service Availability](/en/guides/availability).
 </Note>
+
+## How to read this catalog
+
+The catalog you see is keyed to **your token's group**. Each API key belongs to one model group, and a model only appears in your list if your group is allowed to call it. The models below are the current production line-up; the exact subset visible to your key depends on your group.
+
+| Concept | What it means |
+| --- | --- |
+| **Model `id`** | The exact string you send in `model`. Case-sensitive, copy it verbatim. |
+| **Model group** | The access tier your key belongs to. Determines which models you can call and at what price. |
+| **Endpoint type** | Which protocol a model accepts: OpenAI-compatible, Anthropic, or Gemini. |
+
+## Available models
+
+Each `id` below is a real model identifier. Within a family, the **flagship / recommended** ids are listed first; lighter or older variants follow.
+
+<Tabs>
+  <Tab title="Claude (Anthropic)">
+    | Model `id` | Notes |
+    | --- | --- |
+    | `claude-opus-4-8` | Opus 4.8, flagship reasoning |
+    | `claude-opus-4-7` | Opus 4.7 |
+    | `claude-opus-4-6` | Opus 4.6 |
+    | `claude-sonnet-4-6` | Sonnet 4.6, balanced |
+    | `claude-sonnet-4-5` | Sonnet 4.5 |
+    | `claude-haiku-4-5` | Haiku 4.5, fast and cheap |
+  </Tab>
+  <Tab title="GPT (OpenAI)">
+    | Model `id` | Notes |
+    | --- | --- |
+    | `gpt-5.5` | GPT-5.5, flagship |
+    | `gpt-5.4` | GPT-5.4 |
+    | `gpt-5.4-mini` | GPT-5.4 Mini, lightweight |
+    | `gpt-5.2` | GPT-5.2 |
+    | `gpt-5.1` | GPT-5.1 |
+    | `gpt-5` | GPT-5 |
+  </Tab>
+  <Tab title="Gemini (Google)">
+    | Model `id` | Notes |
+    | --- | --- |
+    | `gemini-3-pro` | Gemini 3 Pro, flagship |
+    | `gemini-3.1-pro` | Gemini 3.1 Pro |
+    | `gemini-3.1-pro-preview` | Gemini 3.1 Pro preview |
+    | `gemini-3.5-flash` | Gemini 3.5 Flash |
+    | `gemini-3-flash` | Gemini 3 Flash |
+    | `gemini-3-flash-preview` | Gemini 3 Flash preview |
+    | `gemini-2.5-flash` | Gemini 2.5 Flash |
+  </Tab>
+  <Tab title="Grok (xAI)">
+    | Model `id` | Notes |
+    | --- | --- |
+    | `grok-4.3` | Grok 4.3, flagship |
+    | `grok-4.2` | Grok 4.2 |
+    | `grok-4.1` | Grok 4.1 |
+    | `grok-4` | Grok 4 |
+  </Tab>
+  <Tab title="DeepSeek">
+    | Model `id` | Notes |
+    | --- | --- |
+    | `deepseek-v4-pro` | DeepSeek V4 Pro, flagship |
+    | `deepseek-v4-flash` | DeepSeek V4 Flash, fast |
+    | `deepseek-v3.2` | DeepSeek V3.2 |
+  </Tab>
+  <Tab title="GLM (Zhipu)">
+    | Model `id` | Notes |
+    | --- | --- |
+    | `glm-5.2` | GLM 5.2, flagship |
+    | `glm-5.1` | GLM 5.1 |
+    | `glm-5` | GLM 5 |
+  </Tab>
+  <Tab title="Qwen (Alibaba)">
+    | Model `id` | Notes |
+    | --- | --- |
+    | `qwen3-max` | Qwen3 Max, flagship |
+    | `qwen3.6-plus` | Qwen 3.6 Plus |
+    | `qwen3-coder-plus` | Qwen3 Coder Plus, code-tuned |
+  </Tab>
+  <Tab title="Kimi (Moonshot)">
+    | Model `id` | Notes |
+    | --- | --- |
+    | `kimi-k2.6` | Kimi K2.6, flagship |
+    | `kimi-k2.5` | Kimi K2.5 |
+  </Tab>
+  <Tab title="Other">
+    | Model `id` | Notes |
+    | --- | --- |
+    | `MiniMax-M2.5` | MiniMax M2.5 |
+  </Tab>
+</Tabs>
 
 <Note>
-  This is the "published price" entry point and carries no user identity. Prices represent the `default` group in an anonymous context. To see the price an authenticated user actually pays (group, tier discount, etc.), use the pricing page in the console.
+  This list is a snapshot. The authoritative, live list is always your own `/v1/models` response (see below) — model availability changes over time.
 </Note>
 
-## When to use it
+## Fetch the live list
 
-| Use case | Description |
-| --- | --- |
-| Price aggregation | OpenRouter and other aggregators scraping the catalog and published prices |
-| Client display | Apps, bots, and SDKs that render the model list |
-| Monitoring | Tracking catalog or price changes over time |
+`/v1/models` returns the models your key can call, in OpenAI SDK format. It requires your API key. The response format follows the format implied by your request headers (OpenAI by default; Anthropic with `x-api-key` + `anthropic-version`; Gemini with `x-goog-api-key`).
 
-## Endpoint
+<Tabs>
+  <Tab title="US / EU (bearlab.ai)">
+    ```bash
+    curl https://bearlab.ai/v1/models \
+      -H "Authorization: Bearer sk-..."
+    ```
+  </Tab>
+  <Tab title="Asia-Pacific (bearlab.space)">
+    ```bash
+    curl https://bearlab.space/v1/models \
+      -H "Authorization: Bearer sk-..."
+    ```
+  </Tab>
+</Tabs>
 
-| Item | Value |
-| --- | --- |
-| **URL** | `https://bearlab.ai/v1/models/pricing` |
-| **Method** | `GET` |
-| **Auth** | None (public) |
-| **Rate limit** | Strict per-IP critical rate limit |
-| **Caching** | 60s in-process cache; `Cache-Control: public, max-age=60` |
-
-### Request
-
-```bash
-curl https://bearlab.ai/v1/models/pricing
-```
-
-## Response structure
-
-The top level is always wrapped in a `data` array:
+Response (truncated):
 
 ```json
 {
+  "object": "list",
   "data": [
     {
-      "id": "gpt-4o",
-      "name": "GPT-4o",
-      "created": 1715558400,
-      "input_modalities": ["text"],
-      "output_modalities": ["text"],
-      "context_length": 128000,
-      "max_output_length": 16384,
-      "pricing": {
-        "prompt": "0.0000025",
-        "completion": "0.00001",
-        "request": "0",
-        "input_cache_read": "0.00000125"
-      },
-      "supported_features": ["tools", "json_mode", "structured_outputs", "logprobs"]
+      "id": "claude-opus-4-8",
+      "object": "model",
+      "created": 1626777600,
+      "owned_by": "openai",
+      "supported_endpoint_types": ["openai"]
     }
   ]
 }
 ```
 
-### Model fields
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `id` | `string` | Unique model identifier; use it when calling `/v1/chat/completions` |
-| `name` | `string` | Display name; falls back to `id` |
-| `created` | `int64` | Release time (Unix seconds) |
-| `input_modalities` / `output_modalities` | `string[]` | At least `text` |
-| `context_length` | `int` | Maximum context window in tokens |
-| `max_output_length` | `int` | Maximum output tokens per response |
-| `pricing` | `Pricing` | Pricing object; see below |
-| `pricing_tiers` | `Pricing[]` | Tiered pricing (at most one, by context-length threshold) |
-| `supported_features` | `string[]` | Capability flags |
-
-### Pricing fields
-
-All prices are **USD strings**; token-class fields are priced per token.
-
-| Field | Unit | Description |
-| --- | --- | --- |
-| `prompt` | USD / input token | Input unit price |
-| `completion` | USD / output token | Output unit price |
-| `request` | USD / request | Flat per-request fee (usually `"0"` for chat models) |
-| `internal_reasoning` | USD / reasoning token | Reasoning token price |
-| `input_cache_read` | USD / token | Cache-hit read price (usually lower) |
-| `input_cache_write` | USD / token | Cache write price |
-| `web_search` | USD / query | Built-in web search tool fee |
-
-<Note>
-  A value of `"0"` may mean "free" or "not applicable to this model". Combine `supported_features` to infer capability rather than relying on pricing alone.
-</Note>
-
-### `supported_features`
-
-| Value | Meaning |
+| Field | Description |
 | --- | --- |
-| `tools` | Function calling / tool use |
-| `reasoning` | Returns reasoning tokens |
-| `json_mode` | JSON mode output |
-| `structured_outputs` | Schema-constrained structured outputs |
-| `logprobs` | Token log probabilities |
-| `web_search` | Built-in web search tool |
+| `id` | Model identifier; pass this in the `model` field of a chat request |
+| `object` | Always `model` |
+| `created` | Release time (Unix seconds) |
+| `owned_by` | Nominal owner string |
+| `supported_endpoint_types` | Which endpoints accept this model: `openai`, `anthropic`, and/or `gemini` |
 
-## Caching and update cadence
+## Calling a model
 
-| Aspect | Behavior |
-| --- | --- |
-| Server cache | 60s in-process; admin updates take effect within 1 minute |
-| Client cache | `Cache-Control: public, max-age=60` |
-| Recommended polling | At most once every 5 minutes; aggressive polling is rate-limited |
+Send the exact `id` in the `model` field. Both example domains are shown; pick the one for your region.
 
-## Comparison with other endpoints
+<Tabs>
+  <Tab title="US / EU (bearlab.ai)">
+    ```bash
+    curl https://bearlab.ai/v1/chat/completions \
+      -H "Authorization: Bearer sk-..." \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "claude-sonnet-4-6",
+        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+      }'
+    ```
+  </Tab>
+  <Tab title="Asia-Pacific (bearlab.space)">
+    ```bash
+    curl https://bearlab.space/v1/chat/completions \
+      -H "Authorization: Bearer sk-..." \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "claude-sonnet-4-6",
+        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+      }'
+    ```
+  </Tab>
+</Tabs>
 
-| Endpoint | Purpose | Auth |
-| --- | --- | --- |
-| `/v1/models/pricing` | Public pricing in OpenRouter format | Public |
-| `/v1/models` | OpenAI-SDK-compatible model id list | Token required |
+<Tip>
+  Need prices and billing rules? See [Pricing & Billing](/en/guides/pricing). For how groups map to discounts, see [User Levels](/en/guides/user-levels).
+</Tip>

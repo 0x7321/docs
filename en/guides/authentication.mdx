@@ -3,20 +3,76 @@ title: "Authentication"
 description: "How to create, pass, and manage API keys."
 ---
 
-Every request is authenticated with an API key. Create keys on the [console](https://bearlab.ai) under API Tokens; they look like `sk-xxxxxxxx`.
+Every request is authenticated with an API key. Create keys on the [console](https://bearlab.ai) under API Tokens; they look like `sk-...`.
+
+BearLab AI is built on the New API gateway, so the same key works across the OpenAI-compatible and Anthropic-compatible protocols. You authenticate with a single Bearer token on every endpoint — there is no separate key per protocol.
 
 <Note>
-  Asia-Pacific users: use the dedicated domain `https://bearlab.in` instead of `https://bearlab.ai`. See [Service Availability](/en/guides/availability).
+  Pick the base URL for your region. Asia-Pacific users should use `https://bearlab.space`; users in the US/EU use `https://bearlab.ai`. The key and request format are identical across regions. See [Service Availability](/en/guides/availability).
 </Note>
 
 ## Passing the key
 
-The two protocols use different auth headers:
+Put your key in the `Authorization` header as a Bearer token. This is the same for both protocols.
 
-| Protocol | Header |
-| --- | --- |
-| OpenAI-compatible | `Authorization: Bearer YOUR_API_KEY` |
-| Anthropic-compatible | `x-api-key: YOUR_API_KEY` |
+| Protocol | Base URL | Auth header |
+| --- | --- | --- |
+| OpenAI-compatible | `<domain>/v1` | `Authorization: Bearer sk-...` |
+| Anthropic-compatible | `<domain>` (calls `/v1/messages`) | `Authorization: Bearer sk-...` |
+
+Where `<domain>` is `https://bearlab.ai` (US/EU) or `https://bearlab.space` (Asia-Pacific).
+
+<Note>
+  The Anthropic-compatible endpoint additionally requires an `anthropic-version` header (for example `anthropic-version: 2023-06-01`), exactly as the native Anthropic API expects.
+</Note>
+
+<CodeGroup>
+
+```bash OpenAI (US/EU)
+curl https://bearlab.ai/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash OpenAI (Asia-Pacific)
+curl https://bearlab.space/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash Anthropic (US/EU)
+curl https://bearlab.ai/v1/messages \
+  -H "Authorization: Bearer sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-7",
+    "max_tokens": 1024,
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash Anthropic (Asia-Pacific)
+curl https://bearlab.space/v1/messages \
+  -H "Authorization: Bearer sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-7",
+    "max_tokens": 1024,
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+</CodeGroup>
 
 ## Key management
 
@@ -25,11 +81,22 @@ The two protocols use different auth headers:
 - **Do not hardcode**: inject via environment variables; never commit keys to a repository.
 - **Revoke on leak**: if a key may be exposed, delete it on the console and create a new one.
 
+## Groups
+
+Models on the gateway are organized into **groups**. A group decides which upstream a model is routed to and applies a billing multiplier (its group ratio). Every key belongs to one or more groups, and a key can only call the models exposed by the groups it can access.
+
+- A model is only callable by your key if that model is enabled for one of your key's groups.
+- The same model can appear in several groups at different price points; the group's ratio scales what each call costs.
+- If you call a model your group does not expose, the request is rejected at the gateway before it reaches any upstream.
+
+This key is provisioned in the **`default`** group, so the models it sees are the baseline mixed catalog. You can browse exactly which models your key can reach — and their pricing — on the [Models & Pricing](/en/guides/pricing) page or via the live [models list](/en/guides/models) endpoint, which returns only the models your key is entitled to.
+
 ## Common auth errors
 
 | Symptom | Cause |
 | --- | --- |
-| `401 Unauthorized` | Wrong or deleted key, or mismatched header (Bearer vs x-api-key). |
-| `403 Forbidden` | Key disabled, insufficient balance, or no access to the model or group. The most common permission issue is a model that requires identity verification. |
+| `401 Unauthorized` | Missing, malformed, wrong, or deleted key. Check that the header is exactly `Authorization: Bearer sk-...`. |
+| `403 Forbidden` | Key disabled, insufficient balance, or the requested model is not exposed by any group your key can access. |
+| `404` on a model | The model name does not exist or is not available to your key's group. Pull the [models list](/en/guides/models) to see the exact ids you can call. |
 
 See [Error Handling](/en/guides/errors) for more codes.

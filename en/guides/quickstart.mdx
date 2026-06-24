@@ -3,10 +3,10 @@ title: "Quickstart"
 description: "Create a key and make your first request in 5 minutes."
 ---
 
-Three steps to call a model.
+Three steps to call a model: create a key, point your client at the right base URL, then send your first chat request.
 
 <Note>
-  Asia-Pacific users: use the dedicated domain `https://bearlab.in` instead of `https://bearlab.ai`. See [Service Availability](/en/guides/availability).
+  Pick the base URL for your region. **US / EU:** `https://bearlab.ai`. **Asia-Pacific:** `https://bearlab.space`. Everything else (keys, models, request format) is identical across regions. See [Service Availability](/en/guides/availability).
 </Note>
 
 <Steps>
@@ -14,58 +14,115 @@ Three steps to call a model.
     Register at the [console](https://bearlab.ai) and add funds on the Wallet page. New users can start with a small top-up to test.
   </Step>
   <Step title="Create an API key">
-    Go to Dashboard, API Tokens, click Add Token, and copy the `sk-...` key. The key is shown in full only once.
+    Go to Dashboard, API Tokens, click Add Token, and copy the `sk-...` key. The key is shown in full only once. You pass it as `Authorization: Bearer sk-...` on every request.
+  </Step>
+  <Step title="Set your base URL">
+    Use the base URL that matches your region and protocol:
+
+    | Protocol | US / EU | Asia-Pacific |
+    | --- | --- | --- |
+    | OpenAI-compatible | `https://bearlab.ai/v1` | `https://bearlab.space/v1` |
+    | Anthropic | `https://bearlab.ai/v1/messages` | `https://bearlab.space/v1/messages` |
   </Step>
   <Step title="Make your first request">
-    Replace `YOUR_API_KEY` with your key.
+    Send the example below. Replace `sk-...` with the key you just created.
   </Step>
 </Steps>
 
 ## Examples
 
-<Tabs>
-  <Tab title="OpenAI-compatible">
-    ```bash
-    curl https://bearlab.ai/v1/chat/completions \
-      -H "Authorization: Bearer YOUR_API_KEY" \
-      -H "Content-Type: application/json" \
-      -d '{
-        "model": "gpt-4o",
-        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
-      }'
-    ```
-  </Tab>
-  <Tab title="Anthropic-compatible">
-    ```bash
-    curl https://bearlab.ai/v1/messages \
-      -H "x-api-key: YOUR_API_KEY" \
-      -H "anthropic-version: 2023-06-01" \
-      -H "Content-Type: application/json" \
-      -d '{
-        "model": "claude-sonnet-4-6",
-        "max_tokens": 256,
-        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
-      }'
-    ```
-  </Tab>
-  <Tab title="Python (OpenAI SDK)">
-    ```python
-    from openai import OpenAI
+The OpenAI-compatible endpoint is `POST /v1/chat/completions`; the Anthropic endpoint is `POST /v1/messages`. Both authenticate with `Authorization: Bearer sk-...`. The `model` value must be one returned by the [models list](/en/guides/models) for your key — the examples below use models available to this account.
 
-    client = OpenAI(
-        api_key="YOUR_API_KEY",
-        base_url="https://bearlab.ai/v1",
-    )
+### OpenAI-compatible
 
-    resp = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[{"role": "user", "content": "Introduce yourself in one sentence"}],
-    )
-    print(resp.choices[0].message.content)
-    ```
-  </Tab>
-</Tabs>
+<CodeGroup>
+```bash US / EU (bearlab.ai)
+curl https://bearlab.ai/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+  }'
+```
+
+```bash Asia-Pacific (bearlab.space)
+curl https://bearlab.space/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+  }'
+```
+</CodeGroup>
+
+### Anthropic
+
+The Anthropic endpoint expects `max_tokens` and the `anthropic-version` header. You can authenticate with `Authorization: Bearer sk-...` (the gateway also accepts `x-api-key: sk-...`).
+
+<CodeGroup>
+```bash US / EU (bearlab.ai)
+curl https://bearlab.ai/v1/messages \
+  -H "Authorization: Bearer sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-sonnet-4-6",
+    "max_tokens": 256,
+    "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+  }'
+```
+
+```bash Asia-Pacific (bearlab.space)
+curl https://bearlab.space/v1/messages \
+  -H "Authorization: Bearer sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-sonnet-4-6",
+    "max_tokens": 256,
+    "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+  }'
+```
+</CodeGroup>
+
+### Python (OpenAI SDK)
+
+Point the SDK at the `/v1` base URL for your region. The SDK appends `/chat/completions` automatically.
+
+<CodeGroup>
+```python US / EU (bearlab.ai)
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-...",
+    base_url="https://bearlab.ai/v1",
+)
+
+resp = client.chat.completions.create(
+    model="gpt-5.4",
+    messages=[{"role": "user", "content": "Introduce yourself in one sentence"}],
+)
+print(resp.choices[0].message.content)
+```
+
+```python Asia-Pacific (bearlab.space)
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-...",
+    base_url="https://bearlab.space/v1",
+)
+
+resp = client.chat.completions.create(
+    model="gpt-5.4",
+    messages=[{"role": "user", "content": "Introduce yourself in one sentence"}],
+)
+print(resp.choices[0].message.content)
+```
+</CodeGroup>
 
 <Tip>
-  Want the model list and prices? See [Models & Pricing API](/en/guides/models). Connecting Cursor or Claude Code? See [Integrations](/en/integrations/cursor).
+  Want the full model list and prices? See [Models &amp; Pricing API](/en/guides/models). Connecting Cursor or Claude Code? See [Integrations](/en/integrations/cursor).
 </Tip>

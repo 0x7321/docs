@@ -3,46 +3,94 @@ title: "Error Handling"
 description: "Common HTTP status codes, their meaning, and how to troubleshoot."
 ---
 
-The API uses standard HTTP status codes. Error bodies are JSON and carry a request-id header (for troubleshooting and [cache routing](/en/guides/prompt-caching)):
+The API uses standard HTTP status codes. Error bodies are JSON. Every response also carries an `X-Oneapi-Request-Id` header, and the gateway appends that same request id into `error.message` — quote it when you contact support.
+
+## Error response shape
+
+The gateway is OpenAI-compatible, so errors use the OpenAI error envelope. The `type` field tells you where the error came from (the gateway itself vs. an upstream provider).
 
 ```json
 {
   "error": {
-    "code": "",
-    "message": "A description, including the request id",
-    "type": "bearlab_api_error"
+    "message": "model not found (request id: 20260624153012abc...)",
+    "type": "new_api_error",
+    "param": "",
+    "code": "model_not_found"
   }
 }
 ```
+
+| Field | Notes |
+| --- | --- |
+| `message` | Human-readable description. The request id is embedded here. |
+| `type` | Origin of the error. Gateway-side errors use `new_api_error`; provider-side errors are passed through as `openai_error`, `claude_error`, `gemini_error`, or `upstream_error`. |
+| `param` | The offending request parameter, when applicable. May be empty. |
+| `code` | A short error code (string) or `null`. Provider passthrough errors keep the upstream code. |
+
+<Note>
+  When the error comes from the upstream model provider (`type` is `openai_error` / `claude_error` / `gemini_error` / `upstream_error`), the `message` and `code` are forwarded mostly verbatim — read them as you would the provider's own error.
+</Note>
 
 ## Common status codes
 
 | Code | Meaning | Cause and fix |
 | --- | --- | --- |
-| `400` | Bad parameters | Missing or wrong-typed parameters; missing `max_tokens` under Anthropic. Fix per `message`. |
-| `401` | Auth failed | API key not set correctly (wrong/deleted key, or Bearer vs x-api-key mismatch). |
-| `403` | Insufficient balance or permission | Out of balance; or no access to the model/group. The most common permission issue is a model that requires identity verification. |
-| `429` | Rate limited | RPM / RPD / TPM / TPD reached; see [Rate Limits](/en/guides/rate-limits). May also be repeated retries from bad parameters. |
-| `503` / `504` | High load | Retry later; for chat, try streaming with `"stream": true`. |
-| `500` | Unknown server error | Contact support with the request id. |
+| `400` | Bad parameters | Missing or wrong-typed parameters. Under Anthropic (`/v1/messages`), `max_tokens` is required. Fix per `error.message` / `error.param`. |
+| `401` | Auth failed | API key missing or invalid (wrong/deleted key). Check the `Authorization: Bearer sk-...` header, and that OpenAI (`/v1`) vs. Anthropic (`/v1/messages`) protocol matches your client. |
+| `403` | No permission | The key's group has no access to the requested model, or the model is disabled. Pick a model from the [models endpoint](/en/guides/models). |
+| `404` | Not found | Unknown route or unknown `model`. Verify the base_url path and that `model` exists. |
+| `429` | Rate limited | RPM / TPM limit reached. Back off and retry; see [Rate Limits](/en/guides/rate-limits). |
+| `500` | Upstream / server error | An upstream provider or the gateway failed. Retry; if it persists, contact support with the request id. |
+| `503` / `504` | High load or timeout | Upstream busy or slow. Retry later; for chat, prefer `"stream": true` to avoid long-request timeouts. |
+
+<Note>
+  Insufficient balance and quota issues surface through `error.message` (e.g. "insufficient quota"), typically with a `403`. Read the message rather than relying on the status code alone — provider passthrough errors can map balance/quota problems to other codes.
+</Note>
+
+## Base URL and protocol
+
+Auth and routing mistakes are the most common cause of `401` / `404`. Confirm you are hitting the right region and protocol:
+
+<CodeGroup>
+
+```bash US / EU (bearlab.ai)
+# OpenAI-compatible
+https://bearlab.ai/v1/chat/completions
+# Anthropic
+https://bearlab.ai/v1/messages
+```
+
+```bash Asia-Pacific (bearlab.space)
+# OpenAI-compatible
+https://bearlab.space/v1/chat/completions
+# Anthropic
+https://bearlab.space/v1/messages
+```
+
+</CodeGroup>
+
+All requests authenticate with `Authorization: Bearer sk-...`.
 
 ## Checklist
 
 <Steps>
   <Step title="Read error.message first">
-    Most issues are explained there.
+    Most issues are explained there, and it carries the request id you need for support.
+  </Step>
+  <Step title="Check error.type">
+    `new_api_error` means the gateway rejected the request (auth, model, quota). Anything else (`openai_error`, `claude_error`, `gemini_error`, `upstream_error`) is an upstream provider error passed through.
   </Step>
   <Step title="Check base_url and protocol">
-    `/v1` (OpenAI) vs `/v1/messages` (Anthropic); the auth header must match.
+    `/v1` (OpenAI) vs. `/v1/messages` (Anthropic). Use `bearlab.ai` for US/EU and `bearlab.space` for Asia-Pacific. The `Authorization: Bearer` header must be present.
   </Step>
   <Step title="Check the model name">
-    Confirm `model` exists via the [models endpoint](/en/guides/models).
+    Confirm `model` exists and your group has access via the [models endpoint](/en/guides/models).
   </Step>
-  <Step title="Check balance / retry">
-    `403` may be balance; retry `5xx` / `429` with exponential backoff, then contact support.
+  <Step title="Retry transient errors">
+    Retry `5xx` / `429` with exponential backoff. If a `403`/`5xx` persists, contact support with the `X-Oneapi-Request-Id`.
   </Step>
 </Steps>
 
 <Note>
-  With `stream: true`, errors may arrive as SSE events after the connection opens. Handle an `error` event mid-stream, not only the HTTP status.
+  With `stream: true`, an error can arrive as an SSE event after the connection opens (the HTTP status is already `200`). Handle an `error` event mid-stream, not only the initial HTTP status.
 </Note>

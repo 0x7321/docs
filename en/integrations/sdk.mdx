@@ -1,20 +1,38 @@
 ---
 title: "Official SDKs (Python / Node)"
-description: "Use the official OpenAI or Anthropic SDKs with BearLab."
+description: "Use the official OpenAI or Anthropic SDKs with BearLab AI."
 ---
 
-Official SDKs only need a changed `base_url` and key to point at BearLab.
+The official OpenAI and Anthropic SDKs work with BearLab AI unchanged — you only swap the `base_url` and supply your BearLab AI API key (`sk-...`). BearLab AI exposes two protocols on the same gateway:
+
+- **OpenAI-compatible** — base URL is `<domain>/v1`, endpoint `/v1/chat/completions`.
+- **Anthropic** — base URL is the domain root, endpoint `/v1/messages`.
+
+<Note>
+  Pick the base URL for your region:
+
+  - **US / EU** — `https://bearlab.ai`
+  - **Asia-Pacific** — `https://bearlab.space`
+
+  Authentication is a Bearer API key in the `Authorization` header. The SDKs add this for you when you pass `api_key`. Never hardcode a real key in source — use an environment variable.
+</Note>
 
 ## OpenAI SDK
 
+Set `base_url` to `<domain>/v1`. Model ids come from the [model list](/en/guides/models) — for example `gpt-5.5`, `claude-sonnet-4-6`, or `deepseek-v4-pro`.
+
 <CodeGroup>
 ```python Python
+import os
 from openai import OpenAI
 
-client = OpenAI(api_key="YOUR_API_KEY", base_url="https://bearlab.ai/v1")
+client = OpenAI(
+    api_key=os.environ["BEARLAB_API_KEY"],   # sk-...
+    base_url="https://bearlab.ai/v1",          # Asia-Pacific: https://bearlab.space/v1
+)
 
 resp = client.chat.completions.create(
-    model="gpt-4o",
+    model="gpt-5.5",
     messages=[{"role": "user", "content": "Hello"}],
 )
 print(resp.choices[0].message.content)
@@ -24,12 +42,12 @@ print(resp.choices[0].message.content)
 import OpenAI from "openai";
 
 const client = new OpenAI({
-  apiKey: "YOUR_API_KEY",
-  baseURL: "https://bearlab.ai/v1",
+  apiKey: process.env.BEARLAB_API_KEY,        // sk-...
+  baseURL: "https://bearlab.ai/v1",            // Asia-Pacific: https://bearlab.space/v1
 });
 
 const resp = await client.chat.completions.create({
-  model: "gpt-4o",
+  model: "gpt-5.5",
   messages: [{ role: "user", content: "Hello" }],
 });
 console.log(resp.choices[0].message.content);
@@ -38,11 +56,17 @@ console.log(resp.choices[0].message.content);
 
 ## Anthropic SDK
 
+Set `base_url` to the **domain root** (no `/v1` suffix) — the Anthropic SDK appends `/v1/messages` itself. Use a Claude model id from the [model list](/en/guides/models), such as `claude-opus-4-7` or `claude-sonnet-4-6`. `max_tokens` is required by the Anthropic Messages API.
+
 <CodeGroup>
 ```python Python
+import os
 from anthropic import Anthropic
 
-client = Anthropic(api_key="YOUR_API_KEY", base_url="https://bearlab.ai")
+client = Anthropic(
+    api_key=os.environ["BEARLAB_API_KEY"],   # sk-...
+    base_url="https://bearlab.ai",             # Asia-Pacific: https://bearlab.space
+)
 
 msg = client.messages.create(
     model="claude-sonnet-4-6",
@@ -56,8 +80,8 @@ print(msg.content[0].text)
 import Anthropic from "@anthropic-ai/sdk";
 
 const client = new Anthropic({
-  apiKey: "YOUR_API_KEY",
-  baseURL: "https://bearlab.ai",
+  apiKey: process.env.BEARLAB_API_KEY,        // sk-...
+  baseURL: "https://bearlab.ai",               // Asia-Pacific: https://bearlab.space
 });
 
 const msg = await client.messages.create({
@@ -69,6 +93,10 @@ console.log(msg.content[0].text);
 ```
 </CodeGroup>
 
+<Warning>
+  Each BearLab AI model id targets a specific protocol. Claude models are reachable through the Anthropic SDK; OpenAI-format models are reachable through the OpenAI SDK. If a request returns a model-not-found or endpoint-mismatch error, confirm the model id supports the protocol you are calling — see the [model list](/en/guides/models).
+</Warning>
+
 <Tip>
-  Any tool that supports a custom OpenAI base URL (LobeChat, Chatbox, Continue, Zed, Immersive Translate) works the same way: set the base URL to `https://bearlab.ai/v1` and use your key.
+  Any tool that accepts a custom OpenAI base URL (LobeChat, Chatbox, Continue, Zed, Immersive Translate) works the same way: set the base URL to `https://bearlab.ai/v1` (US / EU) or `https://bearlab.space/v1` (Asia-Pacific) and paste your key.
 </Tip>

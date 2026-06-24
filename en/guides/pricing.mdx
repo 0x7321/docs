@@ -1,32 +1,115 @@
 ---
 title: "Pricing & Billing"
-description: "Pay-as-you-go billing, provider multipliers, top-ups, balance alerts, and refunds."
+description: "How BearLab AI bills requests: credit balance, quota types, model multipliers, completion ratio, and per-call pricing."
 ---
 
-Pay only for what you use. No minimum, and it scales elastically with your business.
+Pay only for what you use. No subscription, no minimums — every request is metered against your account balance.
 
-## Billing currency
+## How billing works
 
-The platform bills in **USD**, aligned with each provider's official pricing.
+Your account holds a **credit balance** measured in BearLab AI quota. Every request deducts quota based on the model you call and how many tokens it processes (or, for some models, a flat per-call price). USD amounts shown throughout the console use a fixed conversion:
 
-## Billing method
+<Note>
+**500,000 quota = 1 USD.** All per-token and per-call figures on this page are expressed in USD for readability.
+</Note>
 
-Conversational models are billed **per token**: input and output tokens are priced separately, and input tokens that hit [prompt caching](/en/guides/prompt-caching) get a lower rate.
+Your final cost for any request is also scaled by the **group multiplier** of the [provider group](/en/guides/providers) the request is routed through, and [user levels](/en/guides/user-levels) may apply additional discounts.
 
-Token usage per request is taken from `prompt_tokens` and `completion_tokens` in the response `usage`.
+## Two billing methods
 
-## Provider multipliers and discounts
+Each model is billed in one of two ways, decided by its `quota_type`:
 
-Each [provider](/en/guides/providers) has its own **price multiplier**. The price you pay equals the model base price times the provider multiplier. Higher [user levels](/en/guides/user-levels) may receive additional discounts.
+<CardGroup cols={2}>
+  <Card title="Pay per token" icon="coins">
+    `quota_type = 0`. Input and output tokens are priced separately. This covers the conversational/chat models — Claude, GPT-5.x, Gemini, Grok, and the domestic models.
+  </Card>
+  <Card title="Pay per call" icon="receipt">
+    `quota_type = 1`. A flat price is charged per successful request regardless of token count. Used for image generation, CLI/per-request packages, and metered endpoints.
+  </Card>
+</CardGroup>
+
+## Pay-per-token pricing
+
+For token-billed models, BearLab AI uses three numbers:
+
+| Field | Meaning |
+| --- | --- |
+| `model_ratio` | Input price multiplier. **Input USD per 1M tokens = `model_ratio` × 2.** |
+| `completion_ratio` | Output multiplier relative to input. **Output USD per 1M tokens = input price × `completion_ratio`.** |
+| `cache_ratio` | Cache-hit input tokens are billed at `cache_ratio` of the input price (most chat models: `0.1`, i.e. a 90% discount). See [prompt caching](/en/guides/prompt-caching). |
+
+Token counts come from `prompt_tokens` and `completion_tokens` in the response `usage` object.
+
+<Note>
+**Cost formula (token-billed):**
+`cost = (input_tokens × input_price + output_tokens × input_price × completion_ratio) × group_ratio`
+where `input_price = model_ratio × $2 / 1M tokens`. Cached input tokens substitute `model_ratio × cache_ratio`.
+</Note>
+
+### Representative chat models
+
+Prices below are at group multiplier `1.0`, in USD per 1M tokens.
+
+| Model | `model_ratio` | `completion_ratio` | Input / 1M | Output / 1M |
+| --- | --- | --- | --- | --- |
+| `claude-opus-4-8` | 2.5 | 5 | $5.00 | $25.00 |
+| `claude-opus-4-6` | 2.5 | 5 | $5.00 | $25.00 |
+| `claude-sonnet-4-5-20250929` | 1.5 | 5 | $3.00 | $15.00 |
+| `claude-sonnet-4-6-thinking` | 1.5 | 5 | $3.00 | $15.00 |
+| `claude-haiku-4-5` | 0.5 | 5 | $1.00 | $5.00 |
+| `gpt-5.5` | 2.5 | 6 | $5.00 | $30.00 |
+| `gpt-5.4` | 1.25 | 6 | $2.50 | $15.00 |
+| `gpt-5.4-mini` | 0.375 | 6 | $0.75 | $4.50 |
+| `gpt-5.2` | 0.875 | 8 | $1.75 | $14.00 |
+| `gpt-5.1` | 0.625 | 8 | $1.25 | $10.00 |
+| `gemini-3-pro` | 1 | 6 | $2.00 | $12.00 |
+| `gemini-3.1-pro-preview` | 1 | 6 | $2.00 | $12.00 |
+| `gemini-3-flash` | 0.25 | 6 | $0.50 | $3.00 |
+| `gemini-2.5-flash` | 0.5 | 2.5 | $1.00 | $2.50 |
+| `grok-4.3` | 1 | 5 | $2.00 | $10.00 |
+| `grok-4.1` | 1.5 | 5 | $3.00 | $15.00 |
+
+<Note>
+This is a curated sample. The catalog carries 60+ token-billed models. Always read the live price from the **Pricing** page in the console or the `/v1/models` response, which return current `model_ratio` / `completion_ratio` values per model and per group.
+</Note>
+
+### Tiered / context-length pricing
+
+Some models — primarily the domestic models routed through Alibaba Cloud (DeepSeek, Qwen, GLM, Kimi, MiniMax) — use a **tiered expression**: the per-token rate changes with the input length of the request. For example, longer-context Qwen and GLM tiers charge a higher input multiplier above 32K / 128K / 256K tokens. These models display their tier breakpoints on the console Pricing page; the billed rate is selected automatically from the request's input length.
+
+## Pay-per-call pricing
+
+For `quota_type = 1` models, a fixed `model_price` (USD) is charged per successful request. `model_ratio` and `completion_ratio` do not apply. The group multiplier still applies.
+
+| Category | Example models | Per-call price |
+| --- | --- | --- |
+| Image generation | `gpt-image-2` | $0.05 |
+| Image generation (VIP) | `gpt-image-2-vip` | $0.065 |
+| Image generation | `gemini-3-pro-image-preview` | $0.15 |
+| Gemini CLI / per-request | `gemini-2.5-pro-cli`, `gemini-3.1-pro-preview-cli` | $0.0001 |
+| Gemini metered tiers | `gemini-3-pro-preview-c1`, `gemini-2.5-pro-c1` | $0.0002 – $0.0003 |
+| Kiro-Claude per-request | `kiro-claude-opus-4-8`, `kiro-claude-sonnet-4-6` | $0.000305 – $0.00058 |
+
+<Note>
+Per-call cost is simply `model_price × group_ratio`. A failed or rejected request is not billed.
+</Note>
+
+## Free models
+
+If your key resolves only to the **free group**, the models you see (for example `claude-opus-4-7`, `deepseek-v4-pro`, `gpt-5.4-mini`, `claude-opus-4-8`) are routed at no cost to your balance. The console may show a nominal `model_price`, but the effective group multiplier for these models is **0**, so they do not draw down quota. See the [models guide](/en/guides/models) for the full free-model list returned by your key.
+
+## Group multipliers and discounts
+
+The same model can carry a different effective price depending on the [provider group](/en/guides/providers) your key is bound to. The price you pay equals the model's base price (token or per-call) times the group multiplier. Higher [user levels](/en/guides/user-levels) may unlock additional discounts.
 
 ## Top-up
 
-- Online top-up via **Stripe** (credit and debit cards); balance is credited instantly.
+- Top up your balance from the console; the credited quota is available immediately.
 - For enterprise billing or large top-ups, [contact us](mailto:support@bearlab.ai).
 
 ## Balance alerts
 
-To avoid interruptions, set an alert: Dashboard, Profile Settings, Subscription Management, set a threshold. When your balance drops below it, we notify you by email or in-app message.
+To avoid interruptions, set a low-balance threshold in the console under **Profile → Settings**. When your balance drops below it, we notify you by email or in-app message.
 
 ## High-volume plans
 
@@ -41,4 +124,4 @@ To request a refund, contact support. Note:
 - A processing fee of up to **5%** applies.
 - Refunds return to the original payment method.
 
-Stripe emails a receipt after each successful top-up. For a formal invoice, contact support with your company name, tax ID, and amount.
+For a formal invoice, contact support with your company name, tax ID, and amount.

@@ -6,75 +6,112 @@ description: "Request parameters, streaming, tool calling, and the three compati
 Chat completion is the core endpoint, offered through three compatible interfaces (OpenAI, Anthropic, Gemini) that share one key.
 
 <Note>
-  Asia-Pacific users: use the dedicated domain `https://bearlab.in` instead of `https://bearlab.ai`. See [Service Availability](/en/guides/availability).
+  BearLab AI serves two regions. US / EU users call `https://bearlab.ai`; Asia-Pacific users call the dedicated domain `https://bearlab.space`. The two regions share the same key and model catalog. See [Service Availability](/en/guides/availability).
 </Note>
 
 ## Endpoints
 
-| Protocol | Method and path |
-| --- | --- |
-| OpenAI-compatible | `POST https://bearlab.ai/v1/chat/completions` |
-| Anthropic-compatible | `POST https://bearlab.ai/v1/messages` |
-| Gemini native | `base_url=https://bearlab.ai`, `api_version=v1beta` (Google genai SDK) |
+| Protocol | Method and path (US / EU) | Method and path (Asia-Pacific) |
+| --- | --- | --- |
+| OpenAI-compatible | `POST https://bearlab.ai/v1/chat/completions` | `POST https://bearlab.space/v1/chat/completions` |
+| Anthropic-compatible | `POST https://bearlab.ai/v1/messages` | `POST https://bearlab.space/v1/messages` |
+| Gemini native | `base_url=https://bearlab.ai`, `api_version=v1beta` (Google genai SDK) | `base_url=https://bearlab.space`, `api_version=v1beta` |
+
+Authenticate every request with your API key (`sk-...`) in the `Authorization: Bearer` header. The Anthropic protocol additionally accepts the `x-api-key` header.
 
 ## Basic request
 
 <Tabs>
   <Tab title="OpenAI-compatible">
-    ```bash
-    curl https://bearlab.ai/v1/chat/completions \
-      -H "Authorization: Bearer YOUR_API_KEY" \
-      -H "Content-Type: application/json" \
-      -d '{
-        "model": "gpt-4o",
-        "messages": [
-          {"role": "system", "content": "You are a concise assistant."},
-          {"role": "user", "content": "Hello"}
-        ]
-      }'
-    ```
+    <CodeGroup>
+      ```bash US / EU
+      curl https://bearlab.ai/v1/chat/completions \
+        -H "Authorization: Bearer sk-..." \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "gpt-5.5",
+          "messages": [
+            {"role": "system", "content": "You are a concise assistant."},
+            {"role": "user", "content": "Hello"}
+          ]
+        }'
+      ```
+
+      ```bash Asia-Pacific
+      curl https://bearlab.space/v1/chat/completions \
+        -H "Authorization: Bearer sk-..." \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "gpt-5.5",
+          "messages": [
+            {"role": "system", "content": "You are a concise assistant."},
+            {"role": "user", "content": "Hello"}
+          ]
+        }'
+      ```
+    </CodeGroup>
   </Tab>
   <Tab title="Anthropic-compatible">
-    ```bash
-    curl https://bearlab.ai/v1/messages \
-      -H "x-api-key: YOUR_API_KEY" \
-      -H "anthropic-version: 2023-06-01" \
-      -H "Content-Type: application/json" \
-      -d '{
-        "model": "claude-sonnet-4-6",
-        "max_tokens": 1024,
-        "system": "You are a concise assistant.",
-        "messages": [{"role": "user", "content": "Hello"}]
-      }'
-    ```
+    <CodeGroup>
+      ```bash US / EU
+      curl https://bearlab.ai/v1/messages \
+        -H "Authorization: Bearer sk-..." \
+        -H "anthropic-version: 2023-06-01" \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "claude-sonnet-4-6",
+          "max_tokens": 1024,
+          "system": "You are a concise assistant.",
+          "messages": [{"role": "user", "content": "Hello"}]
+        }'
+      ```
+
+      ```bash Asia-Pacific
+      curl https://bearlab.space/v1/messages \
+        -H "Authorization: Bearer sk-..." \
+        -H "anthropic-version: 2023-06-01" \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "claude-sonnet-4-6",
+          "max_tokens": 1024,
+          "system": "You are a concise assistant.",
+          "messages": [{"role": "user", "content": "Hello"}]
+        }'
+      ```
+    </CodeGroup>
   </Tab>
 </Tabs>
 
 ## Common parameters
 
-| Parameter | Description |
-| --- | --- |
-| `model` | Model ID. See [Models & Pricing API](/en/guides/models). |
-| `messages` | Ordered array of conversation messages. |
-| `temperature` | Sampling temperature, `0`-`2`. |
-| `max_tokens` | Maximum output tokens. **Required** under the Anthropic protocol. |
-| `stream` | Stream the response over SSE when `true`. |
+| Parameter | Required | Description |
+| --- | --- | --- |
+| `model` | Yes | Model ID. See [Models & Pricing API](/en/guides/models). |
+| `messages` | Yes | Ordered array of conversation messages. |
+| `max_tokens` | OpenAI: optional · Anthropic: **required** | Maximum output tokens. |
+| `temperature` | No | Sampling temperature. OpenAI range `0`-`2`; Anthropic range `0`-`1`. |
+| `stream` | No | Stream the response over SSE when `true`. |
+| `tools` | No | Function / tool definitions for tool calling. |
 
 <Warning>
-  Protocol difference: the OpenAI protocol puts the system prompt in `messages` as `role: system`; the Anthropic protocol uses a top-level `system` field and requires `max_tokens`.
+  Protocol difference: the OpenAI protocol puts the system prompt in `messages` as `role: system`, and `max_tokens` is optional. The Anthropic protocol uses a top-level `system` field and **requires** `max_tokens`.
 </Warning>
 
 ## Streaming
 
-Set `stream: true`; the response is pushed over SSE, ending with `data: [DONE]` (OpenAI protocol).
+Set `stream: true` to receive the response over Server-Sent Events.
 
-```python
+- **OpenAI protocol** — incremental `delta` chunks, terminated by a final `data: [DONE]` line.
+- **Anthropic protocol** — typed SSE events (`message_start`, `content_block_delta`, `message_stop`, …); there is no `[DONE]` sentinel.
+
+<CodeGroup>
+```python US / EU
 from openai import OpenAI
 
-client = OpenAI(api_key="YOUR_API_KEY", base_url="https://bearlab.ai/v1")
+client = OpenAI(api_key="sk-...", base_url="https://bearlab.ai/v1")
 
 stream = client.chat.completions.create(
-    model="gpt-4o",
+    model="gpt-5.5",
     messages=[{"role": "user", "content": "Write a short poem about spring."}],
     stream=True,
 )
@@ -84,6 +121,23 @@ for chunk in stream:
         print(delta, end="", flush=True)
 ```
 
+```python Asia-Pacific
+from openai import OpenAI
+
+client = OpenAI(api_key="sk-...", base_url="https://bearlab.space/v1")
+
+stream = client.chat.completions.create(
+    model="gpt-5.5",
+    messages=[{"role": "user", "content": "Write a short poem about spring."}],
+    stream=True,
+)
+for chunk in stream:
+    delta = chunk.choices[0].delta.content
+    if delta:
+        print(delta, end="", flush=True)
+```
+</CodeGroup>
+
 ## Tool calling
 
 Both the OpenAI and Anthropic protocols support tool calling.
@@ -91,7 +145,7 @@ Both the OpenAI and Anthropic protocols support tool calling.
 ```python
 from openai import OpenAI
 
-client = OpenAI(base_url="https://bearlab.ai/v1", api_key="YOUR_API_KEY")
+client = OpenAI(base_url="https://bearlab.ai/v1", api_key="sk-...")
 
 tools = [{
     "type": "function",
@@ -107,32 +161,51 @@ tools = [{
 }]
 
 resp = client.chat.completions.create(
-    model="gpt-4o",
+    model="gpt-5.5",
     messages=[{"role": "user", "content": "What's the weather in London?"}],
     tools=tools,
 )
 print(resp.choices[0].message)
 ```
 
+<Note>
+  Asia-Pacific users: set `base_url="https://bearlab.space/v1"` instead.
+</Note>
+
 ## Gemini native protocol
 
 Gemini models can be called in the native Google AI Studio format, with no conversion to OpenAI format.
 
-```python
+<CodeGroup>
+```python US / EU
 from google import genai
 from google.genai import types
 
 client = genai.Client(
-    api_key="YOUR_API_KEY",
+    api_key="sk-...",
     http_options=types.HttpOptions(api_version="v1beta", base_url="https://bearlab.ai"),
 )
 
-resp = client.models.generate_content(model="gemini-2.5-pro", contents="Hello")
+resp = client.models.generate_content(model="gemini-3.1-pro-preview", contents="Hello")
 print(resp.text)
 ```
 
+```python Asia-Pacific
+from google import genai
+from google.genai import types
+
+client = genai.Client(
+    api_key="sk-...",
+    http_options=types.HttpOptions(api_version="v1beta", base_url="https://bearlab.space"),
+)
+
+resp = client.models.generate_content(model="gemini-3.1-pro-preview", contents="Hello")
+print(resp.text)
+```
+</CodeGroup>
+
 <Warning>
-  1. Set `base_url` to `https://bearlab.ai` (no `/v1beta` suffix; the SDK appends it).
+  1. Set `base_url` to the region root (`https://bearlab.ai` or `https://bearlab.space`); do not append `/v1beta`, the SDK adds it.
   2. Set `api_version` to `v1beta`.
   3. Install: Python `pip install google-genai`, Node.js `npm install @google/genai`.
 </Warning>

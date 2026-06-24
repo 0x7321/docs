@@ -1,24 +1,47 @@
 ---
 title: "Cursor"
-description: "Use BearLab conversational models in Cursor."
+description: "Use BearLab AI conversational models in Cursor."
 ---
 
-[Cursor](https://cursor.com) is a popular AI code editor. Connect it through the OpenAI-compatible interface.
+[Cursor](https://cursor.com) is a popular AI code editor. Connect it through BearLab AI's OpenAI-compatible interface.
+
+Cursor only speaks the OpenAI protocol, so always use the `/v1` base URL and authenticate with your `sk-...` key.
 
 <Steps>
   <Step title="Open model settings">
-    Open Settings, Models.
+    Open **Settings → Models**.
   </Step>
   <Step title="Override the base URL">
-    In the OpenAI API Key area, expand Override OpenAI Base URL and set:
-    - **Base URL**: `https://bearlab.ai/v1`
-    - **API Key**: your `sk-...` key
+    In the **OpenAI API Key** area, expand **Override OpenAI Base URL** and set the value for your region:
+
+    <Tabs>
+      <Tab title="US / EU">
+        - **Base URL**: `https://bearlab.ai/v1`
+        - **API Key**: your `sk-...` key
+      </Tab>
+      <Tab title="Asia-Pacific">
+        - **Base URL**: `https://bearlab.space/v1`
+        - **API Key**: your `sk-...` key
+      </Tab>
+    </Tabs>
   </Step>
   <Step title="Add models and verify">
-    Add the model names you want (e.g. `gpt-4o`, `claude-sonnet-4-6`), save, then click Verify.
+    Cursor does not pull the model list automatically when a custom base URL is set, so add the model names manually. Use ids exactly as they appear in the [models endpoint](/en/guides/models), for example:
+
+    - `gpt-5.5`
+    - `claude-sonnet-4-6`
+    - `claude-opus-4-7`
+    - `gemini-3.1-pro-preview`
+    - `deepseek-v4-pro`
+
+    Save, then click **Verify**.
   </Step>
 </Steps>
 
 <Note>
-  Cursor uses the OpenAI-compatible protocol only, so the base URL ends with `/v1`. Model names must exist in the [models endpoint](/en/guides/models). If verification fails, confirm the key with the [Quickstart](/en/guides/quickstart) curl first.
+  Model names must match an id returned by the [models endpoint](/en/guides/models) exactly — including the suffix. A name that does not exist will fail verification. If verification still fails, confirm the key first with the curl in the [Quickstart](/en/guides/quickstart).
 </Note>
+
+<Warning>
+  Pick the base URL that matches your region. `https://bearlab.ai` serves US/EU and `https://bearlab.space` serves Asia-Pacific; the path stays `/v1` for both. Do not mix a region's key with the other region's base URL.
+</Warning>
