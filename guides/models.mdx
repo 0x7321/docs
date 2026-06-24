@@ -1,150 +1,179 @@
 ---
-title: "模型與定價介面"
-description: "公開免鑑權介面，列出所有可用對話模型及其公開價格，遵循 OpenRouter Providers 規範。"
+title: "模型目錄"
+description: "您的 API 金鑰可用的每一個模型，按系列分組，以及模型群組如何管制存取。"
 ---
 
-`/v1/models/pricing` 是一個**公開、免鑑權**的聚合介面，返回平臺當前所有可用對話模型及其公開價格。響應嚴格遵循 [OpenRouter Providers 規範](https://openrouter.ai/docs/guides/community/for-providers)，可被 OpenRouter、第三方比價工具或任意自定義客戶端直接讀取。
+本頁列出您的 API 金鑰可以呼叫的模型，按系列分組。在聊天請求的 `model` 欄位中傳入模型的確切 `id`。
 
 <Note>
-  亞太區域使用者:請改用專用網域 `https://bearlab.in`，而非 `https://bearlab.ai`。詳見 [服務區域](/guides/availability)。
+  亞太地區使用者：請改用專用網域 `https://bearlab.space` 而非 `https://bearlab.ai`。詳見 [服務可用性](/guides/availability)。
 </Note>
+
+## 如何閱讀本目錄
+
+您看到的目錄受限於 **您的權杖群組**。每個 API 金鑰屬於一個模型群組，模型只有在您的群組被允許呼叫時才會出現在您的清單中。下方的模型是當前的正式生產陣容；您的金鑰實際看到的子集取決於您的群組。
+
+| 概念 | 意義 |
+| --- | --- |
+| **模型 `id`** | 您在 `model` 欄位中傳送的確切字串。區分大小寫，請逐字複製。 |
+| **模型群組** | 您的金鑰所屬的存取層級。決定您可以呼叫哪些模型以及以什麼價格。 |
+| **端點類型** | 模型接受的協議：OpenAI 相容、Anthropic 或 Gemini。 |
+
+## 可用的模型
+
+下方的每個 `id` 都是真實的模型識別碼。在同一個系列中，**旗艦 / 推薦** id 列在最前面；較輕量或較舊的變體隨後。
+
+<Tabs>
+  <Tab title="Claude (Anthropic)">
+    | 模型 `id` | 備註 |
+    | --- | --- |
+    | `claude-opus-4-8` | Opus 4.8，旗艦推理模型 |
+    | `claude-opus-4-7` | Opus 4.7 |
+    | `claude-opus-4-6` | Opus 4.6 |
+    | `claude-sonnet-4-6` | Sonnet 4.6，均衡型 |
+    | `claude-sonnet-4-5` | Sonnet 4.5 |
+    | `claude-haiku-4-5` | Haiku 4.5，快速且經濟 |
+  </Tab>
+  <Tab title="GPT (OpenAI)">
+    | 模型 `id` | 備註 |
+    | --- | --- |
+    | `gpt-5.5` | GPT-5.5，旗艦版本 |
+    | `gpt-5.4` | GPT-5.4 |
+    | `gpt-5.4-mini` | GPT-5.4 Mini，輕量級 |
+    | `gpt-5.2` | GPT-5.2 |
+    | `gpt-5.1` | GPT-5.1 |
+    | `gpt-5` | GPT-5 |
+  </Tab>
+  <Tab title="Gemini (Google)">
+    | 模型 `id` | 備註 |
+    | --- | --- |
+    | `gemini-3-pro` | Gemini 3 Pro，旗艦版本 |
+    | `gemini-3.1-pro` | Gemini 3.1 Pro |
+    | `gemini-3.1-pro-preview` | Gemini 3.1 Pro 預覽版 |
+    | `gemini-3.5-flash` | Gemini 3.5 Flash |
+    | `gemini-3-flash` | Gemini 3 Flash |
+    | `gemini-3-flash-preview` | Gemini 3 Flash 預覽版 |
+    | `gemini-2.5-flash` | Gemini 2.5 Flash |
+  </Tab>
+  <Tab title="Grok (xAI)">
+    | 模型 `id` | 備註 |
+    | --- | --- |
+    | `grok-4.3` | Grok 4.3，旗艦版本 |
+    | `grok-4.2` | Grok 4.2 |
+    | `grok-4.1` | Grok 4.1 |
+    | `grok-4` | Grok 4 |
+  </Tab>
+  <Tab title="DeepSeek">
+    | 模型 `id` | 備註 |
+    | --- | --- |
+    | `deepseek-v4-pro` | DeepSeek V4 Pro，旗艦版本 |
+    | `deepseek-v4-flash` | DeepSeek V4 Flash，快速版 |
+    | `deepseek-v3.2` | DeepSeek V3.2 |
+  </Tab>
+  <Tab title="GLM (Zhipu)">
+    | 模型 `id` | 備註 |
+    | --- | --- |
+    | `glm-5.2` | GLM 5.2，旗艦版本 |
+    | `glm-5.1` | GLM 5.1 |
+    | `glm-5` | GLM 5 |
+  </Tab>
+  <Tab title="Qwen (Alibaba)">
+    | 模型 `id` | 備註 |
+    | --- | --- |
+    | `qwen3-max` | Qwen3 Max，旗艦版本 |
+    | `qwen3.6-plus` | Qwen 3.6 Plus |
+    | `qwen3-coder-plus` | Qwen3 Coder Plus，程式碼專用 |
+  </Tab>
+  <Tab title="Kimi (Moonshot)">
+    | 模型 `id` | 備註 |
+    | --- | --- |
+    | `kimi-k2.6` | Kimi K2.6，旗艦版本 |
+    | `kimi-k2.5` | Kimi K2.5 |
+  </Tab>
+  <Tab title="其他">
+    | 模型 `id` | 備註 |
+    | --- | --- |
+    | `MiniMax-M2.5` | MiniMax M2.5 |
+  </Tab>
+</Tabs>
 
 <Note>
-  這是「公開價格」入口，不攜帶使用者身份。返回的是匿名上下文下 `default` 分組的價格。要查詢某個已登入使用者的實際成交價（分組、等級折扣等），請用控制檯內的定價頁。
+  本清單只是一個快照。權威的即時清單始終是您自己的 `/v1/models` 回應（見下文）— 模型可用性隨著時間而變化。
 </Note>
 
-## 何時使用
+## 取得即時清單
 
-| 場景 | 說明 |
-| --- | --- |
-| 第三方比價 | OpenRouter 等聚合器抓取模型目錄與公開價格 |
-| 客戶端展示 | App、機器人、SDK 需要渲染模型列表 |
-| 監控 | 跟蹤模型目錄或價格隨時間的變化 |
+`/v1/models` 會傳回您的金鑰可以呼叫的模型，採用 OpenAI SDK 格式。它需要您的 API 金鑰。回應格式遵循您的請求標頭所暗示的格式（預設為 OpenAI；使用 `x-api-key` + `anthropic-version` 時為 Anthropic；使用 `x-goog-api-key` 時為 Gemini）。
 
-## 端點
+<Tabs>
+  <Tab title="美國 / 歐盟 (bearlab.ai)">
+    ```bash
+    curl https://bearlab.ai/v1/models \
+      -H "Authorization: Bearer sk-..."
+    ```
+  </Tab>
+  <Tab title="亞太地區 (bearlab.space)">
+    ```bash
+    curl https://bearlab.space/v1/models \
+      -H "Authorization: Bearer sk-..."
+    ```
+  </Tab>
+</Tabs>
 
-| 項 | 值 |
-| --- | --- |
-| **URL** | `https://bearlab.ai/v1/models/pricing` |
-| **方法** | `GET` |
-| **鑑權** | 無（公開） |
-| **限流** | 嚴格的單 IP 關鍵介面限流 |
-| **快取** | 60 秒程序內快取；響應帶 `Cache-Control: public, max-age=60` |
-
-### 請求示例
-
-<CodeGroup>
-```bash cURL
-curl https://bearlab.ai/v1/models/pricing
-```
-
-```python Python
-import requests
-
-resp = requests.get("https://bearlab.ai/v1/models/pricing", timeout=10)
-data = resp.json()["data"]
-for m in data[:3]:
-    print(m["id"], m["pricing"])
-```
-
-```javascript Node.js
-const resp = await fetch("https://bearlab.ai/v1/models/pricing");
-const { data } = await resp.json();
-console.log(data.slice(0, 3).map(m => ({ id: m.id, pricing: m.pricing })));
-```
-</CodeGroup>
-
-## 響應結構
-
-頂層始終包裹在 `data` 陣列裡：
+回應（截斷）：
 
 ```json
 {
+  "object": "list",
   "data": [
     {
-      "id": "gpt-4o",
-      "name": "GPT-4o",
-      "created": 1715558400,
-      "input_modalities": ["text"],
-      "output_modalities": ["text"],
-      "context_length": 128000,
-      "max_output_length": 16384,
-      "pricing": {
-        "prompt": "0.0000025",
-        "completion": "0.00001",
-        "request": "0",
-        "input_cache_read": "0.00000125"
-      },
-      "supported_sampling_parameters": [
-        "temperature", "top_p", "frequency_penalty", "presence_penalty",
-        "stop", "seed", "max_tokens", "response_format",
-        "tools", "tool_choice", "logprobs"
-      ],
-      "supported_features": ["tools", "json_mode", "structured_outputs", "logprobs"]
+      "id": "claude-opus-4-8",
+      "object": "model",
+      "created": 1626777600,
+      "owned_by": "openai",
+      "supported_endpoint_types": ["openai"]
     }
   ]
 }
 ```
 
-### 模型欄位
-
-| 欄位 | 型別 | 說明 |
-| --- | --- | --- |
-| `id` | `string` | 模型唯一標識，呼叫 `/v1/chat/completions` 時填這個值 |
-| `name` | `string` | 展示名（如 `GPT-4o`），未配置時回退為 `id` |
-| `created` | `int64` | 模型釋出時間（Unix 秒） |
-| `input_modalities` / `output_modalities` | `string[]` | 輸入/輸出模態，至少包含 `text` |
-| `context_length` | `int` | 最大上下文視窗（token） |
-| `max_output_length` | `int` | 單次最大輸出 token 數 |
-| `pricing` | `Pricing` | 價格物件，見下 |
-| `pricing_tiers` | `Pricing[]` | 階梯價（最多一項；按上下文長度閾值觸發） |
-| `supported_sampling_parameters` | `string[]` | 支援的取樣引數 |
-| `supported_features` | `string[]` | 支援的能力標記，見下 |
-
-### 價格欄位
-
-價格均為 **USD 字串**，token 類按 token 計價。
-
-| 欄位 | 單位 | 說明 |
-| --- | --- | --- |
-| `prompt` | USD / 輸入 token | 輸入單價 |
-| `completion` | USD / 輸出 token | 輸出單價 |
-| `request` | USD / 次 | 每次請求的固定費（多數對話模型為 `"0"`） |
-| `internal_reasoning` | USD / 推理 token | 推理 token 價（o 系 / Claude thinking） |
-| `input_cache_read` | USD / token | 命中快取的讀取價（通常更低） |
-| `input_cache_write` | USD / token | 快取寫入價 |
-| `web_search` | USD / 次 | 內建聯網搜尋工具費 |
-
-<Note>
-  值為 `"0"` 可能表示「免費」或「該模型不適用此維度」。請結合 `supported_features` 與 `supported_sampling_parameters` 判斷能力，不要只看價格。
-</Note>
-
-### `supported_features` 取值
-
-| 值 | 含義 |
+| 欄位 | 描述 |
 | --- | --- |
-| `tools` | 函式呼叫 / 工具使用 |
-| `reasoning` | 返回推理 token（`reasoning_content` / `thinking`） |
-| `json_mode` | 支援 JSON 模式輸出 |
-| `structured_outputs` | 支援 schema 約束的結構化輸出 |
-| `logprobs` | 返回 token 對數機率 |
-| `web_search` | 內建聯網搜尋工具 |
+| `id` | 模型識別碼；在聊天請求的 `model` 欄位中傳入此值 |
+| `object` | 始終為 `model` |
+| `created` | 發佈時間（Unix 秒） |
+| `owned_by` | 名義所有者字串 |
+| `supported_endpoint_types` | 接受此模型的端點：`openai`、`anthropic` 和/或 `gemini` |
 
-## 階梯價
+## 呼叫一個模型
 
-部分模型在超過某個上下文長度閾值後改用另一檔單價（如 Gemini 2.5 Pro 在 ≥128K token 時翻倍）。上層檔位透過 `pricing_tiers` 暴露：`pricing` 是基礎檔，`pricing_tiers[0]` 是上層檔，當總輸入 token ≥ `min_context` 時整體套用上層檔價格（取滿足條件中閾值最高的一檔，非累進）。
+在 `model` 欄位中傳送確切的 `id`。兩個範例網域均已顯示；請選擇適合您地區的那個。
 
-## 快取與更新節奏
+<Tabs>
+  <Tab title="美國 / 歐盟 (bearlab.ai)">
+    ```bash
+    curl https://bearlab.ai/v1/chat/completions \
+      -H "Authorization: Bearer sk-..." \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "claude-sonnet-4-6",
+        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+      }'
+    ```
+  </Tab>
+  <Tab title="亞太地區 (bearlab.space)">
+    ```bash
+    curl https://bearlab.space/v1/chat/completions \
+      -H "Authorization: Bearer sk-..." \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "claude-sonnet-4-6",
+        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+      }'
+    ```
+  </Tab>
+</Tabs>
 
-| 方面 | 行為 |
-| --- | --- |
-| 服務端快取 | 60 秒程序內快取，後臺改價 1 分鐘內生效 |
-| 客戶端快取 | `Cache-Control: public, max-age=60`，CDN / 瀏覽器可安全快取 |
-| 建議輪詢 | 最多每 5 分鐘一次，激進輪詢會被限流 |
-
-## 與其它介面的區別
-
-| 介面 | 用途 | 鑑權 |
-| --- | --- | --- |
-| `/v1/models/pricing` | 本介面：OpenRouter 格式的公開價格 | 公開 |
-| `/v1/models` | OpenAI SDK 相容的模型 id 列表 | 需令牌 |
+<Tip>
+  需要價格和計費規則嗎？詳見 [定價與計費](/guides/pricing)。關於群組如何對應折扣，詳見 [使用者等級](/guides/user-levels)。
+</Tip>

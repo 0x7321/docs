@@ -1,24 +1,39 @@
 ---
-title: "官方 SDK（Python / Node）"
-description: "用 OpenAI 或 Anthropic 官方 SDK 接入 BearLab AI。"
+title: "官方 SDK (Python / Node)"
+description: "搭配 BearLab AI 使用官方 OpenAI 或 Anthropic SDK。"
 ---
 
-官方 SDK 只需改 `base_url` 和密钥即可指向平台。
+官方 OpenAI 和 Anthropic SDK 可直接与 BearLab AI 搭配使用——只需更换 `base_url` 并提供 BearLab AI API 密钥。BearLab AI 在同一网关上暴露两种协议：
+
+- **OpenAI 兼容** — 基础 URL 为 `<domain>/v1`，端点为 `/v1/chat/completions`。
+- **Anthropic** — 基础 URL 为域名根目录，端点为 `/v1/messages`。
+
+<Note>
+  根据您的地区选择基础 URL：
+
+  - **美国 / 欧洲** — `https://bearlab.ai`
+  - **亚太地区** — `https://bearlab.space`
+
+  认证方式为在 `Authorization` 标题中使用承载者 API 密钥。当您传入 `api_key` 时，SDK 会自动添加此项。切勿在源代码中硬编码真实密钥——请使用环境变量。
+</Note>
 
 ## OpenAI SDK
 
+将 `base_url` 设为 `<domain>/v1`。模型 ID 来自[模型列表](/zh-my/guides/models)——例如 `gpt-5.5`、`claude-sonnet-4-6` 或 `deepseek-v4-pro`。
+
 <CodeGroup>
 ```python Python
+import os
 from openai import OpenAI
 
 client = OpenAI(
-    api_key="YOUR_API_KEY",
-    base_url="https://bearlab.ai/v1",
+    api_key=os.environ["BEARLAB_API_KEY"],   # sk-...
+    base_url="https://bearlab.ai/v1",          # Asia-Pacific: https://bearlab.space/v1
 )
 
 resp = client.chat.completions.create(
-    model="gpt-4o",
-    messages=[{"role": "user", "content": "你好"}],
+    model="gpt-5.5",
+    messages=[{"role": "user", "content": "Hello"}],
 )
 print(resp.choices[0].message.content)
 ```
@@ -27,13 +42,13 @@ print(resp.choices[0].message.content)
 import OpenAI from "openai";
 
 const client = new OpenAI({
-  apiKey: "YOUR_API_KEY",
-  baseURL: "https://bearlab.ai/v1",
+  apiKey: process.env.BEARLAB_API_KEY,        // sk-...
+  baseURL: "https://bearlab.ai/v1",            // Asia-Pacific: https://bearlab.space/v1
 });
 
 const resp = await client.chat.completions.create({
-  model: "gpt-4o",
-  messages: [{ role: "user", content: "你好" }],
+  model: "gpt-5.5",
+  messages: [{ role: "user", content: "Hello" }],
 });
 console.log(resp.choices[0].message.content);
 ```
@@ -41,19 +56,22 @@ console.log(resp.choices[0].message.content);
 
 ## Anthropic SDK
 
+将 `base_url` 设为**域名根目录**（无 `/v1` 后缀）——Anthropic SDK 会自行附加 `/v1/messages`。使用[模型列表](/zh-my/guides/models)中的 Claude 模型 ID，例如 `claude-opus-4-7` 或 `claude-sonnet-4-6`。`max_tokens` 为 Anthropic Messages API 的必需参数。
+
 <CodeGroup>
 ```python Python
+import os
 from anthropic import Anthropic
 
 client = Anthropic(
-    api_key="YOUR_API_KEY",
-    base_url="https://bearlab.ai",
+    api_key=os.environ["BEARLAB_API_KEY"],   # sk-...
+    base_url="https://bearlab.ai",             # Asia-Pacific: https://bearlab.space
 )
 
 msg = client.messages.create(
     model="claude-sonnet-4-6",
     max_tokens=1024,
-    messages=[{"role": "user", "content": "你好"}],
+    messages=[{"role": "user", "content": "Hello"}],
 )
 print(msg.content[0].text)
 ```
@@ -62,19 +80,23 @@ print(msg.content[0].text)
 import Anthropic from "@anthropic-ai/sdk";
 
 const client = new Anthropic({
-  apiKey: "YOUR_API_KEY",
-  baseURL: "https://bearlab.ai",
+  apiKey: process.env.BEARLAB_API_KEY,        // sk-...
+  baseURL: "https://bearlab.ai",               // Asia-Pacific: https://bearlab.space
 });
 
 const msg = await client.messages.create({
   model: "claude-sonnet-4-6",
   max_tokens: 1024,
-  messages: [{ role: "user", content: "你好" }],
+  messages: [{ role: "user", content: "Hello" }],
 });
 console.log(msg.content[0].text);
 ```
 </CodeGroup>
 
+<Warning>
+  每个 BearLab AI 模型 ID 都以特定协议为目标。Claude 模型通过 Anthropic SDK 可达；OpenAI 格式的模型通过 OpenAI SDK 可达。如果请求返回找不到模型或端点不匹配的错误，请确认该模型 ID 支持您所调用的协议——参阅[模型列表](/zh-my/guides/models)。
+</Warning>
+
 <Tip>
-  任何支持「自定义 OpenAI Base URL」的工具（LobeChat、Chatbox、Continue、Zed、沉浸式翻译等）都同理：Base URL 设为 `https://bearlab.ai/v1`，密钥填你的 Key 即可。
+  任何接受自定义 OpenAI 基础 URL 的工具（LobeChat、Chatbox、Continue、Zed、Immersive Translate）都能以同样方式运作：将基础 URL 设为 `https://bearlab.ai/v1`（美国 / 欧洲）或 `https://bearlab.space/v1`（亚太地区），并粘贴您的密钥。
 </Tip>

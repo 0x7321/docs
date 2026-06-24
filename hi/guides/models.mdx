@@ -1,123 +1,179 @@
 ---
-title: "Models & Pricing API"
-description: "एक public, unauthenticated endpoint जो सभी available conversational models और उनकी published prices को list करता है, OpenRouter Providers specification को follow करते हुए।"
+title: "मॉडल कैटलॉग"
+description: "आपकी API कुंजी के लिए उपलब्ध प्रत्येक मॉडल, परिवार द्वारा समूहीकृत, और मॉडल समूह कैसे पहुँच को नियंत्रित करता है।"
 ---
 
-`/v1/models/pricing` एक **public, unauthenticated** aggregation endpoint है जो हर conversational model को currently available के साथ return करता है उसकी published price के साथ। Response [OpenRouter Providers specification](https://openrouter.ai/docs/guides/community/for-providers) को follow करता है, इसलिए इसे OpenRouter, third-party price aggregators, या किसी भी custom client द्वारा ingested किया जा सकता है।
+यह पृष्ठ आपकी API कुंजी द्वारा कॉल किए जा सकने वाले मॉडलों को परिवार द्वारा समूहीकृत करके सूचीबद्ध करता है। चैट अनुरोध के `model` फ़ील्ड में मॉडल का सटीक `id` पास करें।
 
 <Note>
-  Asia-Pacific users: `https://bearlab.ai` के बजाय समर्पित डोमेन `https://bearlab.in` का उपयोग करें। [Service Availability](/hi/guides/availability) देखें।
+  एशिया-प्रशांत उपयोगकर्ता: `https://bearlab.ai` के बजाय समर्पित डोमेन `https://bearlab.space` का उपयोग करें। [सेवा उपलब्धता](/hi/guides/availability) देखें।
 </Note>
+
+## इस कैटलॉग को कैसे पढ़ें
+
+जो कैटलॉग आप देखते हैं वह **आपके टोकन समूह** के लिए बंधा हुआ है। प्रत्येक API कुंजी एक मॉडल समूह के अंतर्गत आती है, और एक मॉडल केवल तभी आपकी सूची में दिखाई देता है जब आपका समूह इसे कॉल करने के लिए अनुमति दी जाती है। नीचे दिए गए मॉडल वर्तमान उत्पादन लाइनअप हैं; आपकी कुंजी के लिए दिखाया गया सटीक सबसेट आपके समूह पर निर्भर करता है।
+
+| अवधारणा | अर्थ |
+| --- | --- |
+| **मॉडल `id`** | वह सटीक स्ट्रिंग जो आप `model` में भेजते हैं। केस-संवेदनशील, इसे शब्दशः कॉपी करें। |
+| **मॉडल समूह** | एक्सेस टियर जिसके तहत आपकी कुंजी आती है। निर्धारित करता है कि आप कौन से मॉडल कॉल कर सकते हैं और किस कीमत पर। |
+| **एंडपॉइंट प्रकार** | कौन सी प्रोटोकॉल एक मॉडल स्वीकार करता है: OpenAI-संगत, Anthropic, या Gemini। |
+
+## उपलब्ध मॉडल
+
+नीचे प्रत्येक `id` एक वास्तविक मॉडल पहचानकर्ता है। एक परिवार के भीतर, **फ्लैगशिप / अनुशंसित** आईडी पहले सूचीबद्ध हैं; हल्के या पुराने वेरिएंट अनुसरण करते हैं।
+
+<Tabs>
+  <Tab title="Claude (Anthropic)">
+    | मॉडल `id` | नोट्स |
+    | --- | --- |
+    | `claude-opus-4-8` | Opus 4.8, फ्लैगशिप रीजनिंग |
+    | `claude-opus-4-7` | Opus 4.7 |
+    | `claude-opus-4-6` | Opus 4.6 |
+    | `claude-sonnet-4-6` | Sonnet 4.6, संतुलित |
+    | `claude-sonnet-4-5` | Sonnet 4.5 |
+    | `claude-haiku-4-5` | Haiku 4.5, तेज़ और सस्ता |
+  </Tab>
+  <Tab title="GPT (OpenAI)">
+    | मॉडल `id` | नोट्स |
+    | --- | --- |
+    | `gpt-5.5` | GPT-5.5, फ्लैगशिप |
+    | `gpt-5.4` | GPT-5.4 |
+    | `gpt-5.4-mini` | GPT-5.4 Mini, हल्का |
+    | `gpt-5.2` | GPT-5.2 |
+    | `gpt-5.1` | GPT-5.1 |
+    | `gpt-5` | GPT-5 |
+  </Tab>
+  <Tab title="Gemini (Google)">
+    | मॉडल `id` | नोट्स |
+    | --- | --- |
+    | `gemini-3-pro` | Gemini 3 Pro, फ्लैगशिप |
+    | `gemini-3.1-pro` | Gemini 3.1 Pro |
+    | `gemini-3.1-pro-preview` | Gemini 3.1 Pro प्रीव्यू |
+    | `gemini-3.5-flash` | Gemini 3.5 Flash |
+    | `gemini-3-flash` | Gemini 3 Flash |
+    | `gemini-3-flash-preview` | Gemini 3 Flash प्रीव्यू |
+    | `gemini-2.5-flash` | Gemini 2.5 Flash |
+  </Tab>
+  <Tab title="Grok (xAI)">
+    | मॉडल `id` | नोट्स |
+    | --- | --- |
+    | `grok-4.3` | Grok 4.3, फ्लैगशिप |
+    | `grok-4.2` | Grok 4.2 |
+    | `grok-4.1` | Grok 4.1 |
+    | `grok-4` | Grok 4 |
+  </Tab>
+  <Tab title="DeepSeek">
+    | मॉडल `id` | नोट्स |
+    | --- | --- |
+    | `deepseek-v4-pro` | DeepSeek V4 Pro, फ्लैगशिप |
+    | `deepseek-v4-flash` | DeepSeek V4 Flash, तेज़ |
+    | `deepseek-v3.2` | DeepSeek V3.2 |
+  </Tab>
+  <Tab title="GLM (Zhipu)">
+    | मॉडल `id` | नोट्स |
+    | --- | --- |
+    | `glm-5.2` | GLM 5.2, फ्लैगशिप |
+    | `glm-5.1` | GLM 5.1 |
+    | `glm-5` | GLM 5 |
+  </Tab>
+  <Tab title="Qwen (Alibaba)">
+    | मॉडल `id` | नोट्स |
+    | --- | --- |
+    | `qwen3-max` | Qwen3 Max, फ्लैगशिप |
+    | `qwen3.6-plus` | Qwen 3.6 Plus |
+    | `qwen3-coder-plus` | Qwen3 Coder Plus, कोड-ट्यून्ड |
+  </Tab>
+  <Tab title="Kimi (Moonshot)">
+    | मॉडल `id` | नोट्स |
+    | --- | --- |
+    | `kimi-k2.6` | Kimi K2.6, फ्लैगशिप |
+    | `kimi-k2.5` | Kimi K2.5 |
+  </Tab>
+  <Tab title="अन्य">
+    | मॉडल `id` | नोट्स |
+    | --- | --- |
+    | `MiniMax-M2.5` | MiniMax M2.5 |
+  </Tab>
+</Tabs>
 
 <Note>
-  यह "published price" entry point है और कोई user identity carry नहीं करता है। Prices anonymous context में `default` group को represent करते हैं। एक authenticated user वास्तव में जो price pay करता है (group, tier discount, आदि) देखने के लिए, console में pricing page का उपयोग करें।
+  यह सूची एक स्नैपशॉट है। अधिकृत, लाइव सूची हमेशा आपकी स्वयं की `/v1/models` प्रतिक्रिया है (नीचे देखें) — मॉडल की उपलब्धता समय के साथ बदलती है।
 </Note>
 
-## जब इसका उपयोग करें
+## लाइव सूची प्राप्त करें
 
-| Use case | Description |
-| --- | --- |
-| Price aggregation | OpenRouter और अन्य aggregators जो catalog और published prices को scrape कर रहे हैं |
-| Client display | Apps, bots, और SDKs जो model list को render करते हैं |
-| Monitoring | समय के साथ catalog या price changes को track करना |
+`/v1/models` उन मॉडलों को लौटाता है जिन्हें आपकी कुंजी कॉल कर सकती है, OpenAI SDK प्रारूप में। इसके लिए आपकी API कुंजी की आवश्यकता है। प्रतिक्रिया प्रारूप आपके अनुरोध शीर्षलेख द्वारा निहित प्रारूप का अनुसरण करता है (डिफ़ॉल्ट रूप से OpenAI; `x-api-key` + `anthropic-version` के साथ Anthropic; `x-goog-api-key` के साथ Gemini)।
 
-## Endpoint
+<Tabs>
+  <Tab title="यूएस / यूई (bearlab.ai)">
+    ```bash
+    curl https://bearlab.ai/v1/models \
+      -H "Authorization: Bearer sk-..."
+    ```
+  </Tab>
+  <Tab title="एशिया-प्रशांत (bearlab.space)">
+    ```bash
+    curl https://bearlab.space/v1/models \
+      -H "Authorization: Bearer sk-..."
+    ```
+  </Tab>
+</Tabs>
 
-| Item | Value |
-| --- | --- |
-| **URL** | `https://bearlab.ai/v1/models/pricing` |
-| **Method** | `GET` |
-| **Auth** | None (public) |
-| **Rate limit** | Strict per-IP critical rate limit |
-| **Caching** | 60s in-process cache; `Cache-Control: public, max-age=60` |
-
-### Request
-
-```bash
-curl https://bearlab.ai/v1/models/pricing
-```
-
-## Response structure
-
-Top level हमेशा `data` array में wrapped होता है:
+प्रतिक्रिया (छंटनी की गई):
 
 ```json
 {
+  "object": "list",
   "data": [
     {
-      "id": "gpt-4o",
-      "name": "GPT-4o",
-      "created": 1715558400,
-      "input_modalities": ["text"],
-      "output_modalities": ["text"],
-      "context_length": 128000,
-      "max_output_length": 16384,
-      "pricing": {
-        "prompt": "0.0000025",
-        "completion": "0.00001",
-        "request": "0",
-        "input_cache_read": "0.00000125"
-      },
-      "supported_features": ["tools", "json_mode", "structured_outputs", "logprobs"]
+      "id": "claude-opus-4-8",
+      "object": "model",
+      "created": 1626777600,
+      "owned_by": "openai",
+      "supported_endpoint_types": ["openai"]
     }
   ]
 }
 ```
 
-### Model fields
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `id` | `string` | Unique model identifier; `/v1/chat/completions` को call करते समय इसका उपयोग करें |
-| `name` | `string` | Display name; `id` को fallback करता है |
-| `created` | `int64` | Release time (Unix seconds) |
-| `input_modalities` / `output_modalities` | `string[]` | कम से कम `text` |
-| `context_length` | `int` | Maximum context window in tokens |
-| `max_output_length` | `int` | Maximum output tokens per response |
-| `pricing` | `Pricing` | Pricing object; नीचे देखें |
-| `pricing_tiers` | `Pricing[]` | Tiered pricing (at most one, by context-length threshold) |
-| `supported_features` | `string[]` | Capability flags |
-
-### Pricing fields
-
-सभी prices **USD strings** हैं; token-class fields प्रति token priced हैं।
-
-| Field | Unit | Description |
-| --- | --- | --- |
-| `prompt` | USD / input token | Input unit price |
-| `completion` | USD / output token | Output unit price |
-| `request` | USD / request | Flat per-request fee (usually `"0"` for chat models) |
-| `internal_reasoning` | USD / reasoning token | Reasoning token price |
-| `input_cache_read` | USD / token | Cache-hit read price (usually lower) |
-| `input_cache_write` | USD / token | Cache write price |
-| `web_search` | USD / query | Built-in web search tool fee |
-
-<Note>
-  `"0"` का मतलब "free" या "not applicable to this model" हो सकता है। Capability को infer करने के लिए `supported_features` को combine करें बजाय pricing पर ही rely करने के।
-</Note>
-
-### `supported_features`
-
-| Value | Meaning |
+| फ़ील्ड | विवरण |
 | --- | --- |
-| `tools` | Function calling / tool use |
-| `reasoning` | Returns reasoning tokens |
-| `json_mode` | JSON mode output |
-| `structured_outputs` | Schema-constrained structured outputs |
-| `logprobs` | Token log probabilities |
-| `web_search` | Built-in web search tool |
+| `id` | मॉडल पहचानकर्ता; चैट अनुरोध के `model` फ़ील्ड में यह पास करें |
+| `object` | हमेशा `model` |
+| `created` | रिलीज़ समय (Unix सेकंड) |
+| `owned_by` | नाममात्र मालिक स्ट्रिंग |
+| `supported_endpoint_types` | कौन से एंडपॉइंट इस मॉडल को स्वीकार करते हैं: `openai`, `anthropic`, और/या `gemini` |
 
-## Caching और update cadence
+## एक मॉडल को कॉल करें
 
-| Aspect | Behavior |
-| --- | --- |
-| Server cache | 60s in-process; admin updates 1 minute के अंदर लागू होते हैं |
-| Client cache | `Cache-Control: public, max-age=60` |
-| Recommended polling | Most 5 मिनट में एक बार; aggressive polling rate-limited है |
+`model` फ़ील्ड में सटीक `id` भेजें। दोनों उदाहरण डोमेन दिखाए गए हैं; अपने क्षेत्र के लिए सही चुनें।
 
-## अन्य endpoints के साथ तुलना
+<Tabs>
+  <Tab title="यूएस / यूई (bearlab.ai)">
+    ```bash
+    curl https://bearlab.ai/v1/chat/completions \
+      -H "Authorization: Bearer sk-..." \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "claude-sonnet-4-6",
+        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+      }'
+    ```
+  </Tab>
+  <Tab title="एशिया-प्रशांत (bearlab.space)">
+    ```bash
+    curl https://bearlab.space/v1/chat/completions \
+      -H "Authorization: Bearer sk-..." \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "claude-sonnet-4-6",
+        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+      }'
+    ```
+  </Tab>
+</Tabs>
 
-| Endpoint | Purpose | Auth |
-| --- | --- | --- |
-| `/v1/models/pricing` | OpenRouter format में public pricing | Public |
-| `/v1/models` | OpenAI-SDK-compatible model id list | Token required |
+<Tip>
+  कीमतें और बिलिंग नियमों की आवश्यकता है? [मूल्य निर्धारण और बिलिंग](/hi/guides/pricing) देखें। समूह कैसे छूट के लिए मैप करते हैं, [उपयोगकर्ता स्तर](/hi/guides/user-levels) देखें।
+</Tip>

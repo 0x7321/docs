@@ -1,23 +1,39 @@
 ---
 title: "Cline / Roo Code"
-description: "在 VS Code 的 Cline 或 Roo Code 扩展中使用 BearLab AI。"
+description: "在 Cline 或 Roo Code VS Code 扩展中使用 BearLab AI。"
 ---
 
-[Cline](https://github.com/cline/cline) 及其增强分支 [Roo Code](https://github.com/RooVetGit/Roo-Code) 都是 VS Code 里的 AI 编程扩展，通过 OpenAI 兼容接口接入。
-
-## 配置
+[Cline](https://github.com/cline/cline) 和其增强分支 [Roo Code](https://github.com/RooVetGit/Roo-Code) 是 VS Code AI 编程扩展。通过 OpenAI 兼容接口将它们连接到 BearLab AI。
 
 <Steps>
-  <Step title="选择 Provider">
-    在扩展设置中，**API Provider** 选择 **OpenAI Compatible**。
+  <Step title="选择提供商">
+    在扩展设置中，将 API Provider 设置为 **OpenAI Compatible**。
   </Step>
-  <Step title="填写连接信息">
-    - **Base URL**：`https://bearlab.ai/v1`
-    - **API Key**：你的 `sk-...` 密钥
-    - **Model ID**：要使用的模型，如 `claude-sonnet-4-6` 或 `gpt-4o`
+  <Step title="填入连接详细信息">
+    - **Base URL**：使用您所在地区的端点
+
+      <Tabs>
+        <Tab title="US / EU">
+          ```
+          https://bearlab.ai/v1
+          ```
+        </Tab>
+        <Tab title="Asia-Pacific">
+          ```
+          https://bearlab.space/v1
+          ```
+        </Tab>
+      </Tabs>
+
+    - **API Key**：您的 `sk-...` 密钥
+    - **Model ID**：来自 [models endpoint](/zh-Hans/guides/models) 的精确模型 id，例如 `claude-sonnet-4-6`、`gpt-5.4` 或 `deepseek-v4-pro`
   </Step>
 </Steps>
 
 <Note>
-  选 **OpenAI Compatible** 而不是 Anthropic，Base URL 用 `/v1`。编程类任务建议选上下文窗口较大、代码能力强的模型。Model ID 必须是 [模型接口](/zh-Hans/guides/models) 中真实存在的 ID。
+  选择 **OpenAI Compatible**，而非 Anthropic，并在 Base URL 上保留 `/v1` 后缀。Cline 在 `Authorization: Bearer sk-...` 标头中使用您的密钥调用 `POST /v1/chat/completions`。
 </Note>
+
+<Warning>
+  **Model ID** 必须完全匹配 [models endpoint](/zh-Hans/guides/models) 返回的 id。名称如 `gpt-4o` 不在该列表中的并非有效的模型 id，请求将被拒绝。
+</Warning>

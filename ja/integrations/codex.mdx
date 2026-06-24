@@ -1,47 +1,83 @@
 ---
 title: "OpenAI Codex CLI"
-description: "OpenAIのCodex CLIでBearLab AIを使用します。"
+description: "OpenAI の Codex CLI で BearLab AI を使用します。"
 ---
 
-[Codex CLI](https://github.com/openai/codex) はOpenAIの公式コマンドラインコーディングエージェントで、カスタムプロバイダー経由で接続されます。
+[Codex CLI](https://github.com/openai/codex) は OpenAI 公式のコマンドラインコード エージェントです。BearLab AI ゲートウェイを指す カスタムプロバイダを追加することで、BearLab AI に接続できます。
 
 <Warning>
-  CodexはOpenAIの **Responses API**（`wire_api = "responses"`）を使用します。これはOpenAI専有プロトコルで、**OpenAI系モデル**（`gpt-*` / `o*`）でしか動作しません。Claude・Geminiなどのモデルは Codex 経由では使用できません——Claudeを使う場合は [Claude Code](/ja/integrations/claude-code)、[Cursor](/ja/integrations/cursor)、[Cline](/ja/integrations/cline) を利用してください。
+  Codex は OpenAI **Responses API**（`wire_api = "responses"`）を使用します。これは OpenAI 専有プロトコルで、**OpenAI ファミリーモデルのみで機能します**（`gpt-*` / `gpt-oss-*`）。Claude、Gemini、GLM および その他の非 OpenAI モデルは Codex で駆動できません — 代わりに [Claude Code](/ja/guides/claude-code)、[Cursor](/ja/guides/cursor)、または [Cline](/ja/guides/cline) を使用してください。
 </Warning>
+
+## ベース URL
+
+Codex は OpenAI 互換エンドポイントと通信するため、`base_url` は `/v1` で終わります。あなたに最も近いリージョンを選択してください：
+
+| リージョン | `base_url` |
+| --- | --- |
+| 米国 / ヨーロッパ | `https://bearlab.ai/v1` |
+| アジア太平洋 | `https://bearlab.space/v1` |
 
 ## 推奨モデル
 
-| モデル | ID | 用途 |
+OpenAI ファミリーのモデル ID を使用してください。[モデルリスト](/ja/guides/models)に表示されているとおりに完全に一致する必要があります。利用可能な OpenAI ファミリー ID は以下の通りです：
+
+| モデル | ID | 最適な用途 |
 | --- | --- | --- |
-| GPT-5.5 | `gpt-5.5` | 最新の汎用モデル、Codex の現在のデフォルト |
-| GPT-5.2-Codex | `gpt-5.2-codex` | Codex コーディング最適化、API キーワークフロー向け |
-| GPT-5.4-mini | `gpt-5.4-mini` | 軽量・高速、サブタスクと対話編集 |
+| GPT-5.5 | `gpt-5.5` | 最新の汎用モデル、Codex の強力なデフォルト |
+| GPT-5.4 | `gpt-5.4` | 品質とスピードのバランス |
+| GPT-5.4-mini | `gpt-5.4-mini` | 軽量で高速、サブタスクと対話的編集用 |
+| GPT-5.2 | `gpt-5.2` | 日常的な変更に信頼できるワークホース |
+| GPT-5 | `gpt-5` | 安定したベースライン、幅広い互換性 |
+
+<Note>
+  モデル ID は大文字と小文字を区別し、[モデル エンドポイント](/ja/guides/models)と完全に一致する必要があります。Codex を設定する前に、クイックリストを実行してあなたのキーで何が見えるかを確認してください。
+</Note>
 
 ## 設定
 
-`~/.codex/config.toml`を編集し、BearLabを指すプロバイダーを追加します:
+`~/.codex/config.toml` を編集し、BearLab AI を指すプロバイダを追加してください。
 
-```toml
-model = "gpt-5.5"
-model_provider = "bearlab"
+<Tabs>
+  <Tab title="米国 / ヨーロッパ">
+    ```toml
+    model = "gpt-5.5"
+    model_provider = "bearlab"
 
-# サードパーティプロバイダーはレスポンスストレージを無効にする必要があります
-disable_response_storage = true
+    # Third-party providers must disable response storage
+    disable_response_storage = true
 
-[model_providers.bearlab]
-name = "BearLab AI"
-base_url = "https://bearlab.ai/v1"
-env_key = "BEARLAB_API_KEY"
-wire_api = "responses"
-```
+    [model_providers.bearlab]
+    name = "BearLab AI"
+    base_url = "https://bearlab.ai/v1"
+    env_key = "BEARLAB_API_KEY"
+    wire_api = "responses"
+    ```
+  </Tab>
+  <Tab title="アジア太平洋">
+    ```toml
+    model = "gpt-5.5"
+    model_provider = "bearlab"
 
-キーをエクスポートして実行します:
+    # Third-party providers must disable response storage
+    disable_response_storage = true
+
+    [model_providers.bearlab]
+    name = "BearLab AI"
+    base_url = "https://bearlab.space/v1"
+    env_key = "BEARLAB_API_KEY"
+    wire_api = "responses"
+    ```
+  </Tab>
+</Tabs>
+
+あなたの API キーをエクスポートして実行してください：
 
 ```bash
-export BEARLAB_API_KEY="YOUR_API_KEY"
+export BEARLAB_API_KEY="sk-..."
 codex
 ```
 
 <Note>
-  `/v1` で終わるOpenAI互換アドレスを使用してください。`wire_api = "responses"` と `disable_response_storage = true` はサードパーティのOpenAI形式プロバイダーに必須です。`model` は[modelsエンドポイント](/ja/guides/models)に存在するOpenAI系のIDを使用してください。
+  `/v1` で終わる OpenAI 互換アドレスを使用してください。サードパーティ OpenAI 形式プロバイダの場合、`wire_api = "responses"` と `disable_response_storage = true` が必須です。認証は Bearer キー（`sk-...`）で、Codex が `env_key` 経由で `Authorization` ヘッダで送信します。`model` は [モデルリスト](/ja/guides/models)に存在する OpenAI ファミリー ID である必要があります。
 </Note>

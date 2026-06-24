@@ -1,46 +1,114 @@
 ---
-title: "平臺介紹"
-description: "BearLab AI 是什麼、能做什麼。"
+title: "介紹"
+description: "BearLab AI 是什麼以及它的功能。"
 ---
 
-> BearLab AI（BearLab.ai）把數十家主流廠商的對話模型收到一個 API 下，OpenAI、Anthropic、Google、DeepSeek 都能用同一個 Key 調。
+> BearLab AI 將來自數十家領先提供商的對話模型整合在一個 API 下。OpenAI、Anthropic、Google、DeepSeek 等都可以用單一密鑰存取。
 
-## BearLab AI 是什麼
+## 什麼是 BearLab AI
 
-它是一個對話模型聚合平臺。你不用再去 OpenAI、Anthropic、Google 各自注冊、各自充值、各自管一套金鑰，在這裡申請一個 Key，配一個 `base_url`，就能調它們的最新對話模型。
+BearLab AI 是一個對話模型閘道。您不需要分別向 OpenAI、Anthropic、Google 等註冊、充值和管理密鑰，只需在這裡建立一個密鑰，指向一個 `base_url`，即可呼叫它們最新的對話模型。
 
-介面同時相容 OpenAI 和 Anthropic 兩套協議，現有程式碼基本不用改，換個地址和金鑰就能接進來。
+該閘道相容於 OpenAI 和 Anthropic 協定，因此現有代碼通常只需更改端點和密鑰即可使用——無須進行其他修改。
 
-我們只做對話模型這一件事，所以介面簡單、計費清楚、跑得穩。
+我們專注於對話模型這一項功能，這使得介面簡潔、計費清晰，服務也更加穩定。
 
-## 主要能力
+## 基礎 URL
 
-**一個 Key 用所有模型**
-不同廠商、不同模型，統一用一套介面呼叫。一個賬戶管許可權，一份賬單看花銷，一處看用量。
+選擇離您最近的地區。每個地區都在兩種協定後面公開相同的模型。
 
-**OpenAI / Anthropic 雙協議**
-兩套協議都原生支援，Cursor、Claude Code、Cline、Codex 這些工具直接填地址就能用，按需要切換，不用關心背後是哪家的模型。
+<Tabs>
+  <Tab title="US / EU">
+    | 協定 | 基礎 URL |
+    | --- | --- |
+    | OpenAI 相容 | `https://bearlab.ai/v1` |
+    | Anthropic | `https://bearlab.ai/v1/messages` |
+  </Tab>
+  <Tab title="Asia-Pacific">
+    | 協定 | 基礎 URL |
+    | --- | --- |
+    | OpenAI 相容 | `https://bearlab.space/v1` |
+    | Anthropic | `https://bearlab.space/v1/messages` |
+  </Tab>
+</Tabs>
 
-**穩定可用**
-熱門模型接多家供應商，某一家出問題自動切到別家，請求不中斷。
+<Note>
+這兩個地區可以互換——同一個密鑰在兩個地區都可用。按網路延遲選擇，而非功能，因為模型目錄和協定完全相同。
+</Note>
 
-**按量付費**
-用多少算多少，沒有月費和起充門檻，價格隨上游浮動，餘額實時可查。
+## 驗證
 
-**用量可查**
-每次呼叫的請求、響應、Token 消耗都有記錄，方便排查問題和算成本。
+每個請求都在 `Authorization` 標頭中以 Bearer token 形式攜帶您的 API 密鑰。密鑰以 `sk-` 開頭。
 
-## 只做對話模型
+<CodeGroup>
 
-BearLab AI 不提供影象、語音、影片、音樂、嵌入（Embedding）這些模型，專注把對話模型做穩做透。需要那些能力請用對應的專門平臺。
+```bash OpenAI-compatible
+curl https://bearlab.ai/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.5",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash Anthropic
+curl https://bearlab.ai/v1/messages \
+  -H "Authorization: Bearer sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-8",
+    "max_tokens": 1024,
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash Asia-Pacific
+curl https://bearlab.space/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.5",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+</CodeGroup>
+
+Anthropic 端點另外需要 `anthropic-version` 標頭，需與上游 Anthropic Messages API 相符。
+
+## 主要功能
+
+**一個密鑰支援所有模型**
+透過統一介面存取多家廠商和模型。一個帳戶管理所有存取、一個帳戶管理所有支出、一個地方檢視所有使用情況。
+
+**OpenAI / Anthropic 雙協定支援**
+兩種協定都原生支援。Cursor、Claude Code、Cline 和 Codex 只需設定基礎 URL 和密鑰即可連線——無須在意模型後面是哪個廠商。暴露 Anthropic 協定的模型同時標記為 `openai` 和 `anthropic` 端點；其他模型僅支援 OpenAI。
+
+**廣泛的模型覆蓋**
+模型目錄涵蓋 GPT（5.x 系列）、Claude（Opus / Sonnet / Haiku）、Gemini（3.x）、Grok、DeepSeek、GLM、Qwen、Kimi 和其他對話模型。您能看到的確切列表取決於您密鑰所屬的組別。
+
+**穩定且高可用**
+熱門模型由多個上游通道支援。如果其中一個失敗，請求會自動轉移到另一個。
+
+**按使用量付費**
+只為使用的部分付費。無月費，無最低充值要求。價格與上游提供商同步，餘額實時可見。
+
+**可觀測的使用情況**
+每次呼叫都會記錄其請求、回應和令牌消耗，便於故障排除和成本核算。
+
+## 僅支援對話模型
+
+BearLab AI 專注於對話模型，不定位為通用的圖像、音訊、視訊、音樂或嵌入平台。目標是讓對話模型保持穩定和完整。對於其他功能，請使用專門的平台。
 
 ## 下一步
 
 <CardGroup cols={2}>
-  <Card title="快速開始" icon="rocket" href="/guides/quickstart" cta="立即開始">
-    5 分鐘建立金鑰並發出第一個請求。
+  <Card title="快速開始" icon="rocket" href="/guides/quickstart" cta="開始使用">
+    建立密鑰並發送第一個請求。
   </Card>
-  <Card title="對話補全" icon="comments" href="/guides/chat" cta="看介面">
-    請求引數、流式輸出、雙協議差異。
+  <Card title="聊天完成" icon="comments" href="/guides/chat" cta="查看 API">
+    參數、串流和協定差異。
   </Card>
 </CardGroup>

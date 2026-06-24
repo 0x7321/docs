@@ -1,58 +1,201 @@
 ---
 title: "提示詞快取"
-description: "用提示詞快取降低重複內容的成本，並用請求 ID 保持會話路由一致以提升命中率。"
+description: "透過閘道使用 Anthropic 和 OpenAI 提示詞快取，並保持多輪請求在同一後端通道上，使得快取真正能夠被重複使用。"
 ---
 
-## 什麼是提示詞快取
+提示詞快取讓供應商能夠重複使用已處理過的上下文前綴，**大幅降低延遲和輸入令牌成本**。BearLab AI 直接傳遞供應商的快取功能，並加入*通道親和性*機制，使得來自同一呼叫者的連續請求被路由到同一後端，這正是使跨請求快取在多通道中繼上發揮效用的關鍵。
 
-很多模型供應商（包括 Anthropic Claude 和 OpenAI）原生支援提示詞快取。當同一段上下文被重複傳送時，供應商會複用此前的計算結果，**降低延遲和 token 成本**。
+<Note>
+  BearLab AI 服務兩個地區。美國／歐洲用戶應呼叫 `https://bearlab.ai`；亞太地區用戶應呼叫 `https://bearlab.space`。兩個地區共用同一密鑰、模型目錄和快取行為。請參閱 [服務可用性](/guides/availability)。
+</Note>
 
-## 快取的限制
+## 供應商快取運作原理
 
-**快取不能跨賬戶共享**，這是供應商側的限制，不是平臺限制。
+快取完全由上游供應商實現；閘道轉發請求並將快取欄位回傳給您。兩種協議在是否需要明確選擇方面存在差異。
 
-作為多渠道中轉平臺，我們無法保證同一賬戶連續兩次請求一定路由到同一後端渠道。若被髮到不同渠道，已有快取無法複用，命中率下降、成本上升。
+<Tabs>
+  <Tab title="Anthropic（需明確選擇）">
+    Claude 快取是**明確的**。透過在內容區塊（或請求層級）上使用 `cache_control` 標記快取斷點。該區塊及其前面的所有內容都將被快取。
 
-## 保持路由一致
+    - 標記：`"cache_control": {"type": "ephemeral"}`
+    - 預設 TTL：**5 分鐘**，每次快取命中時重新整理。1 小時 TTL 可按基礎輸入價格的 2 倍獲得。
+    - 回應中的使用欄位：`cache_creation_input_tokens`（在第一次呼叫時寫入）和 `cache_read_input_tokens`（後續從快取提供）。
 
-為此，你可以在後續請求裡帶上前一次請求的 ID，系統會盡量把新請求路由到同一渠道，最大化快取複用。兩種方式：
+    將穩定內容（系統提示詞、長文件、工具定義）放在斷點之前，使快取的前綴在各輪對話中保持一致。
+  </Tab>
+  <Tab title="OpenAI（自動）">
+    OpenAI 快取是**自動的** — 無需修改請求，不額外收費。
 
-| 請求頭 | 取值來源 | 有效期 |
+    - 在提示詞達到 **1024 令牌或以上**時觸發；較短的提示詞永不被快取。
+    - 回應中的使用欄位：`usage.prompt_tokens_details.cached_tokens`（快取命中的輸入令牌數；當無快取時為 `0`）。
+    - 可選的 `prompt_cache_key` 欄位與前綴雜湊結合，**改善路由並提高命中率**當許多請求共用一個長公共前綴時。
+  </Tab>
+</Tabs>
+
+## 為什麼中繼會降低命中率
+
+快取與建立它的精確後端帳戶綁定 — 它**無法在帳戶間共用**。這是供應商端的規則，而非閘道規則。
+
+由於 BearLab AI 在多個上游通道間進行負載平衡，來自同一呼叫者的兩個連續請求不保證會命中同一後端。當它們落在不同通道時，之前的快取不可見，前綴會按全價計費。
+
+## 通道親和性讓您停留在同一通道
+
+為解決此問題，閘道執行**通道親和性**機制：一旦請求在某通道上成功，後續攜帶相同親和值的請求會被路由回該通道以供 TTL 窗口使用，使供應商端快取保持可達。
+
+親和性由您請求正文中的某個值決定。預設規則為：
+
+| 協議 | 路徑 | 親和值（請求正文欄位） |
 | --- | --- | --- |
-| `X-Request-Id` | 上一次響應返回的請求 ID 頭 | 5 分鐘 |
-| `X-Response-Id` | 上一次響應 JSON 裡的會話 ID（如 Claude 的 `message.id`） | 5 分鐘 |
+| OpenAI 相容 | `/v1/responses` | `prompt_cache_key` |
+| Anthropic 相容 | `/v1/messages` | `metadata.user_id` |
 
-### 示例
+在一次對話的所有輪次中在該欄位傳送**穩定值**，閘道會將它們固定到同一通道。在開始不相關的對話時使用新值。親和性條目在不活動 TTL（預設 1 小時）後過期。
 
-```python
-import anthropic
+<Warning>
+  親和性盡力而為。如果固定通道不可用，請求仍會在另一通道上通過 — 只是該輪不會重複使用該通道的快取。不要依賴親和性的正確性，僅用於成本優化。
+</Warning>
 
-client = anthropic.Anthropic(
-    base_url="https://bearlab.ai",
-    api_key="API_KEY",
-)
+## 範例
 
-# 第一次請求
-response = client.messages.create(
-    model="claude-sonnet-4-6",
-    max_tokens=1024,
-    messages=[{"role": "user", "content": "Hello!"}],
-)
-response_id = response.id
+<Tabs>
+  <Tab title="Anthropic（cache_control + 親和性）">
+    使用 `cache_control` 快取長系統提示詞，並用穩定的 `metadata.user_id` 固定對話。
 
-# 第二次請求 —— 帶上 response id 以留在同一渠道
-response2 = client.messages.create(
-    model="claude-sonnet-4-6",
-    max_tokens=1024,
-    messages=[
-        {"role": "user", "content": "Hello!"},
-        {"role": "assistant", "content": response.content[0].text},
-        {"role": "user", "content": "Continue our conversation..."},
-    ],
-    extra_headers={"X-Response-Id": response_id},
-)
-```
+    <CodeGroup>
+      ```bash 美國／歐洲
+      curl https://bearlab.ai/v1/messages \
+        -H "Authorization: Bearer sk-..." \
+        -H "anthropic-version: 2023-06-01" \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "claude-sonnet-4-6",
+          "max_tokens": 1024,
+          "metadata": {"user_id": "conversation-7f3a"},
+          "system": [
+            {
+              "type": "text",
+              "text": "<a long, stable system prompt or document>",
+              "cache_control": {"type": "ephemeral"}
+            }
+          ],
+          "messages": [{"role": "user", "content": "Summarize the document."}]
+        }'
+      ```
 
-## 使用建議
+      ```bash 亞太地區
+      curl https://bearlab.space/v1/messages \
+        -H "Authorization: Bearer sk-..." \
+        -H "anthropic-version: 2023-06-01" \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "claude-sonnet-4-6",
+          "max_tokens": 1024,
+          "metadata": {"user_id": "conversation-7f3a"},
+          "system": [
+            {
+              "type": "text",
+              "text": "<a long, stable system prompt or document>",
+              "cache_control": {"type": "ephemeral"}
+            }
+          ],
+          "messages": [{"role": "user", "content": "Summarize the document."}]
+        }'
+      ```
+    </CodeGroup>
 
-把**不變內容放前面**（system、長文件），變化內容放後面（使用者最新提問），以最大化字首命中。字首越長、複用越頻繁，省得越多；一次性請求無需快取。
+    在此對話的每個後續輪次中重複使用相同的 `metadata.user_id`；閘道會將它們路由到同一通道，使 `cache_read_input_tokens` 維持在高水位。
+  </Tab>
+
+  <Tab title="OpenAI（自動 + 親和性）">
+    OpenAI 自動快取；您只需傳送穩定的 `prompt_cache_key` 使後續請求停留在同一通道。
+
+    <CodeGroup>
+      ```bash 美國／歐洲
+      curl https://bearlab.ai/v1/responses \
+        -H "Authorization: Bearer sk-..." \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "gpt-5.5",
+          "prompt_cache_key": "conversation-7f3a",
+          "input": "Continue summarizing the attached document."
+        }'
+      ```
+
+      ```bash 亞太地區
+      curl https://bearlab.space/v1/responses \
+        -H "Authorization: Bearer sk-..." \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "gpt-5.5",
+          "prompt_cache_key": "conversation-7f3a",
+          "input": "Continue summarizing the attached document."
+        }'
+      ```
+    </CodeGroup>
+
+    相同的 `prompt_cache_key` 既改善了 OpenAI 本身的路由，也驅動了閘道的通道親和性，使 `cached_tokens` 反映真實重複使用。
+  </Tab>
+
+  <Tab title="Anthropic SDK">
+    ```python
+    import anthropic
+
+    client = anthropic.Anthropic(
+        base_url="https://bearlab.ai",   # 亞太地區：https://bearlab.space
+        api_key="sk-...",
+    )
+
+    SYSTEM = "<a long, stable system prompt or document>"
+    USER_ID = "conversation-7f3a"  # 在整個對話中保持穩定
+
+    first = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=1024,
+        metadata={"user_id": USER_ID},
+        system=[{
+            "type": "text",
+            "text": SYSTEM,
+            "cache_control": {"type": "ephemeral"},
+        }],
+        messages=[{"role": "user", "content": "Summarize the document."}],
+    )
+
+    follow_up = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=1024,
+        metadata={"user_id": USER_ID},  # 相同值 → 相同通道 → 快取命中
+        system=[{
+            "type": "text",
+            "text": SYSTEM,
+            "cache_control": {"type": "ephemeral"},
+        }],
+        messages=[
+            {"role": "user", "content": "Summarize the document."},
+            {"role": "assistant", "content": first.content[0].text},
+            {"role": "user", "content": "Now list the action items."},
+        ],
+    )
+
+    print(follow_up.usage.cache_read_input_tokens)
+    ```
+  </Tab>
+</Tabs>
+
+## 最大化命中
+
+<Steps>
+  <Step title="順序放置穩定內容在前">
+    將不變內容（系統提示詞、長文件、工具綱要）放在前面，將變動部分（最新用戶訊息）放在最後，使快取的前綴保持字節級一致。前綴越長，被重複使用的頻率越高，您省得越多。
+  </Step>
+  <Step title="設定快取斷點（僅 Claude）">
+    在穩定區塊之後新增 `cache_control: {"type": "ephemeral"}`。OpenAI 無需標記 — 一旦提示詞達到 1024 令牌，它就自動快取。
+  </Step>
+  <Step title="固定對話">
+    在各輪中傳送穩定的親和值 — `/v1/messages` 用 `metadata.user_id`，`/v1/responses` 用 `prompt_cache_key` — 並在整次對話中重複使用。對不相關的對話使用新值。
+  </Step>
+  <Step title="透過使用情況驗證">
+    檢查回應使用：`cache_read_input_tokens`（Claude）或 `prompt_tokens_details.cached_tokens`（OpenAI）。命中次數上升證實前綴和親和值均穩定。
+  </Step>
+</Steps>
+
+請參閱 [聊天完成](/guides/chat)瞭解完整請求參數，以及 [定價](/guides/pricing)瞭解快取與未快取輸入令牌的計費方式。

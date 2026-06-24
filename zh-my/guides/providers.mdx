@@ -1,79 +1,134 @@
 ---
 title: "供应商与路由"
-description: "同一模型由多个供应商承载，如何在令牌中配置或按请求覆盖路由。"
+description: "每个模型由上游供应商支持，并分组到路由组中。在您的令牌中配置路由，或按请求覆盖。"
 ---
 
-每个模型可能由**多个供应商**承载。供应商是按来源和成本组织的服务节点，不同供应商有不同的价格倍率和模型覆盖。发送请求时，系统按你的令牌配置自动选择可用供应商；某个供应商失败或超时会自动重试另一个，对你的代码透明。
+BearLab AI 上的每个模型都由一个或多个**上游供应商**（服务商）提供。在单个模型名称背后，网关将您的请求路由到健康的供应商节点；如果一个失败或超时，它会透明地重试另一个，您的代码无需感知。供应商被组织成**路由组**，您的令牌决定它可以从哪些组中获取。
 
-## 可用供应商
+<Note>
+BearLab AI 是一个统一的网关，基于 New API 构建。下方的供应商目录是从此账户的实时定价数据生成的，因此它反映了您的密钥可以到达的确切服务商和模型系列。
+</Note>
 
-| ID | 名称 | 说明 |
+## 基础 URL
+
+选择离您最近的区域。两个区域都提供相同的模型和相同的供应商路由。
+
+| 区域 | OpenAI 兼容基础 URL | Anthropic 基础 URL |
 | --- | --- | --- |
-| `official` | 官方 | 聚合 OpenAI、Anthropic、Google 等各大官方直连的供应商组，稳定性最高 |
-| `official_cheap` | 官方（折扣） | 官方渠道的成本优化版，稳定性高、价格更低 |
-| `mix` | 混合 | 多源混合渠道，价格最低、模型覆盖最广 |
+| 美洲 / 欧盟 | `https://bearlab.ai/v1` | `https://bearlab.ai`（讯息在 `/v1/messages`） |
+| 亚太区 | `https://bearlab.space/v1` | `https://bearlab.space`（讯息在 `/v1/messages`） |
 
-`official` 是一个**供应商组**，打包了各大官方平台的节点；选它时系统在所有官方节点间智能路由与故障转移，无需逐家指定。
+身份验证到处都相同：将您的 API 密钥作为 Bearer 令牌发送。
 
-### 怎么选
+```
+Authorization: Bearer sk-...
+```
 
-| 你的需求 | 推荐配置 |
-| --- | --- |
-| 稳定优先，不在意价格 | `official` |
-| 稳定且更划算 | `official_cheap` |
-| 成本最低，可接受轻微不稳定 | `mix` |
-| 先折扣官方，失败再回退混合 | `official_cheap,mix` |
+## 涵盖的供应商
 
-## 在令牌中配置
+每个供应商对应一个上游服务商路由。该表是从实时模型到服务商的映射构建的；计数是目前在该供应商下定价的模型变体数量。
 
-创建或编辑令牌时可设置该令牌的默认路由：
+| 供应商 | 上游服务商 | 模型系列 | 变体 | 协议 |
+| --- | --- | --- | --- | --- |
+| Anthropic | Anthropic（包括 Bedrock / Kiro 中继） | Claude（Opus、Sonnet、Haiku） | 30 | OpenAI + Anthropic |
+| Google | Google Gemini | Gemini 2.5 / 3 / 3.1 / 3.5（Pro、Flash、图像、CLI 变体） | 79 | OpenAI + Gemini |
+| OpenAI | OpenAI | GPT-5.x、GPT-image-2 | 23 | OpenAI |
+| xAI | xAI | Grok 4 / 4.1 / 4.2 / 4.3 | 10 | OpenAI |
+| Alibaba Bailian（聚合器） | Alibaba Cloud Bailian | Qwen、GLM、DeepSeek、Kimi、MiniMax | 18 | OpenAI + Anthropic |
 
-* **供应商列表**：留空（推荐）= 在所有可用供应商间自动路由；单个 = 只走该供应商；多个用逗号分隔，按顺序或排序策略尝试。
-* **仅限指定供应商**：关（默认）= 优先指定的，全失败再回退其它；开 = 严格只用指定的，全失败直接报错不回退。
-* **排序策略**：手动（默认，按你列出的顺序）/ 延迟 / 价格 / 吞吐。
+<Note>
+某些模型系列可以通过多个供应商访问。例如，国产模型（Qwen / GLM / DeepSeek / Kimi / MiniMax）都是通过 **Alibaba Bailian** 聚合器提供的，而不是单独的原生服务商路由。网关会为您选择一个可用的路由，因此您很少需要指定特定的供应商。
+</Note>
+
+## 路由组
+
+供应商通过**路由组**暴露给您的令牌。您账户的可用组包括，除其他外：
+
+<CardGroup cols={2}>
+  <Card title="default" icon="layer-group">
+    日常组：GPT-5.x、Gemini 3.x 和通过 Bailian 路由的国产模型（Qwen / GLM / DeepSeek / Kimi）。
+  </Card>
+  <Card title="auto" icon="shuffle">
+    优先级顺序故障转移。平台根据请求选择一个可用的组，而不是固定一个，因此当一个饱和时，流量会跨上游流动（Claude、Gemini、GPT、DeepSeek、GLM、Kimi、Qwen、MiniMax）。
+  </Card>
+  <Card title="claudecode / claude*" icon="robot">
+    Claude 聚焦组（`claudecode`、`claudecode特价`、`claudeAWS*`、`claudekiro*`、`claude反重力`）支持 Anthropic 供应商，具有不同的成本等级。
+  </Card>
+  <Card title="gemini* / grok / 国产" icon="sparkles">
+    服务商范围的组：Google 的 `gemini-guan` / `gemini2`、xAI 的 `grok`、Bailian 国产模型套组的 `国产`。
+  </Card>
+</CardGroup>
+
+<Warning>
+组访问权限绑定到您的密钥。在请求中命名您没有权限的组或供应商不会解锁它 — 网关只在您的令牌有权限的范围内路由。
+</Warning>
+
+## 在令牌中配置路由
+
+当您创建或编辑令牌时，您设置其默认路由：
+
+- **供应商 / 组列表**：留空（建议）以跨您的密钥可以访问的所有内容路由；设置单个条目以限制为它；设置多个（逗号分隔）以按顺序或按排序策略尝试它们。
+- **仅供应商模式**：关闭（默认）优先使用列出的供应商，但退回到其他供应商；打开严格限制为它们，如果全部失败则返回错误。
+- **排序策略**：手动（默认）、延迟、价格或吞吐量。
 
 ## 按请求覆盖
 
-也可用请求头对**单次请求**临时覆盖令牌设置，无需改令牌：
+通过标题为单个请求覆盖您的令牌默认值：
 
-| 请求头 | 作用 |
+| 标题 | 效果 |
 | --- | --- |
-| `X-Provider-Order` | 指定本次请求的供应商及顺序 |
-| `X-Provider-Only` | `"true"` 开启严格模式，不回退 |
+| `X-Provider-Order` | 用于此请求的供应商 / 组和顺序 |
+| `X-Provider-Only` | `"true"` 启用严格模式（无退回） |
 | `X-Provider-Sort` | 覆盖排序策略（`latency` / `price` / `throughput`） |
-| `X-Provider-Ignore` | 本次请求跳过的供应商，叠加在令牌配置之上 |
+| `X-Provider-Ignore` | 要跳过的供应商，堆叠在令牌配置上 |
 
-> 通过请求头指定的供应商仍受你的账户权限约束。
+> 通过标题请求的供应商和组仍受您的账户权限限制。
 
 ### 示例
 
-```bash
-# 先折扣官方，失败回退混合
+<CodeGroup>
+
+```bash 美洲 / 欧盟 (bearlab.ai)
 curl https://bearlab.ai/v1/chat/completions \
-  -H "Authorization: Bearer sk-your-token" \
-  -H "X-Provider-Order: official_cheap,mix" \
+  -H "Authorization: Bearer sk-..." \
   -H "Content-Type: application/json" \
-  -d '{"model": "gpt-4o", "messages": [{"role": "user", "content": "Hello"}]}'
+  -H "X-Provider-Sort: latency" \
+  -d '{
+    "model": "gpt-5.5",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
 ```
 
-```bash
-# 严格只走官方，不回退
-curl https://bearlab.ai/v1/chat/completions \
-  -H "Authorization: Bearer sk-your-token" \
-  -H "X-Provider-Order: official" \
-  -H "X-Provider-Only: true" \
+```bash 亚太区 (bearlab.space)
+curl https://bearlab.space/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
   -H "Content-Type: application/json" \
-  -d '{"model": "claude-sonnet-4-6", "messages": [{"role": "user", "content": "Hello"}]}'
+  -H "X-Provider-Sort: latency" \
+  -d '{
+    "model": "gpt-5.5",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
 ```
 
-也可在 SDK 客户端里设默认头：
+</CodeGroup>
 
-```python
-import openai
+## 发现实时供应商
 
-client = openai.OpenAI(
-    api_key="sk-your-token",
-    base_url="https://bearlab.ai/v1",
-    default_headers={"X-Provider-Order": "official_cheap,mix"},
-)
+上面的列表是一个快照。要查看您的密钥现在可以到达的确切模型，请查询模型端点 — 网关从您的身份验证标题自动侦测协议：
+
+<CodeGroup>
+
+```bash OpenAI 协议
+curl https://bearlab.ai/v1/models \
+  -H "Authorization: Bearer sk-..."
 ```
+
+```bash Anthropic 协议
+curl https://bearlab.ai/v1/models \
+  -H "x-api-key: sk-..." \
+  -H "anthropic-version: 2023-06-01"
+```
+
+</CodeGroup>
+
+每个条目包括 `id`、`owned_by` 和 `supported_endpoint_types`，因此您可以在调用之前判断给定模型接受哪些协议。见 [Models](/zh-my/guides/models) 了解完整目录，[Pricing](/zh-my/guides/pricing) 了解每个模型的费率。

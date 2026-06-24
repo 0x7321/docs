@@ -1,21 +1,106 @@
 ---
-title: "服務區域 / Service Availability"
-description: "BearLab AI的直接服務區域，以及亞太區域的接入方式。"
+title: "服務可用性"
+description: "BearLab AI 服務區域與相應的區域基礎 URL。"
 ---
 
-## 服務區域
+BearLab AI 通過兩個區域基礎 URL 公開相同的閘道。選擇與您的請求來源相匹配的 URL，然後將每個 OpenAI 相容或 Anthropic 呼叫指向該網域。
 
-BearLab AI（bearlab.ai）面向**美國與歐盟**司法管轄區直接提供服務。
+| 區域 | 基礎 URL |
+| --- | --- |
+| 美國 / 歐盟 | `https://bearlab.ai` |
+| 亞太地區 | `https://bearlab.space` |
 
-### 亞太區域
+<Note>
+兩個區域共享相同的 API 表面、模型目錄和價格。只有主機改變 — 您的 API 密鑰、請求體和模型 ID 在兩個區域中保持相同。
+</Note>
 
-亞太區域由**印度區域合作伙伴**提供服務。
+## 選擇區域
 
-該區域的 API 請求須改用專用網域 `https://bearlab.in`，而非 `https://bearlab.ai`。
+<Steps>
+  <Step title="確定您的流量來源">
+    使用最接近您的用戶端或伺服器的網域。美國/歐盟流量應目標指向 `https://bearlab.ai`；亞太地區的用戶端應目標指向 `https://bearlab.space` 以獲得更低的延遲。
+  </Step>
+  <Step title="設定您的基礎 URL">
+    配置您的 SDK 或 HTTP 用戶端以使用區域基礎 URL 加上下面的協議路徑。
+  </Step>
+  <Step title="身份驗證">
+    在 `Authorization` 標頭中以 Bearer 令牌的形式發送您的 BearLab AI API 密鑰。相同的 `sk-...` 密鑰對兩個區域都有效。
+  </Step>
+</Steps>
 
-該區域服務的相關政策由區域合作伙伴自行制定；亞太區域使用者請自行確保符合所在地的法律法規。
+## 每個協議的基礎 URL
 
-| 區域 | API 域名 | OpenAI | Anthropic |
+BearLab AI 支持兩種請求格式。您附加的路徑取決於您使用的是哪一個。
+
+| 協議 | 路徑 | 美國 / 歐盟 | 亞太地區 |
 | --- | --- | --- | --- |
-| 美國 / 歐盟 | `https://bearlab.ai` | `https://bearlab.ai/v1/chat/completions` | `https://bearlab.ai/v1/messages` |
-| 亞太區域 | `https://bearlab.in` | `https://bearlab.in/v1/chat/completions` | `https://bearlab.in/v1/messages` |
+| OpenAI 相容 | `/v1/chat/completions` | `https://bearlab.ai/v1/chat/completions` | `https://bearlab.space/v1/chat/completions` |
+| Anthropic | `/v1/messages` | `https://bearlab.ai/v1/messages` | `https://bearlab.space/v1/messages` |
+
+對於 OpenAI SDK，將基礎 URL 設定為 `<domain>/v1`。對於 Anthropic SDK，將基礎 URL 設定為 `<domain>`（SDK 自己附加 `/v1/messages`）。
+
+## 快速範例
+
+<CodeGroup>
+
+```bash US / EU (OpenAI-compatible)
+curl https://bearlab.ai/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash Asia-Pacific (OpenAI-compatible)
+curl https://bearlab.space/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash US / EU (Anthropic)
+curl https://bearlab.ai/v1/messages \
+  -H "x-api-key: sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-7",
+    "max_tokens": 1024,
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash Asia-Pacific (Anthropic)
+curl https://bearlab.space/v1/messages \
+  -H "x-api-key: sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-7",
+    "max_tokens": 1024,
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+</CodeGroup>
+
+<Note>
+Anthropic 端點接受原生 Claude 標頭樣式（`x-api-key` 加上 `anthropic-version`）。兩個協議也接受標準 `Authorization: Bearer sk-...` 標頭。
+</Note>
+
+## 切換區域
+
+在區域之間遷移只需要更改您基礎 URL 中的主機。您的整合中的其他任何內容都不會改變：
+
+- 保持相同的 API 密鑰（`sk-...`）。
+- 保持相同的模型 ID — 參閱 [Models](/guides/models) 以取得完整目錄。
+- 保持相同的請求和回應體。
+
+<Warning>
+在可能的情況下，每個用戶端使用單一區域。在一個應用程式中混合 `bearlab.ai` 和 `bearlab.space` 沒有任何好處，並使延遲更難推理 — 選擇最接近您流量的主機並保持在其上。
+</Warning>

@@ -3,20 +3,76 @@ title: "Authentification"
 description: "Comment créer, passer et gérer les clés API."
 ---
 
-Chaque requête est authentifiée avec une clé API. Créez des clés sur la [console](https://bearlab.ai) sous API Tokens ; elles ressemblent à `sk-xxxxxxxx`.
+Chaque requête est authentifiée avec une clé API. Créez des clés sur la [console](https://bearlab.ai) sous API Tokens ; elles ressemblent à `sk-...`.
+
+BearLab AI est construit sur la passerelle New API, donc la même clé fonctionne sur les protocoles compatibles OpenAI et Anthropic. Vous vous authentifiez avec un jeton Bearer unique sur chaque point de terminaison — il n'y a pas de clé séparée par protocole.
 
 <Note>
-  Utilisateurs Asie-Pacifique : utilisez le domaine dédié `https://bearlab.in` au lieu de `https://bearlab.ai`. Voir [Service Availability](/fr/guides/availability).
+  Choisissez l'URL de base pour votre région. Les utilisateurs Asie-Pacifique devraient utiliser `https://bearlab.space` ; les utilisateurs US/UE utilisent `https://bearlab.ai`. La clé et le format de requête sont identiques dans les régions. Consultez [Disponibilité du service](/fr/guides/availability).
 </Note>
 
 ## Passer la clé
 
-Les deux protocoles utilisent différents en-têtes d'authentification :
+Mettez votre clé dans l'en-tête `Authorization` en tant que jeton Bearer. C'est le même pour les deux protocoles.
 
-| Protocole | En-tête |
-| --- | --- |
-| Compatible OpenAI | `Authorization: Bearer YOUR_API_KEY` |
-| Compatible Anthropic | `x-api-key: YOUR_API_KEY` |
+| Protocole | URL de base | En-tête Auth |
+| --- | --- | --- |
+| Compatible OpenAI | `<domain>/v1` | `Authorization: Bearer sk-...` |
+| Compatible Anthropic | `<domain>` (appels `/v1/messages`) | `Authorization: Bearer sk-...` |
+
+Où `<domain>` est `https://bearlab.ai` (US/UE) ou `https://bearlab.space` (Asie-Pacifique).
+
+<Note>
+  Le point de terminaison compatible Anthropic nécessite également un en-tête `anthropic-version` (par exemple `anthropic-version: 2023-06-01`), exactement comme l'API Anthropic native l'attend.
+</Note>
+
+<CodeGroup>
+
+```bash OpenAI (US/EU)
+curl https://bearlab.ai/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash OpenAI (Asia-Pacific)
+curl https://bearlab.space/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash Anthropic (US/EU)
+curl https://bearlab.ai/v1/messages \
+  -H "Authorization: Bearer sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-7",
+    "max_tokens": 1024,
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash Anthropic (Asia-Pacific)
+curl https://bearlab.space/v1/messages \
+  -H "Authorization: Bearer sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-7",
+    "max_tokens": 1024,
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+</CodeGroup>
 
 ## Gestion des clés
 
@@ -25,11 +81,22 @@ Les deux protocoles utilisent différents en-têtes d'authentification :
 - **Ne pas coder en dur** : injectez via les variables d'environnement ; ne commitez jamais les clés dans un dépôt.
 - **Révoquer en cas de fuite** : si une clé peut être exposée, supprimez-la sur la console et créez-en une nouvelle.
 
+## Groupes
+
+Les modèles sur la passerelle sont organisés en **groupes**. Un groupe détermine vers quel amont un modèle est acheminé et applique un multiplicateur de facturation (son ratio de groupe). Chaque clé appartient à un ou plusieurs groupes, et une clé ne peut appeler que les modèles exposés par les groupes auxquels elle peut accéder.
+
+- Un modèle n'est appelable par votre clé que si ce modèle est activé pour l'un de vos groupes de clés.
+- Le même modèle peut apparaître dans plusieurs groupes à différents points de prix ; le ratio du groupe met à l'échelle ce que chaque appel coûte.
+- Si vous appelez un modèle que votre groupe n'expose pas, la requête est rejetée au niveau de la passerelle avant d'atteindre un amont.
+
+Cette clé est configurée dans le groupe **`default`**, donc les modèles qu'elle voit sont le catalogue mixte de base. Vous pouvez parcourir exactement quels modèles votre clé peut atteindre — et leurs tarifs — sur la page [Modèles et tarification](/fr/guides/pricing) ou via le point de terminaison de la [liste des modèles](/fr/guides/models) en direct, qui retourne uniquement les modèles auxquels vous avez droit.
+
 ## Erreurs d'authentification courantes
 
 | Symptôme | Cause |
 | --- | --- |
-| `401 Unauthorized` | Clé erronée ou supprimée, ou en-tête mal assorti (Bearer vs x-api-key). |
-| `403 Forbidden` | Clé désactivée, solde insuffisant, ou pas d'accès au modèle ou au groupe. Le problème de permission le plus courant est un modèle qui nécessite une vérification d'identité. |
+| `401 Unauthorized` | Clé manquante, malformée, incorrecte ou supprimée. Vérifiez que l'en-tête est exactement `Authorization: Bearer sk-...`. |
+| `403 Forbidden` | Clé désactivée, solde insuffisant, ou le modèle demandé n'est pas exposé par aucun groupe auquel votre clé peut accéder. |
+| `404` on a model | Le nom du modèle n'existe pas ou n'est pas disponible pour le groupe de votre clé. Récupérez la [liste des modèles](/fr/guides/models) pour voir les ID exacts que vous pouvez appeler. |
 
-Voir [Error Handling](/fr/guides/errors) pour plus de codes.
+Consultez [Gestion des erreurs](/fr/guides/errors) pour plus de codes.

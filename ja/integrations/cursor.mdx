@@ -1,24 +1,47 @@
 ---
 title: "Cursor"
-description: "CursorでBearLabの会話型モデルを使用します。"
+description: "CursorでBearLab AIの会話型モデルを使用します。"
 ---
 
-[Cursor](https://cursor.com)は人気のあるAIコードエディタです。OpenAI互換インターフェース経由で接続します。
+[Cursor](https://cursor.com)は人気のあるAIコードエディタです。BearLab AIのOpenAI互換インターフェース経由で接続します。
+
+CursorはOpenAIプロトコルのみをサポートするため、常に `/v1` ベースURLを使用し、`sk-...` キーで認証してください。
 
 <Steps>
   <Step title="モデル設定を開く">
-    設定、モデルを開きます。
+    **Settings → Models** を開きます。
   </Step>
   <Step title="ベースURLをオーバーライド">
-    OpenAI APIキー領域で、OpenAIベースURLをオーバーライドを展開し、設定します:
-    - **ベースURL**: `https://bearlab.ai/v1`
-    - **APIキー**: あなたの`sk-...`キー
+    **OpenAI API Key** 領域で、**Override OpenAI Base URL** を展開し、リージョンに応じて値を設定します：
+
+    <Tabs>
+      <Tab title="US / EU">
+        - **Base URL**: `https://bearlab.ai/v1`
+        - **API Key**: あなたの `sk-...` キー
+      </Tab>
+      <Tab title="Asia-Pacific">
+        - **Base URL**: `https://bearlab.space/v1`
+        - **API Key**: あなたの `sk-...` キー
+      </Tab>
+    </Tabs>
   </Step>
   <Step title="モデルを追加して検証">
-    必要なモデル名を追加します(例. `gpt-4o`, `claude-sonnet-4-6`)。保存してから検証をクリックします。
+    カスタムベースURLが設定されている場合、Cursorはモデルリストを自動的に取得しないため、モデル名を手動で追加する必要があります。[models endpoint](/ja/guides/models) に表示される ID を使用してください。例：
+
+    - `gpt-5.5`
+    - `claude-sonnet-4-6`
+    - `claude-opus-4-7`
+    - `gemini-3.1-pro-preview`
+    - `deepseek-v4-pro`
+
+    保存してから、**Verify** をクリックします。
   </Step>
 </Steps>
 
 <Note>
-  CursorはOpenAI互換プロトコルのみを使用するため、ベースURLは`/v1`で終わります。モデル名は[modelsエンドポイント](/ja/guides/models)に存在する必要があります。検証が失敗した場合は、[クイックスタート](/ja/guides/quickstart)curlを使用してキーを確認してください。
+  モデル名は [models endpoint](/ja/guides/models) から返されるIDと完全に一致する必要があります（サフィックスを含む）。存在しない名前は検証に失敗します。検証がまだ失敗する場合は、[Quickstart](/ja/guides/quickstart) の curl でキーを最初に確認してください。
 </Note>
+
+<Warning>
+  リージョンに対応するベースURLを選択してください。`https://bearlab.ai` は米国/EU を、`https://bearlab.space` はアジア太平洋を提供します。パスは両方とも `/v1` です。あるリージョンのキーと別のリージョンのベースURLを混ぜないでください。
+</Warning>

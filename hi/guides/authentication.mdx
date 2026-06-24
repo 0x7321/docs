@@ -1,35 +1,102 @@
 ---
 title: "प्रमाणीकरण"
-description: "API keys कैसे बनाएं, pass करें, और manage करें।"
+description: "API कुंजियों को कैसे बनाएं, pass करें, और manage करें।"
 ---
 
-हर request एक API key के साथ authenticated है। [console](https://bearlab.ai) पर API Tokens के तहत keys बनाएं; वे `sk-xxxxxxxx` की तरह दिखते हैं।
+हर request एक API कुंजी के साथ प्रमाणित है। [कंसोल](https://bearlab.ai) पर API Tokens के तहत कुंजियों को बनाएं; वे `sk-...` की तरह दिखती हैं।
+
+BearLab AI New API gateway पर built है, इसलिए same key OpenAI-compatible और Anthropic-compatible दोनों protocols में काम करती है। आप हर endpoint पर एक single Bearer token के साथ authenticate करते हैं — प्रोटोकॉल के लिए कोई अलग key नहीं है।
 
 <Note>
-  Asia-Pacific users: `https://bearlab.ai` के बजाय समर्पित डोमेन `https://bearlab.in` का उपयोग करें। [Service Availability](/hi/guides/availability) देखें।
+  अपने region के लिए base URL चुनें। Asia-Pacific users को `https://bearlab.space` use करना चाहिए; US/EU users `https://bearlab.ai` का use करते हैं। Key और request format सभी regions में समान हैं। [सेवा उपलब्धता](/hi/guides/availability) देखें।
 </Note>
 
-## Key को pass करना
+## कुंजी को pass करना
 
-दोनों protocols विभिन्न auth headers का उपयोग करते हैं:
+अपनी कुंजी को `Authorization` header में Bearer token के रूप में रखें। दोनों protocols में same है।
 
-| Protocol | Header |
-| --- | --- |
-| OpenAI-compatible | `Authorization: Bearer YOUR_API_KEY` |
-| Anthropic-compatible | `x-api-key: YOUR_API_KEY` |
+| Protocol | Base URL | Auth header |
+| --- | --- | --- |
+| OpenAI-compatible | `<domain>/v1` | `Authorization: Bearer sk-...` |
+| Anthropic-compatible | `<domain>` (`/v1/messages` calls करता है) | `Authorization: Bearer sk-...` |
 
-## Key management
+जहाँ `<domain>` `https://bearlab.ai` (US/EU) या `https://bearlab.space` (Asia-Pacific) है।
 
-- **प्रत्येक use के लिए एक key**: आसान revocation और per-key usage stats के लिए project या client के लिए अलग keys बनाएं।
+<Note>
+  Anthropic-compatible endpoint को अतिरिक्त रूप से `anthropic-version` header की आवश्यकता है (उदाहरण `anthropic-version: 2023-06-01`), बिल्कुल जैसे native Anthropic API expect करता है।
+</Note>
+
+<CodeGroup>
+
+```bash OpenAI (US/EU)
+curl https://bearlab.ai/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash OpenAI (Asia-Pacific)
+curl https://bearlab.space/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash Anthropic (US/EU)
+curl https://bearlab.ai/v1/messages \
+  -H "Authorization: Bearer sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-7",
+    "max_tokens": 1024,
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash Anthropic (Asia-Pacific)
+curl https://bearlab.space/v1/messages \
+  -H "Authorization: Bearer sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-7",
+    "max_tokens": 1024,
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+</CodeGroup>
+
+## कुंजी प्रबंधन
+
+- **प्रत्येक use के लिए एक कुंजी**: आसान revocation और per-key usage stats के लिए project या client के लिए अलग कुंजियों को बनाएं।
 - **एक quota cap सेट करें**: exposure को कम करने के लिए creation पर एक single key को spending limit दें।
 - **Hardcode न करें**: environment variables के माध्यम से inject करें; कभी भी keys को repository में commit न करें।
-- **Leak पर revoke करें**: यदि एक key exposed हो सकता है, तो इसे console पर delete करें और एक नया बनाएं।
+- **Leak पर revoke करें**: यदि एक key exposed हो सकता है, तो इसे console पर delete करें और एक नई key बनाएं।
 
-## Common auth errors
+## समूह
 
-| Symptom | Cause |
+gateway पर models को **समूहों** में organize किया जाता है। एक समूह decide करता है कि एक model को किस upstream में route किया जाए और एक billing multiplier (इसका group ratio) apply करता है। हर key एक या अधिक समूहों से संबंधित है, और एक key केवल उन models को call कर सकता है जिन्हें वह access कर सकता है।
+
+- एक model केवल तभी आपकी key के द्वारा callable है जब वह model आपकी key के groups में से किसी एक के लिए enabled है।
+- same model कई समूहों में different price points पर दिखाई दे सकता है; group की ratio हर call की cost को decide करता है।
+- यदि आप किसी ऐसे model को call करते हैं जिसे आपका group expose नहीं करता है, तो request gateway level पर reject हो जाता है।
+
+यह key **`default`** group में provision किया गया है, इसलिए यह जो models देखता है वह baseline mixed catalog है। आप [Models & Pricing](/hi/guides/pricing) page पर या live [models list](/hi/guides/models) endpoint के via exactly देख सकते हैं कि आपकी key कौन से models तक पहुंच सकती है और उनकी कीमत क्या है, यह endpoint केवल उन models को return करता है जिन तक आप access कर सकते हैं।
+
+## आम authentication errors
+
+| लक्षण | कारण |
 | --- | --- |
-| `401 Unauthorized` | गलत या deleted key, या mismatched header (Bearer vs x-api-key)। |
-| `403 Forbidden` | Key disabled, insufficient balance, या model या group तक कोई access नहीं। सबसे common permission issue एक model है जिसे identity verification की आवश्यकता है। |
+| `401 Unauthorized` | Missing, malformed, wrong, या deleted key। Check करें कि header exactly `Authorization: Bearer sk-...` है। |
+| `403 Forbidden` | Key disabled है, insufficient balance है, या requested model किसी भी group द्वारा expose नहीं किया गया है जिसे आपकी key access कर सकती है। |
+| `404` on a model | Model name exist नहीं करता या आपकी key के group के लिए available नहीं है। Exact IDs देखने के लिए [models list](/hi/guides/models) pull करें जिन्हें आप call कर सकते हैं। |
 
 अधिक codes के लिए [Error Handling](/hi/guides/errors) देखें।

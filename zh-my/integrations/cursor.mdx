@@ -1,26 +1,47 @@
 ---
 title: "Cursor"
-description: "在 Cursor 中使用 BearLab AI 的对话模型。"
+description: "在 Cursor 中使用 BearLab AI 对话模型。"
 ---
 
-[Cursor](https://cursor.com) 是流行的 AI 代码编辑器。通过 OpenAI 兼容接口接入 BearLab AI。
+[Cursor](https://cursor.com) 是一个流行的 AI 代码编辑器。通过 BearLab AI 的 OpenAI 兼容接口连接。
 
-## 配置步骤
+Cursor 仅支持 OpenAI 协议，因此请始终使用 `/v1` 基础 URL 并使用您的 `sk-...` 密钥进行身份验证。
 
 <Steps>
   <Step title="打开模型设置">
     打开 **Settings → Models**。
   </Step>
-  <Step title="覆盖 Base URL">
-    找到 **OpenAI API Key** 区域，展开 **Override OpenAI Base URL**，填写：
-    - **Base URL**：`https://bearlab.ai/v1`
-    - **API Key**：你的 `sk-...` 密钥
+  <Step title="覆盖基础 URL">
+    在 **OpenAI API Key** 区域中，展开 **Override OpenAI Base URL** 并为您的区域设置值：
+
+    <Tabs>
+      <Tab title="US / EU">
+        - **Base URL**: `https://bearlab.ai/v1`
+        - **API Key**: 您的 `sk-...` 密钥
+      </Tab>
+      <Tab title="Asia-Pacific">
+        - **Base URL**: `https://bearlab.space/v1`
+        - **API Key**: 您的 `sk-...` 密钥
+      </Tab>
+    </Tabs>
   </Step>
   <Step title="添加模型并验证">
-    在模型列表中添加你要用的模型名（如 `gpt-4o`、`claude-sonnet-4-6`），保存后点击 **Verify** 验证连通。
+    当设置自定义基础 URL 时，Cursor 不会自动拉取模型列表，因此需要手动添加模型名称。使用 [models endpoint](/zh-my/guides/models) 中显示的 ID，例如：
+
+    - `gpt-5.5`
+    - `claude-sonnet-4-6`
+    - `claude-opus-4-7`
+    - `gemini-3.1-pro-preview`
+    - `deepseek-v4-pro`
+
+    保存，然后点击 **Verify**。
   </Step>
 </Steps>
 
 <Note>
-  Cursor 仅走 OpenAI 兼容协议，Base URL 用 `/v1` 结尾。添加的模型名必须是 [模型接口](/zh-my/guides/models) 中真实存在的 ID。验证失败时，先用 [快速开始](/zh-my/guides/quickstart) 的 curl 确认密钥可用。
+  模型名称必须完全匹配 [models endpoint](/zh-my/guides/models) 返回的 ID，包括后缀。不存在的名称将无法验证。如果验证仍然失败，请先使用 [Quickstart](/zh-my/guides/quickstart) 中的 curl 确认密钥。
 </Note>
+
+<Warning>
+  选择与您的区域相符的基础 URL。`https://bearlab.ai` 服务美国/欧洲，`https://bearlab.space` 服务亚太地区；路径对两者都是 `/v1`。不要混用一个区域的密钥与另一个区域的基础 URL。
+</Warning>

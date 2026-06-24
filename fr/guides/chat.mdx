@@ -1,80 +1,117 @@
 ---
-title: "Chat Completions"
-description: "Paramètres de requête, streaming, appel d'outils et les trois protocoles compatibles."
+title: "Complétions de Chat"
+description: "Paramètres de requête, streaming, appels d'outils et trois protocoles compatibles."
 ---
 
-Chat completion est le point de terminaison central, offert via trois interfaces compatibles (OpenAI, Anthropic, Gemini) qui partagent une seule clé.
+La complétion de chat est le point de terminaison principal, offert via trois interfaces compatibles (OpenAI, Anthropic, Gemini) partageant une clé unique.
 
 <Note>
-  Utilisateurs Asie-Pacifique : utilisez le domaine dédié `https://bearlab.in` au lieu de `https://bearlab.ai`. Voir [Service Availability](/fr/guides/availability).
+  BearLab AI dessert deux régions. Les utilisateurs américains/européens appellent `https://bearlab.ai` ; les utilisateurs d'Asie-Pacifique appellent le domaine dédié `https://bearlab.space`. Les deux régions partagent la même clé et le même catalogue de modèles. Voir [Disponibilité du Service](/fr/guides/availability).
 </Note>
 
 ## Points de terminaison
 
-| Protocole | Méthode et chemin |
-| --- | --- |
-| Compatible OpenAI | `POST https://bearlab.ai/v1/chat/completions` |
-| Compatible Anthropic | `POST https://bearlab.ai/v1/messages` |
-| Gemini native | `base_url=https://bearlab.ai`, `api_version=v1beta` (SDK Google genai) |
+| Protocole | Méthode et chemin (US / EU) | Méthode et chemin (Asie-Pacifique) |
+| --- | --- | --- |
+| Compatible OpenAI | `POST https://bearlab.ai/v1/chat/completions` | `POST https://bearlab.space/v1/chat/completions` |
+| Compatible Anthropic | `POST https://bearlab.ai/v1/messages` | `POST https://bearlab.space/v1/messages` |
+| Gemini natif | `base_url=https://bearlab.ai`, `api_version=v1beta` (SDK Google genai) | `base_url=https://bearlab.space`, `api_version=v1beta` |
 
-## Requête basique
+Authentifiez chaque requête avec votre clé API (`sk-...`) dans l'en-tête `Authorization: Bearer`. Le protocole Anthropic accepte également l'en-tête `x-api-key`.
+
+## Requête de base
 
 <Tabs>
   <Tab title="Compatible OpenAI">
-    ```bash
-    curl https://bearlab.ai/v1/chat/completions \
-      -H "Authorization: Bearer YOUR_API_KEY" \
-      -H "Content-Type: application/json" \
-      -d '{
-        "model": "gpt-4o",
-        "messages": [
-          {"role": "system", "content": "You are a concise assistant."},
-          {"role": "user", "content": "Hello"}
-        ]
-      }'
-    ```
+    <CodeGroup>
+      ```bash US / EU
+      curl https://bearlab.ai/v1/chat/completions \
+        -H "Authorization: Bearer sk-..." \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "gpt-5.5",
+          "messages": [
+            {"role": "system", "content": "You are a concise assistant."},
+            {"role": "user", "content": "Hello"}
+          ]
+        }'
+      ```
+
+      ```bash Asie-Pacifique
+      curl https://bearlab.space/v1/chat/completions \
+        -H "Authorization: Bearer sk-..." \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "gpt-5.5",
+          "messages": [
+            {"role": "system", "content": "You are a concise assistant."},
+            {"role": "user", "content": "Hello"}
+          ]
+        }'
+      ```
+    </CodeGroup>
   </Tab>
   <Tab title="Compatible Anthropic">
-    ```bash
-    curl https://bearlab.ai/v1/messages \
-      -H "x-api-key: YOUR_API_KEY" \
-      -H "anthropic-version: 2023-06-01" \
-      -H "Content-Type: application/json" \
-      -d '{
-        "model": "claude-sonnet-4-6",
-        "max_tokens": 1024,
-        "system": "You are a concise assistant.",
-        "messages": [{"role": "user", "content": "Hello"}]
-      }'
-    ```
+    <CodeGroup>
+      ```bash US / EU
+      curl https://bearlab.ai/v1/messages \
+        -H "Authorization: Bearer sk-..." \
+        -H "anthropic-version: 2023-06-01" \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "claude-sonnet-4-6",
+          "max_tokens": 1024,
+          "system": "You are a concise assistant.",
+          "messages": [{"role": "user", "content": "Hello"}]
+        }'
+      ```
+
+      ```bash Asie-Pacifique
+      curl https://bearlab.space/v1/messages \
+        -H "Authorization: Bearer sk-..." \
+        -H "anthropic-version: 2023-06-01" \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "claude-sonnet-4-6",
+          "max_tokens": 1024,
+          "system": "You are a concise assistant.",
+          "messages": [{"role": "user", "content": "Hello"}]
+        }'
+      ```
+    </CodeGroup>
   </Tab>
 </Tabs>
 
 ## Paramètres courants
 
-| Paramètre | Description |
-| --- | --- |
-| `model` | ID du modèle. Voir [Models & Pricing API](/fr/guides/models). |
-| `messages` | Tableau ordonné des messages de conversation. |
-| `temperature` | Température d'échantillonnage, `0`-`2`. |
-| `max_tokens` | Jetons de sortie maximaux. **Requis** sous le protocole Anthropic. |
-| `stream` | Diffusez la réponse via SSE quand `true`. |
+| Paramètre | Requis | Description |
+| --- | --- | --- |
+| `model` | Oui | ID du modèle. Voir [API des Modèles et Tarification](/fr/guides/models). |
+| `messages` | Oui | Tableau ordonné de messages de conversation. |
+| `max_tokens` | OpenAI : optionnel · Anthropic : **requis** | Nombre maximum de tokens de sortie. |
+| `temperature` | Non | Température d'échantillonnage. Plage OpenAI `0`-`2` ; plage Anthropic `0`-`1`. |
+| `stream` | Non | Diffusez la réponse via SSE lorsqu'il est défini sur `true`. |
+| `tools` | Non | Définitions de fonctions / outils pour les appels d'outils. |
 
 <Warning>
-  Différence de protocole : le protocole OpenAI place le prompt système dans `messages` en tant que `role: system` ; le protocole Anthropic utilise un champ `system` de niveau supérieur et nécessite `max_tokens`.
+  Différence de protocole : le protocole OpenAI place l'invite système dans `messages` comme `role: system`, et `max_tokens` est optionnel. Le protocole Anthropic utilise un champ `system` de haut niveau et **exige** `max_tokens`.
 </Warning>
 
 ## Streaming
 
-Définissez `stream: true` ; la réponse est poussée via SSE, se terminant par `data: [DONE]` (protocole OpenAI).
+Définissez `stream: true` pour recevoir la réponse via Server-Sent Events.
 
-```python
+- **Protocole OpenAI** — portions `delta` incrémentielles, terminées par une ligne finale `data: [DONE]`.
+- **Protocole Anthropic** — événements SSE typés (`message_start`, `content_block_delta`, `message_stop`, …) ; il n'y a pas de sentinelle `[DONE]`.
+
+<CodeGroup>
+```python US / EU
 from openai import OpenAI
 
-client = OpenAI(api_key="YOUR_API_KEY", base_url="https://bearlab.ai/v1")
+client = OpenAI(api_key="sk-...", base_url="https://bearlab.ai/v1")
 
 stream = client.chat.completions.create(
-    model="gpt-4o",
+    model="gpt-5.5",
     messages=[{"role": "user", "content": "Write a short poem about spring."}],
     stream=True,
 )
@@ -84,14 +121,31 @@ for chunk in stream:
         print(delta, end="", flush=True)
 ```
 
-## Appel d'outils
+```python Asie-Pacifique
+from openai import OpenAI
 
-Les protocoles OpenAI et Anthropic supportent tous deux l'appel d'outils.
+client = OpenAI(api_key="sk-...", base_url="https://bearlab.space/v1")
+
+stream = client.chat.completions.create(
+    model="gpt-5.5",
+    messages=[{"role": "user", "content": "Write a short poem about spring."}],
+    stream=True,
+)
+for chunk in stream:
+    delta = chunk.choices[0].delta.content
+    if delta:
+        print(delta, end="", flush=True)
+```
+</CodeGroup>
+
+## Appels d'outils
+
+Les protocoles OpenAI et Anthropic prennent tous deux en charge les appels d'outils.
 
 ```python
 from openai import OpenAI
 
-client = OpenAI(base_url="https://bearlab.ai/v1", api_key="YOUR_API_KEY")
+client = OpenAI(base_url="https://bearlab.ai/v1", api_key="sk-...")
 
 tools = [{
     "type": "function",
@@ -107,36 +161,55 @@ tools = [{
 }]
 
 resp = client.chat.completions.create(
-    model="gpt-4o",
+    model="gpt-5.5",
     messages=[{"role": "user", "content": "What's the weather in London?"}],
     tools=tools,
 )
 print(resp.choices[0].message)
 ```
 
-## Protocole Gemini native
+<Note>
+  Utilisateurs d'Asie-Pacifique : définissez `base_url="https://bearlab.space/v1"` à la place.
+</Note>
+
+## Protocole natif Gemini
 
 Les modèles Gemini peuvent être appelés au format natif Google AI Studio, sans conversion au format OpenAI.
 
-```python
+<CodeGroup>
+```python US / EU
 from google import genai
 from google.genai import types
 
 client = genai.Client(
-    api_key="YOUR_API_KEY",
+    api_key="sk-...",
     http_options=types.HttpOptions(api_version="v1beta", base_url="https://bearlab.ai"),
 )
 
-resp = client.models.generate_content(model="gemini-2.5-pro", contents="Hello")
+resp = client.models.generate_content(model="gemini-3.1-pro-preview", contents="Hello")
 print(resp.text)
 ```
 
+```python Asie-Pacifique
+from google import genai
+from google.genai import types
+
+client = genai.Client(
+    api_key="sk-...",
+    http_options=types.HttpOptions(api_version="v1beta", base_url="https://bearlab.space"),
+)
+
+resp = client.models.generate_content(model="gemini-3.1-pro-preview", contents="Hello")
+print(resp.text)
+```
+</CodeGroup>
+
 <Warning>
-  1. Définissez `base_url` à `https://bearlab.ai` (pas de suffixe `/v1beta` ; le SDK l'ajoute).
-  2. Définissez `api_version` à `v1beta`.
-  3. Installez : Python `pip install google-genai`, Node.js `npm install @google/genai`.
+  1. Définissez `base_url` sur la racine de la région (`https://bearlab.ai` ou `https://bearlab.space`) ; n'ajoutez pas `/v1beta`, le SDK l'ajoute.
+  2. Définissez `api_version` sur `v1beta`.
+  3. Installer : Python `pip install google-genai`, Node.js `npm install @google/genai`.
 </Warning>
 
 <Tip>
-  Les préfixes longs répétés (prompts système fixes, longs documents) peuvent utiliser [Prompt Caching](/fr/guides/prompt-caching) pour réduire le coût de la partie répétée.
+  Les préfixes longs répétés (invites système fixes, longs documents) peuvent utiliser [Mise en cache des invites](/fr/guides/prompt-caching) pour réduire le coût de la partie répétée.
 </Tip>

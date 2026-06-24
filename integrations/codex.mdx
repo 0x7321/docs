@@ -1,47 +1,83 @@
 ---
 title: "OpenAI Codex CLI"
-description: "在 OpenAI 官方 Codex CLI 中使用 BearLab AI。"
+description: "在 OpenAI 的 Codex CLI 中使用 BearLab AI。"
 ---
 
-[Codex CLI](https://github.com/openai/codex) 是 OpenAI 官方命令列程式設計代理，透過自定義 provider 接入平臺。
+[Codex CLI](https://github.com/openai/codex) 是 OpenAI 官方的命令行代碼代理。您可以透過新增指向 BearLab AI 閘道的自訂提供者來將其連接至 BearLab AI。
 
 <Warning>
-  Codex 走 OpenAI **Responses API**（`wire_api = "responses"`），這是 OpenAI 專有協議，**只能使用 OpenAI 系模型**（`gpt-*` / `o*`）。Claude、Gemini 等模型無法透過 Codex 使用——要用 Claude 請走 [Claude Code](/integrations/claude-code)、[Cursor](/integrations/cursor) 或 [Cline](/integrations/cline)。
+  Codex 使用 OpenAI **Responses API**（`wire_api = "responses"`），這是 OpenAI 專有協議，**僅適用於 OpenAI 系列模型**（`gpt-*` / `gpt-oss-*`）。Claude、Gemini、GLM 及其他非 OpenAI 模型無法透過 Codex 驅動 — 請改用 [Claude Code](/guides/claude-code)、[Cursor](/guides/cursor) 或 [Cline](/guides/cline)。
 </Warning>
+
+## 基礎 URL
+
+Codex 與 OpenAI 相容端點通訊，因此 `base_url` 以 `/v1` 結尾。選擇最接近您的地區：
+
+| 地區 | `base_url` |
+| --- | --- |
+| 美國 / 歐洲 | `https://bearlab.ai/v1` |
+| 亞太地區 | `https://bearlab.space/v1` |
 
 ## 推薦模型
 
-| 模型 | ID | 適用場景 |
+使用 OpenAI 系列的模型 ID，必須完全符合您的[模型列表](/guides/models)中的顯示方式。可用的 OpenAI 系列 ID 包括：
+
+| 模型 | ID | 最適用於 |
 | --- | --- | --- |
-| GPT-5.5 | `gpt-5.5` | 最新通用模型，Codex 當前預設 |
-| GPT-5.2-Codex | `gpt-5.2-codex` | Codex 程式設計優化，API Key 工作流首選 |
-| GPT-5.4-mini | `gpt-5.4-mini` | 輕量快速，子任務與互動編輯 |
+| GPT-5.5 | `gpt-5.5` | 最新通用模型，Codex 的強大預設選擇 |
+| GPT-5.4 | `gpt-5.4` | 品質與速度均衡 |
+| GPT-5.4-mini | `gpt-5.4-mini` | 輕量且快速，適合子工作與互動編輯 |
+| GPT-5.2 | `gpt-5.2` | 可靠的日常變更工作馬 |
+| GPT-5 | `gpt-5` | 穩定的基準，相容性廣泛 |
 
-## 配置
+<Note>
+  模型 ID 區分大小寫，必須完全符合[模型端點](/guides/models)。設定 Codex 前，請先執行快速列表以確認您的金鑰可以看到哪些模型。
+</Note>
 
-編輯 `~/.codex/config.toml`，新增指向平臺的 provider：
+## 設定
 
-```toml
-model = "gpt-5.5"
-model_provider = "bearlab"
+編輯 `~/.codex/config.toml` 並新增指向 BearLab AI 的提供者。
 
-# 第三方 provider 必須關閉響應儲存
-disable_response_storage = true
+<Tabs>
+  <Tab title="美國 / 歐洲">
+    ```toml
+    model = "gpt-5.5"
+    model_provider = "bearlab"
 
-[model_providers.bearlab]
-name = "BearLab AI"
-base_url = "https://bearlab.ai/v1"
-env_key = "BEARLAB_API_KEY"
-wire_api = "responses"
-```
+    # Third-party providers must disable response storage
+    disable_response_storage = true
 
-匯出金鑰後執行：
+    [model_providers.bearlab]
+    name = "BearLab AI"
+    base_url = "https://bearlab.ai/v1"
+    env_key = "BEARLAB_API_KEY"
+    wire_api = "responses"
+    ```
+  </Tab>
+  <Tab title="亞太地區">
+    ```toml
+    model = "gpt-5.5"
+    model_provider = "bearlab"
+
+    # Third-party providers must disable response storage
+    disable_response_storage = true
+
+    [model_providers.bearlab]
+    name = "BearLab AI"
+    base_url = "https://bearlab.space/v1"
+    env_key = "BEARLAB_API_KEY"
+    wire_api = "responses"
+    ```
+  </Tab>
+</Tabs>
+
+匯出您的 API 金鑰並執行：
 
 ```bash
-export BEARLAB_API_KEY="YOUR_API_KEY"
+export BEARLAB_API_KEY="sk-..."
 codex
 ```
 
 <Note>
-  `base_url` 用 `/v1` 結尾的 OpenAI 相容地址。`wire_api = "responses"` 與 `disable_response_storage = true` 是第三方 OpenAI 系 provider 的必需項。`model` 必須是 [模型介面](/guides/models) 中存在的 OpenAI 系 ID。
+  使用以 `/v1` 結尾的 OpenAI 相容位址。第三方 OpenAI 格式提供者必須設定 `wire_api = "responses"` 和 `disable_response_storage = true`。驗証是 Bearer 金鑰（`sk-...`），由 Codex 透過 `env_key` 在 `Authorization` 標頭中傳送。`model` 必須是您[模型列表](/guides/models)中存在的 OpenAI 系列 ID。
 </Note>

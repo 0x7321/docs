@@ -1,42 +1,100 @@
 ---
 title: "BearLab AI"
-description: "一个 Key，用上所有主流对话模型。OpenAI、Anthropic、Google、DeepSeek 同一个 API 接入。"
+description: "一个密钥搞定所有顶级对话模型。OpenAI、Anthropic、Google、DeepSeek 等通过单一 API 接入。"
 ---
 
-## 服务区域
+BearLab AI (bearlab.ai) 将来自数十个提供商的对话模型整合到一个 API 中。创建一个密钥，设置一个 `base_url`，即可调用来自 OpenAI、Anthropic、Google、DeepSeek 及其他厂商的最新模型，无需分别向各家厂商注册和充值。
 
-BearLab AI面向**美国与欧盟**司法管辖区直接提供服务。
+该接口兼容于 OpenAI 和 Anthropic 协议，因此现有代码通常只需更改一行 `base_url` 就能使用。
 
-| 区域 | API 域名 | OpenAI | Anthropic |
+## 地域 base URL
+
+选择您所在地区的 base URL，在两者之间使用相同的 API 密钥。
+
+| 地区 | API 域名 | OpenAI 兼容 | Anthropic 兼容 |
 | --- | --- | --- | --- |
-| 美国 / 欧盟 | `https://bearlab.ai` | `https://bearlab.ai/v1/chat/completions` | `https://bearlab.ai/v1/messages` |
-| 亚太区域 | `https://bearlab.in` | `https://bearlab.in/v1/chat/completions` | `https://bearlab.in/v1/messages` |
+| 美国 / 欧洲 | `https://bearlab.ai` | `https://bearlab.ai/v1/chat/completions` | `https://bearlab.ai/v1/messages` |
+| 亚太地区 | `https://bearlab.space` | `https://bearlab.space/v1/chat/completions` | `https://bearlab.space/v1/messages` |
 
-### 亚太区域
+<Note>
+  亚太地区的用户应使用专用域名 `https://bearlab.space` 而不是 `https://bearlab.ai`。您的 `sk-...` 密钥在两个域名上的功能相同。详见 [服务可用性](/zh-Hans/guides/availability)。
+</Note>
 
-亚太区域由**印度区域合作伙伴**提供服务。
+## 两种协议，一个密钥
 
-该区域的 API 请求须改用专用域名 `https://bearlab.in`，而非 `https://bearlab.ai`。
+- **OpenAI 兼容** — `POST <base_url>/v1/chat/completions`，使用 `Authorization: Bearer sk-...` 进行身份验证。
+- **Anthropic 兼容** — `POST <base_url>/v1/messages`，发送 `x-api-key: sk-...` 和 `anthropic-version: 2023-06-01`。
 
-该区域服务的相关政策由区域合作伙伴自行制定；亚太区域用户请自行确保符合所在地的法律法规。
+<Tabs>
+  <Tab title="OpenAI 兼容 (美国 / 欧洲)">
+    ```bash
+    curl https://bearlab.ai/v1/chat/completions \
+      -H "Authorization: Bearer sk-..." \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "gpt-5.5",
+        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+      }'
+    ```
+  </Tab>
+  <Tab title="OpenAI 兼容 (亚太地区)">
+    ```bash
+    curl https://bearlab.space/v1/chat/completions \
+      -H "Authorization: Bearer sk-..." \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "gpt-5.5",
+        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+      }'
+    ```
+  </Tab>
+  <Tab title="Anthropic 兼容 (美国 / 欧洲)">
+    ```bash
+    curl https://bearlab.ai/v1/messages \
+      -H "x-api-key: sk-..." \
+      -H "anthropic-version: 2023-06-01" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "claude-opus-4-7",
+        "max_tokens": 256,
+        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+      }'
+    ```
+  </Tab>
+  <Tab title="Anthropic 兼容 (亚太地区)">
+    ```bash
+    curl https://bearlab.space/v1/messages \
+      -H "x-api-key: sk-..." \
+      -H "anthropic-version: 2023-06-01" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "claude-opus-4-7",
+        "max_tokens": 256,
+        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+      }'
+    ```
+  </Tab>
+</Tabs>
 
-详见 [服务区域](/zh-Hans/guides/availability)。
-
-BearLab AI（BearLab.ai）把数十家厂商的对话模型收到一个 API 下。申请一个 Key、配一个 `base_url`，就能调 OpenAI、Anthropic、Google、DeepSeek 的最新对话模型，不用各家分别注册和充值。
-
-接口同时兼容 OpenAI 和 Anthropic 两套协议，现有代码基本不用改。
+## 开始使用
 
 <CardGroup cols={2}>
-  <Card title="快速开始" icon="rocket" href="/zh-Hans/guides/quickstart" cta="立即开始">
-    5 分钟创建密钥并发出第一个请求。
+  <Card title="快速开始" icon="rocket" href="/zh-Hans/guides/quickstart" cta="开始使用">
+    在五分钟内创建密钥并发出第一个请求。
   </Card>
-  <Card title="平台介绍" icon="circle-info" href="/zh-Hans/guides/introduction" cta="了解平台">
-    BearLab AI 是什么、能做什么。
+  <Card title="介绍" icon="circle-info" href="/zh-Hans/guides/introduction" cta="了解更多">
+    认识 BearLab AI 是什么以及它的功能。
   </Card>
-  <Card title="对话补全" icon="comments" href="/zh-Hans/guides/chat" cta="看接口">
-    OpenAI 兼容 `/v1` 与 Anthropic 兼容 `/v1/messages`，任选其一。
+  <Card title="对话完成" icon="comments" href="/zh-Hans/guides/chat" cta="查看 API">
+    OpenAI 兼容的 `/v1/chat/completions` 和 Anthropic 兼容的 `/v1/messages`。
   </Card>
-  <Card title="客户端接入" icon="plug" href="/zh-Hans/integrations/cursor" cta="去接入">
-    Cursor、Claude Code、Cline、Codex、各类 SDK 即插即用。
+  <Card title="模型" icon="layer-group" href="/zh-Hans/guides/models" cta="浏览模型">
+    您可以使用单一密钥调用的完整模型目录。
+  </Card>
+  <Card title="价格" icon="tag" href="/zh-Hans/guides/pricing" cta="查看价格">
+    模型比率和计费如何运作。
+  </Card>
+  <Card title="集成" icon="plug" href="/zh-Hans/integrations/cursor" cta="连接">
+    Cursor、Claude Code、Cline、Codex 及 SDK，已准备就绪。
   </Card>
 </CardGroup>

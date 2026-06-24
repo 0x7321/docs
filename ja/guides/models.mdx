@@ -1,123 +1,179 @@
 ---
-title: "モデル & 価格API"
-description: "公開の認証不要なエンドポイント。利用可能なすべての会話型モデルとその公表価格をOpenRouterプロバイダー仕様に従って表示します。"
+title: "モデルカタログ"
+description: "お使いの API キーで利用可能なすべてのモデル、ファミリー別の分類、およびモデルグループがアクセスをどのようにゲートしているかについて。"
 ---
 
-`/v1/models/pricing` は、現在利用可能なすべての会話型モデルとその公表価格を返す**公開の認証不要**な集約エンドポイントです。レスポンスは[OpenRouterプロバイダー仕様](https://openrouter.ai/docs/guides/community/for-providers)に従うため、OpenRouter、サードパーティの価格集約ツール、またはカスタムクライアントに取り込めます。
+このページは、お使いの API キーで呼び出せるモデルを、ファミリー別に分類して一覧にしています。チャットリクエストの `model` フィールドに、モデルの確切な `id` を渡してください。
 
 <Note>
-  アジア太平洋ユーザー: `https://bearlab.ai` の代わりに専用ドメイン `https://bearlab.in` を使用してください。[サービス提供地域](/ja/guides/availability)を参照してください。
+  アジア太平洋地域のユーザーの皆様：`https://bearlab.ai` の代わりに、専用ドメイン `https://bearlab.space` をお使いください。[サービス可用性](/ja/guides/availability) をご覧ください。
 </Note>
+
+## このカタログの読み方
+
+ご覧いただけるカタログは、**ご利用のトークングループ** に基づいています。各 API キーは 1 つのモデルグループに属しており、モデルはご利用のグループが呼び出しを許可されている場合のみ、リストに表示されます。以下のモデルは現在の本番ラインアップです。実際にキーで表示されるサブセットはグループによります。
+
+| 概念 | 説明 |
+| --- | --- |
+| **モデル `id`** | `model` フィールドで送信する正確な文字列です。大文字と小文字が区別されます。そのままコピーしてください。 |
+| **モデルグループ** | ご利用のキーが属するアクセス層です。呼び出せるモデルと価格を決定します。 |
+| **エンドポイントタイプ** | モデルが受け入れるプロトコル：OpenAI 互換、Anthropic、または Gemini です。 |
+
+## 利用可能なモデル
+
+以下の各 `id` は実際のモデル識別子です。同じファミリー内では、**フラッグシップ / 推奨** id が最初にリストされます。軽量版または旧バージョンはその後です。
+
+<Tabs>
+  <Tab title="Claude (Anthropic)">
+    | モデル `id` | 備考 |
+    | --- | --- |
+    | `claude-opus-4-8` | Opus 4.8、フラッグシップ推論 |
+    | `claude-opus-4-7` | Opus 4.7 |
+    | `claude-opus-4-6` | Opus 4.6 |
+    | `claude-sonnet-4-6` | Sonnet 4.6、バランス型 |
+    | `claude-sonnet-4-5` | Sonnet 4.5 |
+    | `claude-haiku-4-5` | Haiku 4.5、高速で経済的 |
+  </Tab>
+  <Tab title="GPT (OpenAI)">
+    | モデル `id` | 備考 |
+    | --- | --- |
+    | `gpt-5.5` | GPT-5.5、フラッグシップ |
+    | `gpt-5.4` | GPT-5.4 |
+    | `gpt-5.4-mini` | GPT-5.4 Mini、軽量 |
+    | `gpt-5.2` | GPT-5.2 |
+    | `gpt-5.1` | GPT-5.1 |
+    | `gpt-5` | GPT-5 |
+  </Tab>
+  <Tab title="Gemini (Google)">
+    | モデル `id` | 備考 |
+    | --- | --- |
+    | `gemini-3-pro` | Gemini 3 Pro、フラッグシップ |
+    | `gemini-3.1-pro` | Gemini 3.1 Pro |
+    | `gemini-3.1-pro-preview` | Gemini 3.1 Pro プレビュー |
+    | `gemini-3.5-flash` | Gemini 3.5 Flash |
+    | `gemini-3-flash` | Gemini 3 Flash |
+    | `gemini-3-flash-preview` | Gemini 3 Flash プレビュー |
+    | `gemini-2.5-flash` | Gemini 2.5 Flash |
+  </Tab>
+  <Tab title="Grok (xAI)">
+    | モデル `id` | 備考 |
+    | --- | --- |
+    | `grok-4.3` | Grok 4.3、フラッグシップ |
+    | `grok-4.2` | Grok 4.2 |
+    | `grok-4.1` | Grok 4.1 |
+    | `grok-4` | Grok 4 |
+  </Tab>
+  <Tab title="DeepSeek">
+    | モデル `id` | 備考 |
+    | --- | --- |
+    | `deepseek-v4-pro` | DeepSeek V4 Pro、フラッグシップ |
+    | `deepseek-v4-flash` | DeepSeek V4 Flash、高速 |
+    | `deepseek-v3.2` | DeepSeek V3.2 |
+  </Tab>
+  <Tab title="GLM (Zhipu)">
+    | モデル `id` | 備考 |
+    | --- | --- |
+    | `glm-5.2` | GLM 5.2、フラッグシップ |
+    | `glm-5.1` | GLM 5.1 |
+    | `glm-5` | GLM 5 |
+  </Tab>
+  <Tab title="Qwen (Alibaba)">
+    | モデル `id` | 備考 |
+    | --- | --- |
+    | `qwen3-max` | Qwen3 Max、フラッグシップ |
+    | `qwen3.6-plus` | Qwen 3.6 Plus |
+    | `qwen3-coder-plus` | Qwen3 Coder Plus、コードチューニング |
+  </Tab>
+  <Tab title="Kimi (Moonshot)">
+    | モデル `id` | 備考 |
+    | --- | --- |
+    | `kimi-k2.6` | Kimi K2.6、フラッグシップ |
+    | `kimi-k2.5` | Kimi K2.5 |
+  </Tab>
+  <Tab title="その他">
+    | モデル `id` | 備考 |
+    | --- | --- |
+    | `MiniMax-M2.5` | MiniMax M2.5 |
+  </Tab>
+</Tabs>
 
 <Note>
-  これは「公表価格」エントリーポイントであり、ユーザー身元を含まないものです。価格は匿名コンテキストの`default`グループを表しています。認証されたユーザーが実際に支払う価格(グループ、階層割引など)を確認するには、コンソールの価格ページを使用してください。
+  このリストはスナップショットです。権威のあるライブリストは常に自分自身の `/v1/models` レスポンスです（以下参照）。モデルの可用性は時間とともに変わります。
 </Note>
 
-## 使用する場合
+## ライブリストを取得する
 
-| ユースケース | 説明 |
-| --- | --- |
-| 価格集約 | OpenRouterおよび他の集約ツールがカタログと公表価格をスクレイピングします |
-| クライアント表示 | アプリ、ボット、SDKがモデルリストをレンダリングします |
-| モニタリング | 時間経過に伴うカタログまたは価格の変更を追跡します |
+`/v1/models` は、お使いのキーが呼び出せるモデルを OpenAI SDK 形式で返します。API キーが必要です。レスポンス形式はご利用のリクエストヘッダーで示唆される形式に従います（デフォルトは OpenAI。`x-api-key` + `anthropic-version` の場合は Anthropic。`x-goog-api-key` の場合は Gemini）。
 
-## エンドポイント
+<Tabs>
+  <Tab title="米国 / EU (bearlab.ai)">
+    ```bash
+    curl https://bearlab.ai/v1/models \
+      -H "Authorization: Bearer sk-..."
+    ```
+  </Tab>
+  <Tab title="アジア太平洋地域 (bearlab.space)">
+    ```bash
+    curl https://bearlab.space/v1/models \
+      -H "Authorization: Bearer sk-..."
+    ```
+  </Tab>
+</Tabs>
 
-| 項目 | 値 |
-| --- | --- |
-| **URL** | `https://bearlab.ai/v1/models/pricing` |
-| **メソッド** | `GET` |
-| **認証** | なし(公開) |
-| **レート制限** | IP単位の厳格な臨界レート制限 |
-| **キャッシング** | 60秒のインプロセスキャッシュ; `Cache-Control: public, max-age=60` |
-
-### リクエスト
-
-```bash
-curl https://bearlab.ai/v1/models/pricing
-```
-
-## レスポンス構造
-
-最上位は常に`data`配列で囲まれています。
+レスポンス（省略）：
 
 ```json
 {
+  "object": "list",
   "data": [
     {
-      "id": "gpt-4o",
-      "name": "GPT-4o",
-      "created": 1715558400,
-      "input_modalities": ["text"],
-      "output_modalities": ["text"],
-      "context_length": 128000,
-      "max_output_length": 16384,
-      "pricing": {
-        "prompt": "0.0000025",
-        "completion": "0.00001",
-        "request": "0",
-        "input_cache_read": "0.00000125"
-      },
-      "supported_features": ["tools", "json_mode", "structured_outputs", "logprobs"]
+      "id": "claude-opus-4-8",
+      "object": "model",
+      "created": 1626777600,
+      "owned_by": "openai",
+      "supported_endpoint_types": ["openai"]
     }
   ]
 }
 ```
 
-### モデルフィールド
-
-| フィールド | タイプ | 説明 |
-| --- | --- | --- |
-| `id` | `string` | ユニークなモデル識別子; `/v1/chat/completions`を呼び出すときに使用します |
-| `name` | `string` | 表示名; `id`へフォールバック |
-| `created` | `int64` | リリース時間(Unixセコンド) |
-| `input_modalities` / `output_modalities` | `string[]` | 少なくとも`text` |
-| `context_length` | `int` | トークン内の最大コンテキストウィンドウ |
-| `max_output_length` | `int` | レスポンスごとの最大出力トークン |
-| `pricing` | `Pricing` | 価格オブジェクト。以下を参照してください |
-| `pricing_tiers` | `Pricing[]` | 階層化された価格(最大1つ、コンテキスト長の閾値による) |
-| `supported_features` | `string[]` | 機能フラグ |
-
-### 価格フィールド
-
-すべての価格は**USDの文字列**です。トークンクラスフィールドはトークンごとに価格が設定されます。
-
-| フィールド | 単位 | 説明 |
-| --- | --- | --- |
-| `prompt` | USD / 入力トークン | 入力単価 |
-| `completion` | USD / 出力トークン | 出力単価 |
-| `request` | USD / リクエスト | リクエストごとの固定料金(チャットモデルでは通常`"0"`) |
-| `internal_reasoning` | USD / 推論トークン | 推論トークンの価格 |
-| `input_cache_read` | USD / トークン | キャッシュヒット読み取り価格(通常はより低い) |
-| `input_cache_write` | USD / トークン | キャッシュ書き込み価格 |
-| `web_search` | USD / クエリ | 組み込みWebサーチツール料金 |
-
-<Note>
-  `"0"`は「無料」または「このモデルに適用不可」を意味する場合があります。価格だけに頼らず、`supported_features`と組み合わせて機能を推測してください。
-</Note>
-
-### `supported_features`
-
-| 値 | 意味 |
+| フィールド | 説明 |
 | --- | --- |
-| `tools` | 関数呼び出し / ツール使用 |
-| `reasoning` | 推論トークンを返す |
-| `json_mode` | JSON モード出力 |
-| `structured_outputs` | スキーマ制約付きの構造化出力 |
-| `logprobs` | トークンログ確率 |
-| `web_search` | 組み込みWebサーチツール |
+| `id` | モデル識別子。チャットリクエストの `model` フィールドで渡してください |
+| `object` | 常に `model` |
+| `created` | リリース時間（Unix 秒） |
+| `owned_by` | 名義上の所有者文字列 |
+| `supported_endpoint_types` | このモデルを受け入れるエンドポイント：`openai`、`anthropic`、および/または `gemini` |
 
-## キャッシングと更新頻度
+## モデルを呼び出す
 
-| アスペクト | 動作 |
-| --- | --- |
-| サーバーキャッシュ | 60秒のインプロセス; 管理者更新は1分以内に反映されます |
-| クライアントキャッシュ | `Cache-Control: public, max-age=60` |
-| 推奨ポーリング | 最多でも5分ごと; 積極的なポーリングはレート制限されます |
+`model` フィールドに正確な `id` を送信してください。両方のサンプルドメインを表示しています。地域に合わせて選択してください。
 
-## 他のエンドポイントとの比較
+<Tabs>
+  <Tab title="米国 / EU (bearlab.ai)">
+    ```bash
+    curl https://bearlab.ai/v1/chat/completions \
+      -H "Authorization: Bearer sk-..." \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "claude-sonnet-4-6",
+        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+      }'
+    ```
+  </Tab>
+  <Tab title="アジア太平洋地域 (bearlab.space)">
+    ```bash
+    curl https://bearlab.space/v1/chat/completions \
+      -H "Authorization: Bearer sk-..." \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "claude-sonnet-4-6",
+        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+      }'
+    ```
+  </Tab>
+</Tabs>
 
-| エンドポイント | 目的 | 認証 |
-| --- | --- | --- |
-| `/v1/models/pricing` | OpenRouter形式の公開価格 | 公開 |
-| `/v1/models` | OpenAI SDK互換モデルIDリスト | トークン必須 |
+<Tip>
+  価格と計費ルールについては、[価格と計費](/ja/guides/pricing) を参照してください。グループが割引にどのようにマップするかについては、[ユーザーレベル](/ja/guides/user-levels) を参照してください。
+</Tip>

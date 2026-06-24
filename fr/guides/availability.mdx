@@ -1,19 +1,106 @@
 ---
-title: "Service Availability"
-description: "Où BearLab sert directement, et comment la région Asie-Pacifique se connecte."
+title: "Disponibilité du service"
+description: "Les régions de service de BearLab AI et les URL de base régionales correspondantes."
 ---
 
-BearLab (bearlab.ai) fournit des services directement dans les juridictions des **États-Unis et de l'Union européenne**.
+BearLab AI expose la même passerelle via deux URL de base régionales. Choisissez celle qui correspond à l'origine de vos demandes, puis pointez chaque appel compatible avec OpenAI ou Anthropic vers ce domaine.
 
-### Asie-Pacifique
+| Région | URL de base |
+| --- | --- |
+| États-Unis / Union Européenne | `https://bearlab.ai` |
+| Asie-Pacifique | `https://bearlab.space` |
 
-La région Asie-Pacifique est desservie par un **partenaire régional basé en Inde**.
+<Note>
+Les deux régions partagent la même surface API, le même catalogue de modèles et les mêmes tarifs. Seul l'hôte change — votre clé API, vos corps de demande et vos ID de modèle restent identiques dans les deux régions.
+</Note>
 
-Les requêtes API de cette région doivent utiliser le domaine dédié `https://bearlab.in` au lieu de `https://bearlab.ai`.
+## Choisir une région
 
-Les politiques de service dans cette région sont définies par le partenaire régional, et les utilisateurs sont responsables de la conformité aux lois locales applicables.
+<Steps>
+  <Step title="Identifiez l'origine de votre trafic">
+    Utilisez le domaine le plus proche de votre client ou serveur. Le trafic américain/UE doit cibler `https://bearlab.ai` ; les clients en Asie-Pacifique doivent cibler `https://bearlab.space` pour une latence plus faible.
+  </Step>
+  <Step title="Définissez votre URL de base">
+    Configurez votre SDK ou votre client HTTP pour utiliser l'URL de base régionale plus le chemin du protocole ci-dessous.
+  </Step>
+  <Step title="Authentification">
+    Envoyez votre clé API BearLab AI en tant que jeton Bearer dans l'en-tête `Authorization`. La même clé `sk-...` fonctionne sur les deux régions.
+  </Step>
+</Steps>
 
-| Région | Domaine API | OpenAI | Anthropic |
+## URL de base par protocole
+
+BearLab AI parle deux formats de demande. Le chemin que vous ajoutez dépend de celui que vous utilisez.
+
+| Protocole | Chemin | États-Unis / UE | Asie-Pacifique |
 | --- | --- | --- | --- |
-| US / EU | `https://bearlab.ai` | `https://bearlab.ai/v1/chat/completions` | `https://bearlab.ai/v1/messages` |
-| Asie-Pacifique | `https://bearlab.in` | `https://bearlab.in/v1/chat/completions` | `https://bearlab.in/v1/messages` |
+| Compatible OpenAI | `/v1/chat/completions` | `https://bearlab.ai/v1/chat/completions` | `https://bearlab.space/v1/chat/completions` |
+| Anthropic | `/v1/messages` | `https://bearlab.ai/v1/messages` | `https://bearlab.space/v1/messages` |
+
+Pour les SDK OpenAI, définissez l'URL de base sur `<domain>/v1`. Pour les SDK Anthropic, définissez l'URL de base sur `<domain>` (le SDK ajoute `/v1/messages` lui-même).
+
+## Exemples rapides
+
+<CodeGroup>
+
+```bash US / EU (OpenAI-compatible)
+curl https://bearlab.ai/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash Asia-Pacific (OpenAI-compatible)
+curl https://bearlab.space/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash US / EU (Anthropic)
+curl https://bearlab.ai/v1/messages \
+  -H "x-api-key: sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-7",
+    "max_tokens": 1024,
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash Asia-Pacific (Anthropic)
+curl https://bearlab.space/v1/messages \
+  -H "x-api-key: sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-7",
+    "max_tokens": 1024,
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+</CodeGroup>
+
+<Note>
+Le point de terminaison Anthropic accepte le style d'en-tête Claude natif (`x-api-key` plus `anthropic-version`). Un en-tête `Authorization: Bearer sk-...` standard est également accepté pour les deux protocoles.
+</Note>
+
+## Changer de région
+
+La migration entre les régions nécessite uniquement de modifier l'hôte dans votre URL de base. Rien d'autre dans votre intégration ne change :
+
+- Gardez la même clé API (`sk-...`).
+- Gardez les mêmes ID de modèle — consultez [Models](/fr/guides/models) pour le catalogue complet.
+- Gardez les mêmes corps de demande et de réponse.
+
+<Warning>
+Utilisez une seule région par client dans la mesure du possible. Mélanger `bearlab.ai` et `bearlab.space` dans une même application n'apporte aucun avantage et rend la latence plus difficile à raisonner — choisissez l'hôte le plus proche de votre trafic et restez-y.
+</Warning>

@@ -1,56 +1,134 @@
 ---
-title: "Providers & Routing"
-description: "Chaque modèle est soutenu par plusieurs fournisseurs. Configurez le routage dans votre jeton ou remplacez-le par requête."
+title: "Fournisseurs et routage"
+description: "Chaque modèle est supporté par des fournisseurs en amont regroupés dans des groupes de routage. Configurez le routage dans votre jeton ou remplacez-le par demande."
 ---
 
-Chaque modèle peut être soutenu par **plusieurs fournisseurs**, des nœuds de service organisés par source et coût avec différents multiplicateurs de prix et couverture de modèles. Le système sélectionne un fournisseur disponible en fonction de la configuration de votre jeton ; si l'un échoue ou expire, il réessaie un autre, de manière transparente à votre code.
+Chaque modèle sur BearLab AI est servi par un ou plusieurs **fournisseurs en amont** (vendeurs). Derrière un seul nom de modèle, la passerelle achemine votre demande vers un nœud fournisseur sain ; en cas d'échec ou de délai d'attente, elle réessaie un autre de manière transparente, sans que votre code s'en aperçoive. Les fournisseurs sont organisés en **groupes de routage**, et votre jeton détermine de quel(s) groupe(s) il peut puiser.
 
-## Fournisseurs disponibles
+<Note>
+BearLab AI est une passerelle unifiée construite sur New API. Le catalogue des fournisseurs ci-dessous est généré à partir des données de prix en direct pour ce compte, il reflète donc exactement quels vendeurs et familles de modèles sont accessibles avec votre clé.
+</Note>
 
-| ID | Nom | Description |
+## URLs de base
+
+Choisissez la région la plus proche de vous. Les deux régions exposent les mêmes modèles et le même routage des fournisseurs.
+
+| Région | URL de base compatible OpenAI | URL de base Anthropic |
 | --- | --- | --- |
-| `official` | Officiel | Un groupe de fournisseurs regroupant les connexions directes aux principales plateformes officielles (OpenAI, Anthropic, Google) ; stabilité la plus élevée |
-| `official_cheap` | Officiel (Réduit) | Canaux officiels optimisés pour le coût ; stabilité élevée à un prix inférieur |
-| `mix` | Mixte | Canaux mixtes multi-sources ; prix le plus bas, couverture la plus large |
+| Amériques / UE | `https://bearlab.ai/v1` | `https://bearlab.ai` (messages à `/v1/messages`) |
+| Asie-Pacifique | `https://bearlab.space/v1` | `https://bearlab.space` (messages à `/v1/messages`) |
 
-`official` est un **groupe de fournisseurs** regroupant les nœuds des principales plateformes officielles ; le sélectionner route et bascule entre tous les nœuds officiels sans spécifier chaque fournisseur.
+L'authentification est identique partout : envoyez votre clé API en tant que jeton Bearer.
 
-### Comment choisir
+```
+Authorization: Bearer sk-...
+```
 
-| Besoin | Configuration recommandée |
-| --- | --- |
-| Stabilité maximale, le prix n'est pas une préoccupation | `official` |
-| Bonne stabilité, meilleur rapport qualité-prix | `official_cheap` |
-| Coût le plus bas, légère instabilité acceptable | `mix` |
-| Officiel réduit en premier, basculer vers mixte | `official_cheap,mix` |
+## Fournisseurs couverts
 
-## Configuration dans un jeton
+Chaque fournisseur correspond à une route de vendeur en amont. Le tableau est construit à partir du mappage en direct des modèles aux vendeurs ; les chiffres représentent le nombre de variantes de modèles actuellement tarifées sous ce fournisseur.
 
-Lors de la création ou de la modification d'un jeton, vous définissez son routage par défaut :
+| Fournisseur | Vendeur en amont | Familles de modèles | Variantes | Protocoles |
+| --- | --- | --- | --- | --- |
+| Anthropic | Anthropic (y compris les relais Bedrock / Kiro) | Claude (Opus, Sonnet, Haiku) | 30 | OpenAI + Anthropic |
+| Google | Google Gemini | Gemini 2.5 / 3 / 3.1 / 3.5 (variantes Pro, Flash, image, CLI) | 79 | OpenAI + Gemini |
+| OpenAI | OpenAI | GPT-5.x, GPT-image-2 | 23 | OpenAI |
+| xAI | xAI | Grok 4 / 4.1 / 4.2 / 4.3 | 10 | OpenAI |
+| Alibaba Bailian (agrégateur) | Alibaba Cloud Bailian | Qwen, GLM, DeepSeek, Kimi, MiniMax | 18 | OpenAI + Anthropic |
 
-- **Liste de fournisseurs** : vide (recommandé) route entre tous les fournisseurs disponibles ; un seul le limite à celui-ci ; plusieurs (séparés par des virgules) sont essayés dans l'ordre ou par stratégie de tri.
-- **Mode fournisseur uniquement** : désactivé (par défaut) priorise les fournisseurs spécifiés mais bascule ; activé limite strictement à ceux-ci et retourne une erreur si tous échouent.
+<Note>
+Certaines familles de modèles sont accessibles par plus d'un fournisseur. Par exemple, les modèles nationaux (Qwen / GLM / DeepSeek / Kimi / MiniMax) sont tous desservis par l'agrégateur **Alibaba Bailian** plutôt que par des routes de vendeurs natifs distincts. La passerelle choisit une route disponible pour vous, vous n'avez donc rarement besoin de nommer un fournisseur spécifique.
+</Note>
+
+## Groupes de routage
+
+Les fournisseurs sont exposés à votre jeton par **groupes de routage**. Les groupes disponibles de votre compte incluent, entre autres :
+
+<CardGroup cols={2}>
+  <Card title="default" icon="layer-group">
+    Le groupe quotidien : GPT-5.x, Gemini 3.x et les modèles nationaux routés par Bailian (Qwen / GLM / DeepSeek / Kimi).
+  </Card>
+  <Card title="auto" icon="shuffle">
+    Basculement par ordre de priorité. La plateforme choisit un groupe disponible par demande au lieu d'en épingler un, donc le trafic se déplace entre les amonts (Claude, Gemini, GPT, DeepSeek, GLM, Kimi, Qwen, MiniMax) quand l'un est saturé.
+  </Card>
+  <Card title="claudecode / claude*" icon="robot">
+    Groupes axés sur Claude (`claudecode`, `claudecode特价`, `claudeAWS*`, `claudekiro*`, `claude反重力`) soutenant le fournisseur Anthropic avec différents niveaux de coûts.
+  </Card>
+  <Card title="gemini* / grok / 国产" icon="sparkles">
+    Groupes limités aux vendeurs : `gemini-guan` / `gemini2` pour Google, `grok` pour xAI, `国产` pour le bundle Bailian des modèles nationaux.
+  </Card>
+</CardGroup>
+
+<Warning>
+L'accès aux groupes est lié à votre clé. Nommer un groupe ou un fournisseur pour lequel vous n'avez pas la permission dans une demande ne le déverrouillera pas — la passerelle n'achemine que dans ce que votre jeton est autorisé à faire.
+</Warning>
+
+## Configuration du routage dans un jeton
+
+Lorsque vous créez ou modifiez un jeton, vous définissez son routage par défaut :
+
+- **Liste des fournisseurs / groupes** : laisser vide (recommandé) pour acheminer à travers tout ce que votre clé peut atteindre ; définir une seule entrée pour restreindre à celle-ci ; définir plusieurs (séparées par des virgules) pour les essayer dans l'ordre ou selon la stratégie de tri.
+- **Mode fournisseur uniquement** : désactivé (par défaut) donne la priorité aux fournisseurs listés mais revient à d'autres ; activé limite strictement à ceux-ci et renvoie une erreur si tous échouent.
 - **Stratégie de tri** : manuel (par défaut), latence, prix ou débit.
 
-## Remplacement par requête
+## Remplacement par demande
 
-Remplacez les paramètres du jeton pour une seule requête via des en-têtes :
+Remplacez les défauts de votre jeton pour une seule demande via des en-têtes :
 
 | En-tête | Effet |
 | --- | --- |
-| `X-Provider-Order` | Fournisseurs et ordre pour cette requête |
-| `X-Provider-Only` | `"true"` active le mode strict, pas de basculement |
-| `X-Provider-Sort` | Remplacez la stratégie de tri (`latency` / `price` / `throughput`) |
+| `X-Provider-Order` | Fournisseurs / groupes et ordre à utiliser pour cette demande |
+| `X-Provider-Only` | `"true"` active le mode strict (pas de secours) |
+| `X-Provider-Sort` | Remplacer la stratégie de tri (`latency` / `price` / `throughput`) |
 | `X-Provider-Ignore` | Fournisseurs à ignorer, empilés sur la configuration du jeton |
 
-> Les fournisseurs spécifiés via les en-têtes sont toujours soumis à vos autorisations de compte.
+> Les fournisseurs et groupes demandés via les en-têtes sont toujours soumis à vos permissions de compte.
 
 ### Exemple
 
-```bash
+<CodeGroup>
+
+```bash Amériques / UE (bearlab.ai)
 curl https://bearlab.ai/v1/chat/completions \
-  -H "Authorization: Bearer sk-your-token" \
-  -H "X-Provider-Order: official_cheap,mix" \
+  -H "Authorization: Bearer sk-..." \
   -H "Content-Type: application/json" \
-  -d '{"model": "gpt-4o", "messages": [{"role": "user", "content": "Hello"}]}'
+  -H "X-Provider-Sort: latency" \
+  -d '{
+    "model": "gpt-5.5",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
 ```
+
+```bash Asie-Pacifique (bearlab.space)
+curl https://bearlab.space/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -H "X-Provider-Sort: latency" \
+  -d '{
+    "model": "gpt-5.5",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+</CodeGroup>
+
+## Découverte des fournisseurs en direct
+
+La liste ci-dessus est un instantané. Pour voir exactement quels modèles votre clé peut atteindre maintenant, interrogez le point de terminaison des modèles — la passerelle détecte automatiquement le protocole à partir de vos en-têtes d'authentification :
+
+<CodeGroup>
+
+```bash Protocole OpenAI
+curl https://bearlab.ai/v1/models \
+  -H "Authorization: Bearer sk-..."
+```
+
+```bash Protocole Anthropic
+curl https://bearlab.ai/v1/models \
+  -H "x-api-key: sk-..." \
+  -H "anthropic-version: 2023-06-01"
+```
+
+</CodeGroup>
+
+Chaque entrée inclut `id`, `owned_by` et `supported_endpoint_types`, vous pouvez donc dire quels protocoles un modèle donné accepte avant de l'appeler. Voir [Models](/fr/guides/models) pour le catalogue complet et [Pricing](/fr/guides/pricing) pour les tarifs par modèle.

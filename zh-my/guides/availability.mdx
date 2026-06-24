@@ -1,21 +1,106 @@
 ---
-title: "服务区域 / Service Availability"
-description: "BearLab AI的直接服务区域，以及亚太区域的接入方式。"
+title: "服务可用性"
+description: "BearLab AI 服务区域和对应的区域基础 URL。"
 ---
 
-## 服务区域
+BearLab AI 通过两个区域基础 URL 公开相同的网关。选择与您的请求来源相匹配的 URL，然后将每个 OpenAI 兼容或 Anthropic 调用指向该域名。
 
-BearLab AI（bearlab.ai）面向**美国与欧盟**司法管辖区直接提供服务。
+| 区域 | 基础 URL |
+| --- | --- |
+| 美国 / 欧盟 | `https://bearlab.ai` |
+| 亚太地区 | `https://bearlab.space` |
 
-### 亚太区域
+<Note>
+两个区域共享相同的 API 表面、模型目录和定价。只有主机改变 — 您的 API 密钥、请求体和模型 ID 在两个区域中保持相同。
+</Note>
 
-亚太区域由**印度区域合作伙伴**提供服务。
+## 选择区域
 
-该区域的 API 请求须改用专用域名 `https://bearlab.in`，而非 `https://bearlab.ai`。
+<Steps>
+  <Step title="确定您的流量来源">
+    使用最接近您的客户端或服务器的域名。美国/欧盟流量应目标指向 `https://bearlab.ai`；亚太地区的客户端应目标指向 `https://bearlab.space` 以获得更低的延迟。
+  </Step>
+  <Step title="设置您的基础 URL">
+    配置您的 SDK 或 HTTP 客户端以使用区域基础 URL 加上下面的协议路径。
+  </Step>
+  <Step title="身份验证">
+    在 `Authorization` 标头中以 Bearer 令牌的形式发送您的 BearLab AI API 密钥。相同的 `sk-...` 密钥对两个区域都有效。
+  </Step>
+</Steps>
 
-该区域服务的相关政策由区域合作伙伴自行制定；亚太区域用户请自行确保符合所在地的法律法规。
+## 每个协议的基础 URL
 
-| 区域 | API 域名 | OpenAI | Anthropic |
+BearLab AI 支持两种请求格式。您附加的路径取决于您使用的是哪一个。
+
+| 协议 | 路径 | 美国 / 欧盟 | 亚太地区 |
 | --- | --- | --- | --- |
-| 美国 / 欧盟 | `https://bearlab.ai` | `https://bearlab.ai/v1/chat/completions` | `https://bearlab.ai/v1/messages` |
-| 亚太区域 | `https://bearlab.in` | `https://bearlab.in/v1/chat/completions` | `https://bearlab.in/v1/messages` |
+| OpenAI 兼容 | `/v1/chat/completions` | `https://bearlab.ai/v1/chat/completions` | `https://bearlab.space/v1/chat/completions` |
+| Anthropic | `/v1/messages` | `https://bearlab.ai/v1/messages` | `https://bearlab.space/v1/messages` |
+
+对于 OpenAI SDK，将基础 URL 设置为 `<domain>/v1`。对于 Anthropic SDK，将基础 URL 设置为 `<domain>`（SDK 自己附加 `/v1/messages`）。
+
+## 快速示例
+
+<CodeGroup>
+
+```bash US / EU (OpenAI-compatible)
+curl https://bearlab.ai/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash Asia-Pacific (OpenAI-compatible)
+curl https://bearlab.space/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash US / EU (Anthropic)
+curl https://bearlab.ai/v1/messages \
+  -H "x-api-key: sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-7",
+    "max_tokens": 1024,
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash Asia-Pacific (Anthropic)
+curl https://bearlab.space/v1/messages \
+  -H "x-api-key: sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-7",
+    "max_tokens": 1024,
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+</CodeGroup>
+
+<Note>
+Anthropic 端点接受原生 Claude 标头样式（`x-api-key` 加上 `anthropic-version`）。两个协议也接受标准 `Authorization: Bearer sk-...` 标头。
+</Note>
+
+## 切换区域
+
+在区域之间迁移只需要更改您基础 URL 中的主机。您的集成中的其他任何内容都不会改变：
+
+- 保持相同的 API 密钥（`sk-...`）。
+- 保持相同的模型 ID — 参阅 [Models](/zh-my/guides/models) 以获取完整目录。
+- 保持相同的请求和响应体。
+
+<Warning>
+在可能的情况下，每个客户端使用单一区域。在一个应用程序中混合 `bearlab.ai` 和 `bearlab.space` 没有任何好处，并使延迟更难推理 — 选择最接近您流量的主机并保持在其上。
+</Warning>

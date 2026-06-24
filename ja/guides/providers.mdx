@@ -1,56 +1,134 @@
 ---
-title: "プロバイダー & ルーティング"
-description: "各モデルは複数のプロバイダーによってサポートされています。トークンでルーティングを設定するか、リクエストごとにオーバーライドします。"
+title: "プロバイダーとルーティング"
+description: "各モデルはアップストリームプロバイダーに支えられており、ルーティンググループに分類されています。トークンでルーティングを設定するか、リクエストごとにオーバーライドしてください。"
 ---
 
-各モデルは**複数のプロバイダー**によってサポートされている場合があります。サービスノードはソースとコストで整理され、異なる価格倍数とモデルカバレッジを持つものです。システムはトークン設定に基づいて利用可能なプロバイダーを選択します。1つが失敗またはタイムアウトした場合、別のプロバイダーに自動的に再試行され、コードに対しては透過的です。
+BearLab AI 上の各モデルは、1 つ以上の**アップストリームプロバイダー**（ベンダー）によって提供されます。単一のモデル名の背後では、ゲートウェイはリクエストをヘルシーなプロバイダーノードにルーティングします。失敗またはタイムアウトが発生した場合は、別のノードに透過的に再試行され、コードは気付きません。プロバイダーは**ルーティンググループ**に編成され、トークンはどのグループから取得できるかを決定します。
 
-## 利用可能なプロバイダー
+<Note>
+BearLab AI は New API 上に構築された統合ゲートウェイです。下記のプロバイダーカタログは、このアカウントのライブ価格データから生成されているため、密鑰で到達可能な正確なベンダーとモデルファミリーを反映しています。
+</Note>
 
-| ID | 名前 | 説明 |
+## ベース URL
+
+最も近いリージョンを選択してください。両リージョンは同じモデルと同じプロバイダールーティングを提供します。
+
+| リージョン | OpenAI互換ベース URL | Anthropic ベース URL |
 | --- | --- | --- |
-| `official` | 公式 | 主要な公式プラットフォーム(OpenAI、Anthropic、Google)への直接接続をバンドルするプロバイダーグループ; 最高の安定性 |
-| `official_cheap` | 公式(割引) | コスト最適化された公式チャネル; より低い価格で高い安定性 |
-| `mix` | 混合 | マルチソース混合チャネル; 最低価格、最広カバレッジ |
+| アメリカ / EU | `https://bearlab.ai/v1` | `https://bearlab.ai`（メッセージは `/v1/messages`） |
+| アジア太平洋 | `https://bearlab.space/v1` | `https://bearlab.space`（メッセージは `/v1/messages`） |
 
-`official`は主要な公式プラットフォームのノードをバンドルする**プロバイダーグループ**です。これを選択すると、各ベンダーを指定することなく、すべての公式ノード全体でルーティングとフェイルオーバーが行われます。
+認証はどこでも同じです：API キーを Bearer トークンとして送信してください。
 
-### 選択方法
+```
+Authorization: Bearer sk-...
+```
 
-| 必要な場合 | 推奨設定 |
-| --- | --- |
-| 最大の安定性、価格は関係ない | `official` |
-| 良い安定性、より良い価値 | `official_cheap` |
-| 最低コスト、わずかな不安定性は許容できる | `mix` |
-| 割引公式優先、混合にフォールバック | `official_cheap,mix` |
+## カバーされるプロバイダー
 
-## トークンで設定
+各プロバイダーはアップストリームベンダールートに対応しています。テーブルはライブモデルからベンダーへのマッピングから構築されています。カウントは、現在そのプロバイダーの下で価格設定されているモデルバリアントの数です。
 
-トークンを作成または編集するときに、デフォルトのルーティングを設定します。
+| プロバイダー | アップストリームベンダー | モデルファミリー | バリアント | プロトコル |
+| --- | --- | --- | --- | --- |
+| Anthropic | Anthropic（Bedrock / Kiro リレーを含む） | Claude（Opus、Sonnet、Haiku） | 30 | OpenAI + Anthropic |
+| Google | Google Gemini | Gemini 2.5 / 3 / 3.1 / 3.5（Pro、Flash、画像、CLI バリアント） | 79 | OpenAI + Gemini |
+| OpenAI | OpenAI | GPT-5.x、GPT-image-2 | 23 | OpenAI |
+| xAI | xAI | Grok 4 / 4.1 / 4.2 / 4.3 | 10 | OpenAI |
+| Alibaba Bailian（アグリゲーター） | Alibaba Cloud Bailian | Qwen、GLM、DeepSeek、Kimi、MiniMax | 18 | OpenAI + Anthropic |
 
-- **プロバイダーリスト**: 空(推奨)はすべての利用可能なプロバイダー全体でルーティング; 1つのみはそれに制限; 複数(カンマ区切り)は順序またはソート戦略で試みられます。
-- **プロバイダー専用モード**: オフ(デフォルト)は指定されたプロバイダーを優先するがフォールバック; オンはそれらに厳密に制限し、すべてが失敗した場合はエラーを返します。
-- **ソート戦略**: 手動(デフォルト)、遅延、価格、またはスループット。
+<Note>
+一部のモデルファミリーは複数のプロバイダーを通じて到達可能です。たとえば、国産モデル（Qwen / GLM / DeepSeek / Kimi / MiniMax）はすべて、個別のネイティブベンダールートではなく **Alibaba Bailian** アグリゲーターを通じて提供されています。ゲートウェイはあなたのために利用可能なルートを選択するため、特定のプロバイダーを指定する必要はほとんどありません。
+</Note>
 
-## リクエストごとにオーバーライド
+## ルーティンググループ
 
-ヘッダー経由でトークン設定を単一のリクエストについてオーバーライドします。
+プロバイダーはトークンに**ルーティンググループ**を通じて公開されます。アカウントで利用可能なグループには、その他の中でも以下が含まれます：
+
+<CardGroup cols={2}>
+  <Card title="default" icon="layer-group">
+    日常的なグループ：GPT-5.x、Gemini 3.x、および Bailian 経由でルーティングされた国産モデル（Qwen / GLM / DeepSeek / Kimi）。
+  </Card>
+  <Card title="auto" icon="shuffle">
+    優先度順序フェイルオーバー。プラットフォームはリクエストごとに利用可能なグループを選択し、1 つを固定しないため、1 つが飽和すると、トラフィックはアップストリーム全体（Claude、Gemini、GPT、DeepSeek、GLM、Kimi、Qwen、MiniMax）に移動します。
+  </Card>
+  <Card title="claudecode / claude*" icon="robot">
+    Claude 集約グループ（`claudecode`、`claudecode特価`、`claudeAWS*`、`claudekiro*`、`claude反重力`）は、異なるコスト階層を持つ Anthropic プロバイダーをサポートしています。
+  </Card>
+  <Card title="gemini* / grok / 国产" icon="sparkles">
+    ベンダースコープのグループ：Google の `gemini-guan` / `gemini2`、xAI の `grok`、Bailian 国産モデルバンドルの `国产`。
+  </Card>
+</CardGroup>
+
+<Warning>
+グループアクセスはキーに紐付けられています。リクエストで権限のないグループまたはプロバイダーを指定しても、ロック解除されません — ゲートウェイはトークンが有権限の範囲内でのみルーティングします。
+</Warning>
+
+## トークンでのルーティング設定
+
+トークンを作成または編集する場合、デフォルトルーティングを設定します：
+
+- **プロバイダー / グループリスト**：空白（推奨）にして、キーがアクセスできるすべてのコンテンツを横断してルーティングします。単一エントリを設定して制限します。複数（カンマ区切り）に設定して、順番またはソート戦略で試します。
+- **プロバイダーのみモード**：オフ（デフォルト）は、リストされたプロバイダーを優先しますが、他にフォールバックします。オンは厳密に制限し、すべてが失敗した場合はエラーを返します。
+- **ソート戦略**：手動（デフォルト）、レイテンシ、価格、またはスループット。
+
+## リクエストごとのオーバーライド
+
+ヘッダーを使用して、単一リクエストのトークンのデフォルトをオーバーライドします：
 
 | ヘッダー | 効果 |
 | --- | --- |
-| `X-Provider-Order` | このリクエストのプロバイダーと順序 |
-| `X-Provider-Only` | `"true"`は厳密モード、フォールバックなし |
-| `X-Provider-Sort` | ソート戦略をオーバーライド(`latency` / `price` / `throughput`) |
-| `X-Provider-Ignore` | スキップするプロバイダー、トークン設定に積み重ねられます |
+| `X-Provider-Order` | このリクエストに使用するプロバイダー / グループと順序 |
+| `X-Provider-Only` | `"true"` は厳密モード（フォールバックなし）を有効にします |
+| `X-Provider-Sort` | ソート戦略をオーバーライド（`latency` / `price` / `throughput`） |
+| `X-Provider-Ignore` | スキップするプロバイダー、トークン設定に積み重ねる |
 
-> ヘッダーで指定されたプロバイダーは、アカウントの権限の対象となります。
+> ヘッダーを通じてリクエストされるプロバイダーとグループは、アカウント権限に依然として従います。
 
 ### 例
 
-```bash
+<CodeGroup>
+
+```bash アメリカ / EU (bearlab.ai)
 curl https://bearlab.ai/v1/chat/completions \
-  -H "Authorization: Bearer sk-your-token" \
-  -H "X-Provider-Order: official_cheap,mix" \
+  -H "Authorization: Bearer sk-..." \
   -H "Content-Type: application/json" \
-  -d '{"model": "gpt-4o", "messages": [{"role": "user", "content": "Hello"}]}'
+  -H "X-Provider-Sort: latency" \
+  -d '{
+    "model": "gpt-5.5",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
 ```
+
+```bash アジア太平洋 (bearlab.space)
+curl https://bearlab.space/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -H "X-Provider-Sort: latency" \
+  -d '{
+    "model": "gpt-5.5",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+</CodeGroup>
+
+## ライブプロバイダーの発見
+
+上記のリストはスナップショットです。キーが今すぐ到達できる正確なモデルを確認するには、モデルエンドポイントをクエリしてください — ゲートウェイは認証ヘッダーからプロトコルを自動検出します：
+
+<CodeGroup>
+
+```bash OpenAI プロトコル
+curl https://bearlab.ai/v1/models \
+  -H "Authorization: Bearer sk-..."
+```
+
+```bash Anthropic プロトコル
+curl https://bearlab.ai/v1/models \
+  -H "x-api-key: sk-..." \
+  -H "anthropic-version: 2023-06-01"
+```
+
+</CodeGroup>
+
+各エントリには `id`、`owned_by`、`supported_endpoint_types` が含まれているため、呼び出す前に特定のモデルがどのプロトコルを受け入れるかを判断できます。完全なカタログについては [Models](/ja/guides/models) を、モデルごとのレートについては [Pricing](/ja/guides/pricing) を参照してください。

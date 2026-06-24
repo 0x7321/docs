@@ -1,80 +1,117 @@
 ---
-title: "Chat Completions"
-description: "Request parameters, streaming, tool calling, और तीन compatible protocols।"
+title: "चैट पूर्णताएं"
+description: "अनुरोध पैरामीटर, स्ट्रीमिंग, टूल कॉलिंग और तीन संगत प्रोटोकॉल।"
 ---
 
-Chat completion core endpoint है, तीन compatible interfaces (OpenAI, Anthropic, Gemini) के माध्यम से दिया गया है जो एक key share करते हैं।
+चैट पूर्णता मुख्य एंडपॉइंट है, जो तीन संगत इंटरफेस (OpenAI, Anthropic, Gemini) के माध्यम से एक कुंजी साझा करते हुए प्रदान की जाती है।
 
 <Note>
-  Asia-Pacific users: `https://bearlab.ai` के बजाय समर्पित डोमेन `https://bearlab.in` का उपयोग करें। [Service Availability](/hi/guides/availability) देखें।
+  BearLab AI दो क्षेत्रों को सेवा प्रदान करता है। अमेरिका / EU उपयोगकर्ता `https://bearlab.ai` को कॉल करते हैं; एशिया-प्रशांत उपयोगकर्ता समर्पित डोमेन `https://bearlab.space` को कॉल करते हैं। दोनों क्षेत्र समान कुंजी और मॉडल कैटलॉग साझा करते हैं। [सेवा उपलब्धता](/hi/guides/availability) देखें।
 </Note>
 
-## Endpoints
+## एंडपॉइंट्स
 
-| Protocol | Method और path |
-| --- | --- |
-| OpenAI-compatible | `POST https://bearlab.ai/v1/chat/completions` |
-| Anthropic-compatible | `POST https://bearlab.ai/v1/messages` |
-| Gemini native | `base_url=https://bearlab.ai`, `api_version=v1beta` (Google genai SDK) |
+| प्रोटोकॉल | विधि और पाथ (US / EU) | विधि और पाथ (एशिया-प्रशांत) |
+| --- | --- | --- |
+| OpenAI-संगत | `POST https://bearlab.ai/v1/chat/completions` | `POST https://bearlab.space/v1/chat/completions` |
+| Anthropic-संगत | `POST https://bearlab.ai/v1/messages` | `POST https://bearlab.space/v1/messages` |
+| Gemini मूल | `base_url=https://bearlab.ai`, `api_version=v1beta` (Google genai SDK) | `base_url=https://bearlab.space`, `api_version=v1beta` |
 
-## Basic request
+`Authorization: Bearer` हेडर में अपनी API कुंजी (`sk-...`) के साथ हर अनुरोध को प्रमाणित करें। Anthropic प्रोटोकॉल अतिरिक्त रूप से `x-api-key` हेडर को स्वीकार करता है।
+
+## बुनियादी अनुरोध
 
 <Tabs>
-  <Tab title="OpenAI-compatible">
-    ```bash
-    curl https://bearlab.ai/v1/chat/completions \
-      -H "Authorization: Bearer YOUR_API_KEY" \
-      -H "Content-Type: application/json" \
-      -d '{
-        "model": "gpt-4o",
-        "messages": [
-          {"role": "system", "content": "You are a concise assistant."},
-          {"role": "user", "content": "Hello"}
-        ]
-      }'
-    ```
+  <Tab title="OpenAI-संगत">
+    <CodeGroup>
+      ```bash US / EU
+      curl https://bearlab.ai/v1/chat/completions \
+        -H "Authorization: Bearer sk-..." \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "gpt-5.5",
+          "messages": [
+            {"role": "system", "content": "You are a concise assistant."},
+            {"role": "user", "content": "Hello"}
+          ]
+        }'
+      ```
+
+      ```bash एशिया-प्रशांत
+      curl https://bearlab.space/v1/chat/completions \
+        -H "Authorization: Bearer sk-..." \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "gpt-5.5",
+          "messages": [
+            {"role": "system", "content": "You are a concise assistant."},
+            {"role": "user", "content": "Hello"}
+          ]
+        }'
+      ```
+    </CodeGroup>
   </Tab>
-  <Tab title="Anthropic-compatible">
-    ```bash
-    curl https://bearlab.ai/v1/messages \
-      -H "x-api-key: YOUR_API_KEY" \
-      -H "anthropic-version: 2023-06-01" \
-      -H "Content-Type: application/json" \
-      -d '{
-        "model": "claude-sonnet-4-6",
-        "max_tokens": 1024,
-        "system": "You are a concise assistant.",
-        "messages": [{"role": "user", "content": "Hello"}]
-      }'
-    ```
+  <Tab title="Anthropic-संगत">
+    <CodeGroup>
+      ```bash US / EU
+      curl https://bearlab.ai/v1/messages \
+        -H "Authorization: Bearer sk-..." \
+        -H "anthropic-version: 2023-06-01" \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "claude-sonnet-4-6",
+          "max_tokens": 1024,
+          "system": "You are a concise assistant.",
+          "messages": [{"role": "user", "content": "Hello"}]
+        }'
+      ```
+
+      ```bash एशिया-प्रशांत
+      curl https://bearlab.space/v1/messages \
+        -H "Authorization: Bearer sk-..." \
+        -H "anthropic-version: 2023-06-01" \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "claude-sonnet-4-6",
+          "max_tokens": 1024,
+          "system": "You are a concise assistant.",
+          "messages": [{"role": "user", "content": "Hello"}]
+        }'
+      ```
+    </CodeGroup>
   </Tab>
 </Tabs>
 
-## Common parameters
+## सामान्य पैरामीटर
 
-| Parameter | Description |
-| --- | --- |
-| `model` | Model ID। [Models & Pricing API](/hi/guides/models) देखें। |
-| `messages` | Conversation messages का ordered array। |
-| `temperature` | Sampling temperature, `0`-`2`। |
-| `max_tokens` | Maximum output tokens। **Required** Anthropic protocol के तहत। |
-| `stream` | जब `true` हो तो SSE पर response stream करें। |
+| पैरामीटर | आवश्यक | विवरण |
+| --- | --- | --- |
+| `model` | हाँ | मॉडल ID। [मॉडल और मूल्य निर्धारण API](/hi/guides/models) देखें। |
+| `messages` | हाँ | बातचीत संदेशों की क्रमबद्ध सरणी। |
+| `max_tokens` | OpenAI: वैकल्पिक · Anthropic: **आवश्यक** | अधिकतम आउटपुट टोकन। |
+| `temperature` | नहीं | नमूनाकरण तापमान। OpenAI श्रेणी `0`-`2`; Anthropic श्रेणी `0`-`1`। |
+| `stream` | नहीं | जब `true` हो तो SSE पर प्रतिक्रिया को स्ट्रीम करें। |
+| `tools` | नहीं | टूल कॉलिंग के लिए फ़ंक्शन / टूल परिभाषाएं। |
 
 <Warning>
-  Protocol difference: OpenAI protocol system prompt को `messages` में `role: system` के रूप में रखता है; Anthropic protocol एक top-level `system` field का उपयोग करता है और `max_tokens` की आवश्यकता है।
+  प्रोटोकॉल अंतर: OpenAI प्रोटोकॉल सिस्टम प्रॉम्प्ट को `messages` में `role: system` के रूप में रखता है, और `max_tokens` वैकल्पिक है। Anthropic प्रोटोकॉल एक शीर्ष-स्तरीय `system` क्षेत्र का उपयोग करता है और `max_tokens` **आवश्यक** है।
 </Warning>
 
-## Streaming
+## स्ट्रीमिंग
 
-`stream: true` सेट करें; response SSE पर pushed है, `data: [DONE]` के साथ समाप्त होता है (OpenAI protocol)।
+Server-Sent Events पर प्रतिक्रिया प्राप्त करने के लिए `stream: true` सेट करें।
 
-```python
+- **OpenAI प्रोटोकॉल** — वृद्धिशील `delta` चंक्स, अंतिम `data: [DONE]` लाइन द्वारा समाप्त।
+- **Anthropic प्रोटोकॉल** — टाइप किए गए SSE इवेंट्स (`message_start`, `content_block_delta`, `message_stop`, …); कोई `[DONE]` सेंटिनल नहीं।
+
+<CodeGroup>
+```python US / EU
 from openai import OpenAI
 
-client = OpenAI(api_key="YOUR_API_KEY", base_url="https://bearlab.ai/v1")
+client = OpenAI(api_key="sk-...", base_url="https://bearlab.ai/v1")
 
 stream = client.chat.completions.create(
-    model="gpt-4o",
+    model="gpt-5.5",
     messages=[{"role": "user", "content": "Write a short poem about spring."}],
     stream=True,
 )
@@ -84,14 +121,31 @@ for chunk in stream:
         print(delta, end="", flush=True)
 ```
 
-## Tool calling
+```python एशिया-प्रशांत
+from openai import OpenAI
 
-OpenAI और Anthropic दोनों protocols tool calling को support करते हैं।
+client = OpenAI(api_key="sk-...", base_url="https://bearlab.space/v1")
+
+stream = client.chat.completions.create(
+    model="gpt-5.5",
+    messages=[{"role": "user", "content": "Write a short poem about spring."}],
+    stream=True,
+)
+for chunk in stream:
+    delta = chunk.choices[0].delta.content
+    if delta:
+        print(delta, end="", flush=True)
+```
+</CodeGroup>
+
+## टूल कॉलिंग
+
+OpenAI और Anthropic प्रोटोकॉल दोनों टूल कॉलिंग का समर्थन करते हैं।
 
 ```python
 from openai import OpenAI
 
-client = OpenAI(base_url="https://bearlab.ai/v1", api_key="YOUR_API_KEY")
+client = OpenAI(base_url="https://bearlab.ai/v1", api_key="sk-...")
 
 tools = [{
     "type": "function",
@@ -107,36 +161,55 @@ tools = [{
 }]
 
 resp = client.chat.completions.create(
-    model="gpt-4o",
+    model="gpt-5.5",
     messages=[{"role": "user", "content": "What's the weather in London?"}],
     tools=tools,
 )
 print(resp.choices[0].message)
 ```
 
-## Gemini native protocol
+<Note>
+  एशिया-प्रशांत उपयोगकर्ता: इसके बजाय `base_url="https://bearlab.space/v1"` सेट करें।
+</Note>
 
-Gemini models को native Google AI Studio format में कॉल किया जा सकता है, बिना OpenAI format में conversion के।
+## Gemini मूल प्रोटोकॉल
 
-```python
+Gemini मॉडल को नेटिव Google AI Studio प्रारूप में बुलाया जा सकता है, OpenAI प्रारूप में कोई रूपांतरण नहीं।
+
+<CodeGroup>
+```python US / EU
 from google import genai
 from google.genai import types
 
 client = genai.Client(
-    api_key="YOUR_API_KEY",
+    api_key="sk-...",
     http_options=types.HttpOptions(api_version="v1beta", base_url="https://bearlab.ai"),
 )
 
-resp = client.models.generate_content(model="gemini-2.5-pro", contents="Hello")
+resp = client.models.generate_content(model="gemini-3.1-pro-preview", contents="Hello")
 print(resp.text)
 ```
 
+```python एशिया-प्रशांत
+from google import genai
+from google.genai import types
+
+client = genai.Client(
+    api_key="sk-...",
+    http_options=types.HttpOptions(api_version="v1beta", base_url="https://bearlab.space"),
+)
+
+resp = client.models.generate_content(model="gemini-3.1-pro-preview", contents="Hello")
+print(resp.text)
+```
+</CodeGroup>
+
 <Warning>
-  1. `base_url` को `https://bearlab.ai` पर सेट करें (कोई `/v1beta` suffix नहीं; SDK इसे append करता है)।
-  2. `api_version` को `v1beta` पर सेट करें।
-  3. Install: Python `pip install google-genai`, Node.js `npm install @google/genai`।
+  1. `base_url` को क्षेत्र रूट (`https://bearlab.ai` या `https://bearlab.space`) में सेट करें; `/v1beta` को जोड़ न दें, SDK इसे जोड़ता है।
+  2. `api_version` को `v1beta` में सेट करें।
+  3. स्थापित करें: Python `pip install google-genai`, Node.js `npm install @google/genai`।
 </Warning>
 
 <Tip>
-  लंबे repeated prefixes (fixed system prompts, long documents) [Prompt Caching](/hi/guides/prompt-caching) का उपयोग कर सकते हैं repeated part की cost को कम करने के लिए।
+  लंबे दोहराए गए उपसर्ग (निश्चित सिस्टम प्रॉम्प्ट्स, लंबे दस्तावेज़) [प्रॉम्प्ट कैशिंग](/hi/guides/prompt-caching) का उपयोग करके दोहराए गए हिस्से की लागत को कम कर सकते हैं।
 </Tip>

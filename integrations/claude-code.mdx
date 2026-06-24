@@ -3,45 +3,132 @@ title: "Claude Code"
 description: "在 Anthropic 官方 Claude Code CLI 中使用 BearLab AI。"
 ---
 
-[Claude Code](https://docs.anthropic.com/zh-TW/docs/claude-code/overview) 是 Anthropic 官方 AI 程式設計 CLI，原生走 Anthropic 協議接入。
+[Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview) 是 Anthropic 官方的 AI 編寫程式 CLI。它採用原生 Anthropic Messages 協議（`POST /v1/messages`），因此只需將其 base URL 指向我們的閘道即可連接到 BearLab AI。
+
+## Base URL
+
+BearLab AI 從網域根目錄提供 Anthropic 協議 — Claude Code 自身會附加 `/v1/messages`，因此請**不要**添加路徑後綴。
+
+<CodeGroup>
+
+```bash US / EU
+export ANTHROPIC_BASE_URL="https://bearlab.ai"
+```
+
+```bash Asia-Pacific
+export ANTHROPIC_BASE_URL="https://bearlab.space"
+```
+
+</CodeGroup>
+
+選擇離您最近的地區。兩者都提供相同的 API 並接受相同的密鑰。
 
 ## 支援的模型
 
-| 模型 | ID | 適用場景 |
+Claude Code 與 Anthropic 端點通信，因此請使用公開 `anthropic` 端點類型的模型。這些 ID 在閘道上是即時的：
+
+| 模型 | ID | 最適合 |
 | --- | --- | --- |
-| Claude Opus 4.8 | `claude-opus-4-8` | 最強推理，複雜架構與深度任務 |
-| Claude Sonnet 4.6 | `claude-sonnet-4-6` | 均衡效能，日常開發首選 |
-| Claude Haiku 4.5 | `claude-haiku-4-5` | 最快，輕量補全與快速問答 |
+| Claude Opus 4.8 | `claude-opus-4-8` | 最強大的推理，複雜架構 |
+| Claude Opus 4.7 | `claude-opus-4-7` | 高端推理，大型重構 |
+| Claude Sonnet 4.6 | `claude-sonnet-4-6` | 均衡性能，日常編寫程式 |
+| Claude Haiku 4.5 | `claude-haiku-4-5` | 最快，輕量級完成 |
 
-## 配置
+<Note>
+  模型可用性取決於附加到您 API 密鑰的群組。瀏覽 [模型](/guides/models) 頁面上的完整即時清單；任何端點類型包括 `anthropic` 的模型都適用於 Claude Code。
+</Note>
 
-透過環境變數指向平臺端點：
+## 設定
 
-```bash
+設定 base URL 和 API 密鑰，然後啟動：
+
+<CodeGroup>
+
+```bash US / EU
 export ANTHROPIC_BASE_URL="https://bearlab.ai"
-export ANTHROPIC_API_KEY="YOUR_API_KEY"
+export ANTHROPIC_API_KEY="sk-..."
 
 claude
 ```
 
-`ANTHROPIC_API_KEY` 與 `ANTHROPIC_AUTH_TOKEN` 均被識別，效果完全相同，任選其一即可。
+```bash Asia-Pacific
+export ANTHROPIC_BASE_URL="https://bearlab.space"
+export ANTHROPIC_API_KEY="sk-..."
 
-## 指定模型（可選）
-
-```bash
-export ANTHROPIC_MODEL="claude-sonnet-4-6"           # 覆蓋預設主力模型
-export ANTHROPIC_SMALL_FAST_MODEL="claude-haiku-4-5" # 覆蓋內部快速小任務用模型
+claude
 ```
 
-不設定時，Claude Code 使用自身預設的模型選擇邏輯。
+</CodeGroup>
+
+<Note>
+  `ANTHROPIC_API_KEY` 和 `ANTHROPIC_AUTH_TOKEN` 都被識別並且等價 — 設定任一個即可。密鑰會作為 Bearer 令牌在 `Authorization` 標題中傳送。
+</Note>
+
+## 覆寫模型（可選）
+
+強制 Claude Code 路由到特定模型而不是其內建預設值：
+
+```bash
+export ANTHROPIC_MODEL="claude-opus-4-8"            # 主要模型
+export ANTHROPIC_SMALL_FAST_MODEL="claude-haiku-4-5" # 快速子任務模型
+```
+
+如果未設定，Claude Code 會使用其自身的預設模型選擇。
 
 ## 持久化
 
-```bash
+將 export 附加到您的 shell 配置檔，以便每個新的工作階段都被配置。選擇您地區的 base URL：
+
+<CodeGroup>
+
+```bash US / EU
 echo 'export ANTHROPIC_BASE_URL="https://bearlab.ai"' >> ~/.zshrc
-echo 'export ANTHROPIC_API_KEY="YOUR_API_KEY"' >> ~/.zshrc
+echo 'export ANTHROPIC_API_KEY="sk-..."' >> ~/.zshrc
 ```
 
-<Note>
-  `ANTHROPIC_BASE_URL` 填平臺根域，不加 `/v1`。模型 ID 必須是 [模型介面](/guides/models) 中真實存在的 ID。
-</Note>
+```bash Asia-Pacific
+echo 'export ANTHROPIC_BASE_URL="https://bearlab.space"' >> ~/.zshrc
+echo 'export ANTHROPIC_API_KEY="sk-..."' >> ~/.zshrc
+```
+
+</CodeGroup>
+
+使用 `source ~/.zshrc`（或 `~/.bashrc` for Bash）重新載入。
+
+## 驗證
+
+在開啟 CLI 前，使用單行請求確認連接：
+
+<CodeGroup>
+
+```bash US / EU
+curl https://bearlab.ai/v1/messages \
+  -H "Authorization: Bearer sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-8",
+    "max_tokens": 64,
+    "messages": [{"role": "user", "content": "ping"}]
+  }'
+```
+
+```bash Asia-Pacific
+curl https://bearlab.space/v1/messages \
+  -H "Authorization: Bearer sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-8",
+    "max_tokens": 64,
+    "messages": [{"role": "user", "content": "ping"}]
+  }'
+```
+
+</CodeGroup>
+
+包含 `content` 陣列的 JSON 回應表示您已準備好 — 執行 `claude`。
+
+<Warning>
+  將 `ANTHROPIC_BASE_URL` 設定為網域根目錄（不含 `/v1` 或 `/v1/messages` 後綴）；Claude Code 會自身附加路徑。模型 ID 必須存在於 [模型](/guides/models) 清單中並公開 `anthropic` 端點類型。
+</Warning>

@@ -1,19 +1,106 @@
 ---
-title: "Service Availability"
-description: "जहां BearLab सीधे serves करता है, और Asia-Pacific region कैसे connect करता है।"
+title: "सेवा उपलब्धता"
+description: "BearLab AI सेवा क्षेत्र और संबंधित क्षेत्रीय आधार URL।"
 ---
 
-BearLab (bearlab.ai) **United States और European Union** jurisdictions में सीधे services provide करता है।
+BearLab AI दो क्षेत्रीय आधार URL के माध्यम से समान गेटवे को उजागर करता है। वह चुनें जो आपके अनुरोध के मूल से मेल खाता है, फिर हर OpenAI-संगत या Anthropic कॉल को उस डोमेन पर निर्देशित करें।
 
-### Asia-Pacific
+| क्षेत्र | आधार URL |
+| --- | --- |
+| संयुक्त राज्य / यूरोपीय संघ | `https://bearlab.ai` |
+| एशिया-प्रशांत | `https://bearlab.space` |
 
-Asia-Pacific region एक **भारत स्थित Regional Partner** द्वारा serve किया जाता है।
+<Note>
+दोनों क्षेत्र एक ही API सतह, मॉडल कैटलॉग और मूल्य निर्धारण साझा करते हैं। केवल होस्ट बदलता है — आपकी API कुंजी, अनुरोध निकाय और मॉडल ID दोनों क्षेत्रों में समान रहते हैं।
+</Note>
 
-इस region से API requests के लिए `https://bearlab.ai` के बजाय समर्पित डोमेन `https://bearlab.in` का उपयोग करना चाहिए।
+## क्षेत्र चुनना
 
-इस region की service policies Regional Partner द्वारा निर्धारित की जाती हैं, और users applicable local laws के अनुपालन के लिए responsible हैं।
+<Steps>
+  <Step title="अपने ट्रैफिक का स्रोत पहचानें">
+    अपने क्लाइंट या सर्वर के निकटतम डोमेन का उपयोग करें। US/EU ट्रैफिक को `https://bearlab.ai` को लक्षित करना चाहिए; एशिया-प्रशांत में क्लाइंट को कम विलंबता के लिए `https://bearlab.space` को लक्षित करना चाहिए।
+  </Step>
+  <Step title="अपना आधार URL सेट करें">
+    अपने SDK या HTTP क्लाइंट को क्षेत्रीय आधार URL और नीचे दिए गए प्रोटोकॉल पथ का उपयोग करने के लिए कॉन्फ़िगर करें।
+  </Step>
+  <Step title="प्रमाणीकरण">
+    `Authorization` हेडर में Bearer टोकन के रूप में अपनी BearLab AI API कुंजी भेजें। वही `sk-...` कुंजी दोनों क्षेत्रों के लिए काम करती है।
+  </Step>
+</Steps>
 
-| Region | API domain | OpenAI | Anthropic |
+## प्रोटोकॉल के अनुसार आधार URL
+
+BearLab AI दो अनुरोध प्रारूपों को बोलता है। आप जो पथ जोड़ते हैं वह उस पर निर्भर करता है जिसका आप उपयोग करते हैं।
+
+| प्रोटोकॉल | पथ | US / EU | एशिया-प्रशांत |
 | --- | --- | --- | --- |
-| US / EU | `https://bearlab.ai` | `https://bearlab.ai/v1/chat/completions` | `https://bearlab.ai/v1/messages` |
-| Asia-Pacific | `https://bearlab.in` | `https://bearlab.in/v1/chat/completions` | `https://bearlab.in/v1/messages` |
+| OpenAI-संगत | `/v1/chat/completions` | `https://bearlab.ai/v1/chat/completions` | `https://bearlab.space/v1/chat/completions` |
+| Anthropic | `/v1/messages` | `https://bearlab.ai/v1/messages` | `https://bearlab.space/v1/messages` |
+
+OpenAI SDK के लिए, आधार URL को `<domain>/v1` पर सेट करें। Anthropic SDK के लिए, आधार URL को `<domain>` पर सेट करें (SDK स्वयं `/v1/messages` को जोड़ता है)।
+
+## त्वरित उदाहरण
+
+<CodeGroup>
+
+```bash US / EU (OpenAI-compatible)
+curl https://bearlab.ai/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash Asia-Pacific (OpenAI-compatible)
+curl https://bearlab.space/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash US / EU (Anthropic)
+curl https://bearlab.ai/v1/messages \
+  -H "x-api-key: sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-7",
+    "max_tokens": 1024,
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash Asia-Pacific (Anthropic)
+curl https://bearlab.space/v1/messages \
+  -H "x-api-key: sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-7",
+    "max_tokens": 1024,
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+</CodeGroup>
+
+<Note>
+Anthropic एंडपॉइंट नेटिव Claude हेडर शैली (`x-api-key` प्लस `anthropic-version`) स्वीकार करता है। दोनों प्रोटोकॉल के लिए एक मानक `Authorization: Bearer sk-...` हेडर भी स्वीकार किया जाता है।
+</Note>
+
+## क्षेत्रों के बीच स्विच करना
+
+क्षेत्रों के बीच माइग्रेट करने के लिए केवल आपके आधार URL में होस्ट को बदलने की आवश्यकता है। आपके एकीकरण में कुछ भी और नहीं बदलता है:
+
+- एक ही API कुंजी (`sk-...`) रखें।
+- एक ही मॉडल ID रखें — पूर्ण कैटलॉग के लिए [Models](/hi/guides/models) देखें।
+- समान अनुरोध और प्रतिक्रिया निकाय रखें।
+
+<Warning>
+जहां संभव हो, प्रति क्लाइंट एक एकल क्षेत्र का उपयोग करें। एक ही एप्लिकेशन में `bearlab.ai` और `bearlab.space` को मिलाना कोई लाभ नहीं जोड़ता है और विलंबता को समझना कठिन बनाता है — अपने ट्रैफिक के लिए सबसे निकटतम होस्ट चुनें और उस पर रहें।
+</Warning>

@@ -1,58 +1,201 @@
 ---
 title: "提示词缓存"
-description: "用提示词缓存降低重复内容的成本，并用请求 ID 保持会话路由一致以提升命中率。"
+description: "通过网关使用 Anthropic 和 OpenAI 提示词缓存，并保持多轮请求在同一后端通道上，使得缓存真正能够被重复使用。"
 ---
 
-## 什么是提示词缓存
+提示词缓存让供应商能够重复使用已处理过的上下文前缀，**大幅降低延迟和输入令牌成本**。BearLab AI 直接传递供应商的缓存功能，并加入*通道亲和性*机制，使得来自同一调用者的连续请求被路由到同一后端，这正是使跨请求缓存在多通道中继上发挥效用的关键。
 
-很多模型供应商（包括 Anthropic Claude 和 OpenAI）原生支持提示词缓存。当同一段上下文被重复发送时，供应商会复用此前的计算结果，**降低延迟和 token 成本**。
+<Note>
+  BearLab AI 服务两个地区。美国／欧洲用户应调用 `https://bearlab.ai`；亚太地区用户应调用 `https://bearlab.space`。两个地区共用同一密钥、模型目录和缓存行为。请参阅 [服务可用性](/zh-Hans/guides/availability)。
+</Note>
 
-## 缓存的限制
+## 供应商缓存运作原理
 
-**缓存不能跨账户共享**，这是供应商侧的限制，不是平台限制。
+缓存完全由上游供应商实现；网关转发请求并将缓存字段回传给您。两种协议在是否需要明确选择方面存在差异。
 
-作为多渠道中转平台，我们无法保证同一账户连续两次请求一定路由到同一后端渠道。若被发到不同渠道，已有缓存无法复用，命中率下降、成本上升。
+<Tabs>
+  <Tab title="Anthropic（需明确选择）">
+    Claude 缓存是**明确的**。通过在内容区块（或请求层级）上使用 `cache_control` 标记缓存断点。该区块及其前面的所有内容都将被缓存。
 
-## 保持路由一致
+    - 标记：`"cache_control": {"type": "ephemeral"}`
+    - 默认 TTL：**5 分钟**，每次缓存命中时刷新。1 小时 TTL 可按基础输入价格的 2 倍获得。
+    - 响应中的使用字段：`cache_creation_input_tokens`（在第一次调用时写入）和 `cache_read_input_tokens`（后续从缓存提供）。
 
-为此，你可以在后续请求里带上前一次请求的 ID，系统会尽量把新请求路由到同一渠道，最大化缓存复用。两种方式：
+    将稳定内容（系统提示词、长文档、工具定义）放在断点之前，使缓存的前缀在各轮对话中保持一致。
+  </Tab>
+  <Tab title="OpenAI（自动）">
+    OpenAI 缓存是**自动的** — 无需修改请求，不额外收费。
 
-| 请求头 | 取值来源 | 有效期 |
+    - 在提示词达到 **1024 令牌或以上**时触发；较短的提示词永不被缓存。
+    - 响应中的使用字段：`usage.prompt_tokens_details.cached_tokens`（缓存命中的输入令牌数；当无缓存时为 `0`）。
+    - 可选的 `prompt_cache_key` 字段与前缀哈希结合，**改善路由并提高命中率**当许多请求共用一个长公共前缀时。
+  </Tab>
+</Tabs>
+
+## 为什么中继会降低命中率
+
+缓存与建立它的精确后端账户绑定 — 它**无法在账户间共用**。这是供应商端的规则，而非网关规则。
+
+由于 BearLab AI 在多个上游通道间进行负载均衡，来自同一调用者的两个连续请求不保证会命中同一后端。当它们落在不同通道时，之前的缓存不可见，前缀会按全价计费。
+
+## 通道亲和性让您停留在同一通道
+
+为解决此问题，网关执行**通道亲和性**机制：一旦请求在某通道上成功，后续携带相同亲和值的请求会被路由回该通道以供 TTL 窗口使用，使供应商端缓存保持可达。
+
+亲和性由您请求正文中的某个值决定。默认规则为：
+
+| 协议 | 路径 | 亲和值（请求正文字段） |
 | --- | --- | --- |
-| `X-Request-Id` | 上一次响应返回的请求 ID 头 | 5 分钟 |
-| `X-Response-Id` | 上一次响应 JSON 里的会话 ID（如 Claude 的 `message.id`） | 5 分钟 |
+| OpenAI 兼容 | `/v1/responses` | `prompt_cache_key` |
+| Anthropic 兼容 | `/v1/messages` | `metadata.user_id` |
 
-### 示例
+在一次对话的所有轮次中在该字段发送**稳定值**，网关会将它们固定到同一通道。在开始不相关的对话时使用新值。亲和性条目在不活动 TTL（默认 1 小时）后过期。
 
-```python
-import anthropic
+<Warning>
+  亲和性尽力而为。如果固定通道不可用，请求仍会在另一通道上通过 — 只是该轮不会重复使用该通道的缓存。不要依赖亲和性的正确性，仅用于成本优化。
+</Warning>
 
-client = anthropic.Anthropic(
-    base_url="https://bearlab.ai",
-    api_key="API_KEY",
-)
+## 示例
 
-# 第一次请求
-response = client.messages.create(
-    model="claude-sonnet-4-6",
-    max_tokens=1024,
-    messages=[{"role": "user", "content": "Hello!"}],
-)
-response_id = response.id
+<Tabs>
+  <Tab title="Anthropic（cache_control + 亲和性）">
+    使用 `cache_control` 缓存长系统提示词，并用稳定的 `metadata.user_id` 固定对话。
 
-# 第二次请求 —— 带上 response id 以留在同一渠道
-response2 = client.messages.create(
-    model="claude-sonnet-4-6",
-    max_tokens=1024,
-    messages=[
-        {"role": "user", "content": "Hello!"},
-        {"role": "assistant", "content": response.content[0].text},
-        {"role": "user", "content": "Continue our conversation..."},
-    ],
-    extra_headers={"X-Response-Id": response_id},
-)
-```
+    <CodeGroup>
+      ```bash 美国／欧洲
+      curl https://bearlab.ai/v1/messages \
+        -H "Authorization: Bearer sk-..." \
+        -H "anthropic-version: 2023-06-01" \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "claude-sonnet-4-6",
+          "max_tokens": 1024,
+          "metadata": {"user_id": "conversation-7f3a"},
+          "system": [
+            {
+              "type": "text",
+              "text": "<a long, stable system prompt or document>",
+              "cache_control": {"type": "ephemeral"}
+            }
+          ],
+          "messages": [{"role": "user", "content": "Summarize the document."}]
+        }'
+      ```
 
-## 使用建议
+      ```bash 亚太地区
+      curl https://bearlab.space/v1/messages \
+        -H "Authorization: Bearer sk-..." \
+        -H "anthropic-version: 2023-06-01" \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "claude-sonnet-4-6",
+          "max_tokens": 1024,
+          "metadata": {"user_id": "conversation-7f3a"},
+          "system": [
+            {
+              "type": "text",
+              "text": "<a long, stable system prompt or document>",
+              "cache_control": {"type": "ephemeral"}
+            }
+          ],
+          "messages": [{"role": "user", "content": "Summarize the document."}]
+        }'
+      ```
+    </CodeGroup>
 
-把**不变内容放前面**（system、长文档），变化内容放后面（用户最新提问），以最大化前缀命中。前缀越长、复用越频繁，省得越多；一次性请求无需缓存。
+    在此对话的每个后续轮次中重复使用相同的 `metadata.user_id`；网关会将它们路由到同一通道，使 `cache_read_input_tokens` 维持在高水位。
+  </Tab>
+
+  <Tab title="OpenAI（自动 + 亲和性）">
+    OpenAI 自动缓存；您只需发送稳定的 `prompt_cache_key` 使后续请求停留在同一通道。
+
+    <CodeGroup>
+      ```bash 美国／欧洲
+      curl https://bearlab.ai/v1/responses \
+        -H "Authorization: Bearer sk-..." \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "gpt-5.5",
+          "prompt_cache_key": "conversation-7f3a",
+          "input": "Continue summarizing the attached document."
+        }'
+      ```
+
+      ```bash 亚太地区
+      curl https://bearlab.space/v1/responses \
+        -H "Authorization: Bearer sk-..." \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "gpt-5.5",
+          "prompt_cache_key": "conversation-7f3a",
+          "input": "Continue summarizing the attached document."
+        }'
+      ```
+    </CodeGroup>
+
+    相同的 `prompt_cache_key` 既改善了 OpenAI 本身的路由，也驱动了网关的通道亲和性，使 `cached_tokens` 反映真实重复使用。
+  </Tab>
+
+  <Tab title="Anthropic SDK">
+    ```python
+    import anthropic
+
+    client = anthropic.Anthropic(
+        base_url="https://bearlab.ai",   # 亚太地区：https://bearlab.space
+        api_key="sk-...",
+    )
+
+    SYSTEM = "<a long, stable system prompt or document>"
+    USER_ID = "conversation-7f3a"  # 在整个对话中保持稳定
+
+    first = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=1024,
+        metadata={"user_id": USER_ID},
+        system=[{
+            "type": "text",
+            "text": SYSTEM,
+            "cache_control": {"type": "ephemeral"},
+        }],
+        messages=[{"role": "user", "content": "Summarize the document."}],
+    )
+
+    follow_up = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=1024,
+        metadata={"user_id": USER_ID},  # 相同值 → 相同通道 → 缓存命中
+        system=[{
+            "type": "text",
+            "text": SYSTEM,
+            "cache_control": {"type": "ephemeral"},
+        }],
+        messages=[
+            {"role": "user", "content": "Summarize the document."},
+            {"role": "assistant", "content": first.content[0].text},
+            {"role": "user", "content": "Now list the action items."},
+        ],
+    )
+
+    print(follow_up.usage.cache_read_input_tokens)
+    ```
+  </Tab>
+</Tabs>
+
+## 最大化命中
+
+<Steps>
+  <Step title="顺序放置稳定内容在前">
+    将不变内容（系统提示词、长文档、工具纲要）放在前面，将变动部分（最新用户消息）放在最后，使缓存的前缀保持字节级一致。前缀越长，被重复使用的频率越高，您省得越多。
+  </Step>
+  <Step title="设定缓存断点（仅 Claude）">
+    在稳定区块之后添加 `cache_control: {"type": "ephemeral"}`。OpenAI 无需标记 — 一旦提示词达到 1024 令牌，它就自动缓存。
+  </Step>
+  <Step title="固定对话">
+    在各轮中发送稳定的亲和值 — `/v1/messages` 用 `metadata.user_id`，`/v1/responses` 用 `prompt_cache_key` — 并在整次对话中重复使用。对不相关的对话使用新值。
+  </Step>
+  <Step title="通过使用情况验证">
+    检查响应使用：`cache_read_input_tokens`（Claude）或 `prompt_tokens_details.cached_tokens`（OpenAI）。命中次数上升证实前缀和亲和值均稳定。
+  </Step>
+</Steps>
+
+请参阅 [聊天完成](/zh-Hans/guides/chat)了解完整请求参数，以及 [定价](/zh-Hans/guides/pricing)了解缓存与未缓存输入令牌的计费方式。

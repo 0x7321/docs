@@ -1,53 +1,201 @@
 ---
 title: "Prompt Caching"
-description: "Repeated content के लिए cost को कम करें, और request IDs के साथ routing को consistent रखें hit rates को improve करने के लिए।"
+description: "Gateway के माध्यम से Anthropic और OpenAI prompt caching का उपयोग करें, और multi-turn requests को same backend channel पर रखें ताकि caches वास्तव में reuse हो सकें।"
 ---
 
-## Prompt caching क्या है
+Prompt caching एक provider को repeated context prefix के लिए computation को reuse करने देता है, **latency और input token cost को dramatically कम करते हुए**। BearLab AI provider caching को directly pass-through करता है और *channel affinity* mechanism जोड़ता है जो same caller के consecutive requests को same backend में route करता है, जो multi-channel relay पर cross-request caching को worthwhile बनाता है।
 
-कई providers (Anthropic Claude और OpenAI सहित) natively prompt caching को support करते हैं। जब same context बार-बार भेजा जाता है, provider prior computation को reuse करता है, **latency और token cost को कम करते हुए**।
+<Note>
+  BearLab AI दो regions serve करता है। US / EU users `https://bearlab.ai` को call करें; Asia-Pacific users `https://bearlab.space` को call करें। दोनों regions same key, model catalog, और caching behavior share करते हैं। [Service Availability](/hi/guides/availability) देखें।
+</Note>
 
-## Caching limitations
+## Provider caching कैसे काम करता है
 
-**Caches को accounts में share नहीं किया जा सकता है**, एक provider-side restriction, platform one नहीं।
+Caching पूरी तरह upstream provider द्वारा implement किया जाता है; gateway request को forward करता है और cache fields को आपको report करता है। दोनों protocols में explicit opt-in करना जरूरी है या नहीं यह अलग है।
 
-एक multi-channel relay के रूप में, हम guarantee नहीं दे सकते कि एक account से दो consecutive requests same backend channel hit करें। यदि वे विभिन्न channels को जाते हैं, तो existing caches को reuse नहीं किया जा सकता है, hit rates को कम करते हुए और cost को बढ़ाते हुए।
+<Tabs>
+  <Tab title="Anthropic (opt-in)">
+    Claude caching **explicit** है। एक content block (या request level) पर `cache_control` के साथ cache breakpoint को mark करें। उस block तक और उसमें सब कुछ cached है।
 
-## Routing को consistent रखना
+    - Marker: `"cache_control": {"type": "ephemeral"}`
+    - Default TTL: **5 minutes**, हर cache hit पर refresh होता है। 1-hour TTL base input price के 2x पर available है।
+    - Response में usage fields: `cache_creation_input_tokens` (first call पर लिखा गया) और `cache_read_input_tokens` (बाद में cache से serve किया गया)।
 
-इसे address करने के लिए, एक previous request की ID को later requests में include करें। System नए request को same channel को route करने की कोशिश करेगा, cache reuse को maximize करते हुए।
+    Stable content (system prompt, long documents, tool definitions) को breakpoint से पहले रखें जिससे cached prefix turns में identical रहे।
+  </Tab>
+  <Tab title="OpenAI (automatic)">
+    OpenAI caching **automatic** है — कोई request change की जरूरत नहीं, कोई extra fee नहीं।
 
-| Header | Source | TTL |
+    - **1024 tokens या अधिक** की prompts पर trigger होता है; shorter prompts कभी cached नहीं होती।
+    - Response में usage field: `usage.prompt_tokens_details.cached_tokens` (कितने input tokens cache hit थे; `0` जब कुछ नहीं cached था)।
+    - Optional `prompt_cache_key` field को prefix hash के साथ combine किया जाता है **routing improve करने और hit rate बढ़ाने के लिए** जब कई requests long common prefix share करते हैं।
+  </Tab>
+</Tabs>
+
+## Relays hit rate को कम क्यों करते हैं
+
+एक cache उस exact backend account से tied होता है जिसने उसे create किया — यह **accounts के बीच share नहीं किया जा सकता**। यह एक provider-side rule है, gateway one नहीं।
+
+क्योंकि BearLab AI multiple upstream channels के बीच load-balance करता है, एक same caller से दो consecutive requests same backend को hit करने की guarantee नहीं है। जब वे different channels पर जाते हैं, earlier cache invisible होता है और prefix full price पर bill होता है।
+
+## Channel affinity आपको एक channel पर रखता है
+
+इसे solve करने के लिए, gateway **channel affinity** चलाता है: एक बार request एक channel पर succeed हो जाए, बाद के requests जो same affinity value carry करते हैं उसी channel पर TTL window के लिए route हो जाते हैं, जिससे provider-side cache reachable रहता है।
+
+Affinity आपके request body में एक value से keyed होता है। Default rules हैं:
+
+| Protocol | Path | Affinity key (request body field) |
 | --- | --- | --- |
-| `X-Request-Id` | Previous response से request-id header | 5 minutes |
-| `X-Response-Id` | Previous response JSON में conversation ID (e.g. Claude का `message.id`) | 5 minutes |
+| OpenAI-compatible | `/v1/responses` | `prompt_cache_key` |
+| Anthropic-compatible | `/v1/messages` | `metadata.user_id` |
 
-### उदाहरण
+एक conversation के सभी turns में उस field में एक **stable value** send करें, और gateway उन्हें एक channel में pin करेगा। जब आप एक unrelated conversation start करते हैं तो एक fresh value use करें। Affinity entries rule TTL (1 hour by default) inactivity के बाद expire हो जाती हैं।
 
-```python
-import anthropic
+<Warning>
+  Affinity best-effort है। अगर pinned channel unavailable है, request फिर भी दूसरे channel पर जाता है — यह सिर्फ उस turn के लिए उस channel के cache को reuse नहीं करेगा। Correctness के लिए affinity पर rely न करें, केवल cost के लिए।
+</Warning>
 
-client = anthropic.Anthropic(base_url="https://bearlab.ai", api_key="API_KEY")
+## Examples
 
-response = client.messages.create(
-    model="claude-sonnet-4-6",
-    max_tokens=1024,
-    messages=[{"role": "user", "content": "Hello!"}],
-)
-response_id = response.id
+<Tabs>
+  <Tab title="Anthropic (cache_control + affinity)">
+    `cache_control` के साथ long system prompt को cache करें, और stable `metadata.user_id` के साथ conversation को pin करें।
 
-response2 = client.messages.create(
-    model="claude-sonnet-4-6",
-    max_tokens=1024,
-    messages=[
-        {"role": "user", "content": "Hello!"},
-        {"role": "assistant", "content": response.content[0].text},
-        {"role": "user", "content": "Continue our conversation..."},
-    ],
-    extra_headers={"X-Response-Id": response_id},
-)
-```
+    <CodeGroup>
+      ```bash US / EU
+      curl https://bearlab.ai/v1/messages \
+        -H "Authorization: Bearer sk-..." \
+        -H "anthropic-version: 2023-06-01" \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "claude-sonnet-4-6",
+          "max_tokens": 1024,
+          "metadata": {"user_id": "conversation-7f3a"},
+          "system": [
+            {
+              "type": "text",
+              "text": "<a long, stable system prompt or document>",
+              "cache_control": {"type": "ephemeral"}
+            }
+          ],
+          "messages": [{"role": "user", "content": "Summarize the document."}]
+        }'
+      ```
 
-## Tips
+      ```bash Asia-Pacific
+      curl https://bearlab.space/v1/messages \
+        -H "Authorization: Bearer sk-..." \
+        -H "anthropic-version: 2023-06-01" \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "claude-sonnet-4-6",
+          "max_tokens": 1024,
+          "metadata": {"user_id": "conversation-7f3a"},
+          "system": [
+            {
+              "type": "text",
+              "text": "<a long, stable system prompt or document>",
+              "cache_control": {"type": "ephemeral"}
+            }
+          ],
+          "messages": [{"role": "user", "content": "Summarize the document."}]
+        }'
+      ```
+    </CodeGroup>
 
-Unchanging content को first रखें (system prompts, long documents) और variable content को last रखें (latest user message) prefix hits को maximize करने के लिए। Longer और अधिक frequently reused prefix, अधिक आप save करते हैं।
+    इस conversation की हर follow-up turn में same `metadata.user_id` को reuse करें; gateway उन्हें same channel पर route करेगा जिससे `cache_read_input_tokens` high रहे।
+  </Tab>
+
+  <Tab title="OpenAI (automatic + affinity)">
+    OpenAI automatically cache करता है; आपको सिर्फ stable `prompt_cache_key` send करना है जिससे follow-up requests same channel पर रहें।
+
+    <CodeGroup>
+      ```bash US / EU
+      curl https://bearlab.ai/v1/responses \
+        -H "Authorization: Bearer sk-..." \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "gpt-5.5",
+          "prompt_cache_key": "conversation-7f3a",
+          "input": "Continue summarizing the attached document."
+        }'
+      ```
+
+      ```bash Asia-Pacific
+      curl https://bearlab.space/v1/responses \
+        -H "Authorization: Bearer sk-..." \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "gpt-5.5",
+          "prompt_cache_key": "conversation-7f3a",
+          "input": "Continue summarizing the attached document."
+        }'
+      ```
+    </CodeGroup>
+
+    Same `prompt_cache_key` दोनों ही OpenAI की own routing को improve करता है और gateway के channel affinity को drive करता है, इसलिए `cached_tokens` actual reuse को reflect करते हैं।
+  </Tab>
+
+  <Tab title="Anthropic SDK">
+    ```python
+    import anthropic
+
+    client = anthropic.Anthropic(
+        base_url="https://bearlab.ai",   # Asia-Pacific: https://bearlab.space
+        api_key="sk-...",
+    )
+
+    SYSTEM = "<a long, stable system prompt or document>"
+    USER_ID = "conversation-7f3a"  # पूरे conversation में stable
+
+    first = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=1024,
+        metadata={"user_id": USER_ID},
+        system=[{
+            "type": "text",
+            "text": SYSTEM,
+            "cache_control": {"type": "ephemeral"},
+        }],
+        messages=[{"role": "user", "content": "Summarize the document."}],
+    )
+
+    follow_up = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=1024,
+        metadata={"user_id": USER_ID},  # same value -> same channel -> cache hit
+        system=[{
+            "type": "text",
+            "text": SYSTEM,
+            "cache_control": {"type": "ephemeral"},
+        }],
+        messages=[
+            {"role": "user", "content": "Summarize the document."},
+            {"role": "assistant", "content": first.content[0].text},
+            {"role": "user", "content": "Now list the action items."},
+        ],
+    )
+
+    print(follow_up.usage.cache_read_input_tokens)
+    ```
+  </Tab>
+</Tabs>
+
+## Hits को maximize करना
+
+<Steps>
+  <Step title="Stable content को पहले order करें">
+    Unchanging content (system prompt, long documents, tool schemas) को front में रखें और variable part (latest user message) को last में रखें, जिससे cached prefix byte-identical रहे। Longer और अधिक frequently reused prefix, अधिक आप save करते हैं।
+  </Step>
+  <Step title="Cache breakpoint set करें (Claude only)">
+    Stable block के बाद `cache_control: {"type": "ephemeral"}` add करें। OpenAI को कोई marker की जरूरत नहीं — एक बार prompt 1024 tokens तक पहुंचे तो automatically cache हो जाती है।
+  </Step>
+  <Step title="Conversation को pin करें">
+    Turns में stable affinity value send करें — `/v1/messages` के लिए `metadata.user_id`, `/v1/responses` के लिए `prompt_cache_key` — और पूरे conversation में reuse करें। Unrelated conversation के लिए new value use करें।
+  </Step>
+  <Step title="Usage के साथ verify करें">
+    Response usage को check करें: `cache_read_input_tokens` (Claude) या `prompt_tokens_details.cached_tokens` (OpenAI)। Rising hit count confirm करता है कि prefix और affinity value दोनों stable हैं।
+  </Step>
+</Steps>
+
+Full request parameters के लिए [Chat Completions](/hi/guides/chat) देखें और cached बनाम uncached input tokens कैसे bill होते हैं इसके लिए [Pricing](/hi/guides/pricing) देखें।

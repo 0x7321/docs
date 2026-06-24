@@ -1,123 +1,179 @@
 ---
-title: "Models & Pricing API"
-description: "Un point de terminaison public et non authentifié répertoriant tous les modèles conversationnels disponibles et leurs prix publiés, suivant la spécification OpenRouter Providers."
+title: "Catalogue des modèles"
+description: "Tous les modèles disponibles pour votre clé API, groupés par famille, et comment les groupes de modèles contrôlent l'accès."
 ---
 
-`/v1/models/pricing` est un point de terminaison d'agrégation **public et non authentifié** qui retourne chaque modèle conversationnel actuellement disponible ainsi que son prix publié. La réponse suit la [spécification OpenRouter Providers](https://openrouter.ai/docs/guides/community/for-providers), afin qu'elle puisse être ingérée par OpenRouter, des agrégateurs de prix tiers ou n'importe quel client personnalisé.
+Cette page liste les modèles que votre clé API peut appeler, regroupés par famille. Passez le `id` exact d'un modèle dans le champ `model` d'une demande de chat.
 
 <Note>
-  Utilisateurs Asie-Pacifique : utilisez le domaine dédié `https://bearlab.in` au lieu de `https://bearlab.ai`. Voir [Service Availability](/fr/guides/availability).
+  Utilisateurs d'Asie-Pacifique : utilisez le domaine dédié `https://bearlab.space` au lieu de `https://bearlab.ai`. Voir [Disponibilité du service](/fr/guides/availability).
 </Note>
+
+## Comment lire ce catalogue
+
+Le catalogue que vous voyez est lié à **votre groupe de jetons**. Chaque clé API appartient à un groupe de modèles, et un modèle n'apparaît dans votre liste que si votre groupe est autorisé à l'appeler. Les modèles ci-dessous constituent la gamme de production actuelle ; le sous-ensemble exact visible pour votre clé dépend de votre groupe.
+
+| Concept | Signification |
+| --- | --- |
+| **Modèle `id`** | La chaîne exacte que vous envoyez dans `model`. Sensible à la casse, copiez-la littéralement. |
+| **Groupe de modèles** | Le niveau d'accès auquel appartient votre clé. Détermine les modèles que vous pouvez appeler et à quel prix. |
+| **Type d'endpoint** | Le protocole qu'un modèle accepte : compatible OpenAI, Anthropic ou Gemini. |
+
+## Modèles disponibles
+
+Chaque `id` ci-dessous est un véritable identifiant de modèle. Dans une famille, les id **phare / recommandé** sont listés en premier ; les variantes plus légères ou plus anciennes suivent.
+
+<Tabs>
+  <Tab title="Claude (Anthropic)">
+    | Modèle `id` | Notes |
+    | --- | --- |
+    | `claude-opus-4-8` | Opus 4.8, phare pour le raisonnement |
+    | `claude-opus-4-7` | Opus 4.7 |
+    | `claude-opus-4-6` | Opus 4.6 |
+    | `claude-sonnet-4-6` | Sonnet 4.6, équilibré |
+    | `claude-sonnet-4-5` | Sonnet 4.5 |
+    | `claude-haiku-4-5` | Haiku 4.5, rapide et économique |
+  </Tab>
+  <Tab title="GPT (OpenAI)">
+    | Modèle `id` | Notes |
+    | --- | --- |
+    | `gpt-5.5` | GPT-5.5, phare |
+    | `gpt-5.4` | GPT-5.4 |
+    | `gpt-5.4-mini` | GPT-5.4 Mini, léger |
+    | `gpt-5.2` | GPT-5.2 |
+    | `gpt-5.1` | GPT-5.1 |
+    | `gpt-5` | GPT-5 |
+  </Tab>
+  <Tab title="Gemini (Google)">
+    | Modèle `id` | Notes |
+    | --- | --- |
+    | `gemini-3-pro` | Gemini 3 Pro, phare |
+    | `gemini-3.1-pro` | Gemini 3.1 Pro |
+    | `gemini-3.1-pro-preview` | Gemini 3.1 Pro preview |
+    | `gemini-3.5-flash` | Gemini 3.5 Flash |
+    | `gemini-3-flash` | Gemini 3 Flash |
+    | `gemini-3-flash-preview` | Gemini 3 Flash preview |
+    | `gemini-2.5-flash` | Gemini 2.5 Flash |
+  </Tab>
+  <Tab title="Grok (xAI)">
+    | Modèle `id` | Notes |
+    | --- | --- |
+    | `grok-4.3` | Grok 4.3, phare |
+    | `grok-4.2` | Grok 4.2 |
+    | `grok-4.1` | Grok 4.1 |
+    | `grok-4` | Grok 4 |
+  </Tab>
+  <Tab title="DeepSeek">
+    | Modèle `id` | Notes |
+    | --- | --- |
+    | `deepseek-v4-pro` | DeepSeek V4 Pro, phare |
+    | `deepseek-v4-flash` | DeepSeek V4 Flash, rapide |
+    | `deepseek-v3.2` | DeepSeek V3.2 |
+  </Tab>
+  <Tab title="GLM (Zhipu)">
+    | Modèle `id` | Notes |
+    | --- | --- |
+    | `glm-5.2` | GLM 5.2, phare |
+    | `glm-5.1` | GLM 5.1 |
+    | `glm-5` | GLM 5 |
+  </Tab>
+  <Tab title="Qwen (Alibaba)">
+    | Modèle `id` | Notes |
+    | --- | --- |
+    | `qwen3-max` | Qwen3 Max, phare |
+    | `qwen3.6-plus` | Qwen 3.6 Plus |
+    | `qwen3-coder-plus` | Qwen3 Coder Plus, optimisé pour le code |
+  </Tab>
+  <Tab title="Kimi (Moonshot)">
+    | Modèle `id` | Notes |
+    | --- | --- |
+    | `kimi-k2.6` | Kimi K2.6, phare |
+    | `kimi-k2.5` | Kimi K2.5 |
+  </Tab>
+  <Tab title="Autres">
+    | Modèle `id` | Notes |
+    | --- | --- |
+    | `MiniMax-M2.5` | MiniMax M2.5 |
+  </Tab>
+</Tabs>
 
 <Note>
-  Ceci est le point d'entrée "prix publié" et ne porte aucune identité utilisateur. Les prix représentent le groupe `default` dans un contexte anonyme. Pour voir le prix qu'un utilisateur authentifié paie réellement (groupe, remise de niveau, etc.), utilisez la page de tarification dans la console.
+  Cette liste est un snapshot. La liste autorisée et en direct est toujours votre propre réponse `/v1/models` (voir ci-dessous) — la disponibilité des modèles change au fil du temps.
 </Note>
 
-## Quand l'utiliser
+## Récupérer la liste en direct
 
-| Cas d'usage | Description |
-| --- | --- |
-| Agrégation de prix | OpenRouter et autres agrégateurs qui scrapent le catalogue et les prix publiés |
-| Affichage client | Applications, bots et SDKs qui rendent la liste des modèles |
-| Surveillance | Suivi des changements de catalogue ou de prix au fil du temps |
+`/v1/models` retourne les modèles que votre clé peut appeler, au format OpenAI SDK. Il nécessite votre clé API. Le format de réponse suit le format impliqué par vos en-têtes de demande (OpenAI par défaut ; Anthropic avec `x-api-key` + `anthropic-version` ; Gemini avec `x-goog-api-key`).
 
-## Point de terminaison
+<Tabs>
+  <Tab title="États-Unis / UE (bearlab.ai)">
+    ```bash
+    curl https://bearlab.ai/v1/models \
+      -H "Authorization: Bearer sk-..."
+    ```
+  </Tab>
+  <Tab title="Asie-Pacifique (bearlab.space)">
+    ```bash
+    curl https://bearlab.space/v1/models \
+      -H "Authorization: Bearer sk-..."
+    ```
+  </Tab>
+</Tabs>
 
-| Élément | Valeur |
-| --- | --- |
-| **URL** | `https://bearlab.ai/v1/models/pricing` |
-| **Méthode** | `GET` |
-| **Auth** | Aucune (public) |
-| **Limite de débit** | Limite critique stricte par IP |
-| **Mise en cache** | Cache en mémoire de 60s ; `Cache-Control: public, max-age=60` |
-
-### Requête
-
-```bash
-curl https://bearlab.ai/v1/models/pricing
-```
-
-## Structure de réponse
-
-Le niveau supérieur est toujours enveloppé dans un tableau `data` :
+Réponse (tronquée) :
 
 ```json
 {
+  "object": "list",
   "data": [
     {
-      "id": "gpt-4o",
-      "name": "GPT-4o",
-      "created": 1715558400,
-      "input_modalities": ["text"],
-      "output_modalities": ["text"],
-      "context_length": 128000,
-      "max_output_length": 16384,
-      "pricing": {
-        "prompt": "0.0000025",
-        "completion": "0.00001",
-        "request": "0",
-        "input_cache_read": "0.00000125"
-      },
-      "supported_features": ["tools", "json_mode", "structured_outputs", "logprobs"]
+      "id": "claude-opus-4-8",
+      "object": "model",
+      "created": 1626777600,
+      "owned_by": "openai",
+      "supported_endpoint_types": ["openai"]
     }
   ]
 }
 ```
 
-### Champs du modèle
-
-| Champ | Type | Description |
-| --- | --- | --- |
-| `id` | `string` | Identifiant de modèle unique ; utilisez-le lors de l'appel de `/v1/chat/completions` |
-| `name` | `string` | Nom d'affichage ; revient à `id` |
-| `created` | `int64` | Temps de sortie (secondes Unix) |
-| `input_modalities` / `output_modalities` | `string[]` | Au moins `text` |
-| `context_length` | `int` | Fenêtre de contexte maximale en jetons |
-| `max_output_length` | `int` | Jetons de sortie maximaux par réponse |
-| `pricing` | `Pricing` | Objet de tarification ; voir ci-dessous |
-| `pricing_tiers` | `Pricing[]` | Tarification par niveau (au plus un, par seuil de longueur de contexte) |
-| `supported_features` | `string[]` | Drapeaux de capacité |
-
-### Champs de tarification
-
-Tous les prix sont des **chaînes USD** ; les champs de classe de jetons sont tarifés par jeton.
-
-| Champ | Unité | Description |
-| --- | --- | --- |
-| `prompt` | USD / jeton d'entrée | Prix unitaire d'entrée |
-| `completion` | USD / jeton de sortie | Prix unitaire de sortie |
-| `request` | USD / requête | Frais forfaitaires par requête (généralement `"0"` pour les modèles de chat) |
-| `internal_reasoning` | USD / jeton de raisonnement | Prix du jeton de raisonnement |
-| `input_cache_read` | USD / jeton | Prix de lecture du cache (généralement inférieur) |
-| `input_cache_write` | USD / jeton | Prix d'écriture du cache |
-| `web_search` | USD / requête | Frais de l'outil de recherche web intégré |
-
-<Note>
-  Une valeur de `"0"` peut signifier "gratuit" ou "non applicable à ce modèle". Combinez `supported_features` pour déduire la capacité plutôt que de vous fier au tarif seul.
-</Note>
-
-### `supported_features`
-
-| Valeur | Signification |
+| Champ | Description |
 | --- | --- |
-| `tools` | Appel de fonction / utilisation d'outils |
-| `reasoning` | Retourne les jetons de raisonnement |
-| `json_mode` | Mode de sortie JSON |
-| `structured_outputs` | Sorties structurées contraintes par schéma |
-| `logprobs` | Probabilités de log des jetons |
-| `web_search` | Outil de recherche web intégré |
+| `id` | Identifiant du modèle ; passez ceci dans le champ `model` d'une demande de chat |
+| `object` | Toujours `model` |
+| `created` | Temps de sortie (secondes Unix) |
+| `owned_by` | Chaîne du propriétaire nominal |
+| `supported_endpoint_types` | Quels endpoints acceptent ce modèle : `openai`, `anthropic`, et/ou `gemini` |
 
-## Mise en cache et cadence de mise à jour
+## Appeler un modèle
 
-| Aspect | Comportement |
-| --- | --- |
-| Cache serveur | 60s en mémoire ; les mises à jour d'administrateur prennent effet en 1 minute |
-| Cache client | `Cache-Control: public, max-age=60` |
-| Sondage recommandé | Au maximum une fois toutes les 5 minutes ; le sondage agressif est limité en débit |
+Envoyez le `id` exact dans le champ `model`. Les deux domaines d'exemple sont affichés ; choisissez celui de votre région.
 
-## Comparaison avec d'autres points de terminaison
+<Tabs>
+  <Tab title="États-Unis / UE (bearlab.ai)">
+    ```bash
+    curl https://bearlab.ai/v1/chat/completions \
+      -H "Authorization: Bearer sk-..." \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "claude-sonnet-4-6",
+        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+      }'
+    ```
+  </Tab>
+  <Tab title="Asie-Pacifique (bearlab.space)">
+    ```bash
+    curl https://bearlab.space/v1/chat/completions \
+      -H "Authorization: Bearer sk-..." \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "claude-sonnet-4-6",
+        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+      }'
+    ```
+  </Tab>
+</Tabs>
 
-| Point de terminaison | Objectif | Auth |
-| --- | --- | --- |
-| `/v1/models/pricing` | Tarification publique au format OpenRouter | Public |
-| `/v1/models` | Liste d'ID de modèle compatible SDK OpenAI | Jeton requis |
+<Tip>
+  Besoin de prix et de règles de facturation ? Voir [Tarification et facturation](/fr/guides/pricing). Pour savoir comment les groupes correspondent aux remises, voir [Niveaux utilisateur](/fr/guides/user-levels).
+</Tip>

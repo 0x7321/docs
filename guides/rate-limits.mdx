@@ -1,48 +1,109 @@
 ---
 title: "速率限制"
-description: "限流的形式、與使用者等級的關係，以及觸發後的應對。"
+description: "閘道限制的內容、如何映射到您的群組，以及當您遇到 429 時如何退避。"
 ---
 
-為保證資源公平使用和服務穩定，平臺對請求頻率與 token 用量設有限制（Rate Limits）。
+為了保持金鑰和上遊之間的容量公平，閘道限制金鑰在滾動視窗內可以發送多少請求。該機制是基於請求計數的，按[群組](/guides/user-levels)配置 — 沒有固定的公開數字，因此請設計您的用戶端以讀取 `429` 並退避，而不是硬編碼速率。
 
-## 限流的形式
+<Note>
+  亞太地區用戶：在下面的每個示例中使用 `https://bearlab.space` 代替 `https://bearlab.ai`。請參閱[服務可用性](/guides/availability)。
+</Note>
 
-| 形式 | 含義 |
-| --- | --- |
-| **RPM** | 每分鐘最大請求數 |
-| **RPH** | 每小時最大請求數 |
-| **RPD** | 每天最大請求數 |
-| **TPM** | 每分鐘最大 token 數（輸入 + 輸出） |
-| **TPD** | 每天最大 token 數 |
+## 限制的內容
 
-## 與使用者等級的關係
+閘道限制**滾動視窗內的請求數**，而不是令牌。兩個獨立的計數器適用於您的金鑰，都在同一個視窗內（由運營商以分鐘為單位配置）：
 
-限流額度主要由[使用者等級](/guides/user-levels)決定：
-
-| 等級 | 獲得方式 | 限流 |
+| 計數器 | 計算內容 | 觸發時間 |
 | --- | --- | --- |
-| **Tier 1** | 註冊後預設 | 5 RPM |
-| **Tier 2** | 任意一次充值後自動升級 | 無限制 |
+| **總請求數** | 視窗內發送的每個請求，**包括失敗的請求**（錯誤的參數、認證錯誤、上遊錯誤） | 一陣重試或格式錯誤的請求可能會用完此配額，即使沒有任何請求成功 |
+| **成功的請求** | 僅傳回 `< 400` 的請求 | 這是正常流量的吞吐量上限 |
 
-新賬戶預設 Tier 1（5 RPM），適合輕度測試；**任意金額充值後立即升到 Tier 2，取消速率限制**，無需手動申請。
+為您的群組設定為 `0` 的計數器意味著該維度**無限制**。因為總請求計數器包括失敗，在錯誤上進行緊密重試迴圈可以自行限制您的速率 — 而不是改為修復基礎錯誤。
 
-## TPM 與 max_tokens
+<Note>
+  閘道不強制執行每分鐘令牌 (TPM) 或每天令牌 (TPD) 預算。制約您的令牌支出的是您的[餘額和每個模型的定價](/guides/pricing)，而不是速率計數器。成本控制和速率限制是獨立的系統。
+</Note>
 
-請求發出時無法預知輸入輸出總 token，系統會用請求引數 `max_tokens` 估算並據此做 TPM 限流，實際生成後再按真實 token 數校正。建議把 `max_tokens` 設得**接近實際需要**，減少因高估觸發限流的誤差。
+## 如何映射到您的群組
 
-## 觸發後的表現
+速率限制附加到您金鑰的**群組**，這是限制[您可以呼叫的模型](/guides/user-levels)的同一個群組。不同的群組可以有不同的計數器；`default` 群組、具名群組和 `auto` 可以各自解析為不同的上限。沒有數字"層級階梯" — 群組是單位。
 
-短時間內請求數或 token 用量達到上限時，介面返回 `429 Too Many Requests`，後續請求會被暫時拒絕，冷卻時間過後恢復。
+因為限制是按群組且由運營商配置的，「我的限制是什麼」的權威答案是實證的：發送流量並觀察 `429`。將您在其他地方看到引用的任何數字視為可能隨著頻道的新增或停用而改變的快照。
+
+## 當您被限制時
+
+當任一計數器用完時，API 傳回 `429 Too Many Requests`，具有 OpenAI 風格的錯誤主體。`message` 命名您遇到的限制和視窗：
 
 ```http
 HTTP/1.1 429 Too Many Requests
 Content-Type: application/json
-
-{ "error": { "message": "當前分組上游負載已飽和，請稍後再試", "type": "bearlab_api_error" } }
 ```
 
-## 最佳化建議
+```json
+{
+  "error": {
+    "message": "您已達到請求數限制：N分鐘內最多請求M次",
+    "type": "new_api_error"
+  }
+}
+```
 
-* **指數退避重試**：遇 `429` 等待後重試，等待時間逐次加倍。
-* **合併批次請求**：當請求數到頂但 token 仍有餘量時，把多個任務合併進一次請求，提升 token 利用率。
-* **需要更高額度**：聯絡業務經理申請單獨配額。
+總請求變體新增失敗計入其中 — 讀取訊息以區分兩者：
+
+- **成功請求限制** — 您推送的正常流量超過群組允許的範圍；請放慢速度或移到上限更高的群組。
+- **總請求限制** (`...包括失敗次數...`) — 失敗被計入；您可能在重試一個損壞的請求。修復該請求，然後重試。
+
+每個回應都包含一個 `X-Oneapi-Request-Id` 標頭；如果您聯絡支援，請引用它。有關完整錯誤信封，請參閱[錯誤處理](/guides/errors)。
+
+## 如何回應
+
+<Steps>
+  <Step title="讀取 429 訊息">
+    它告訴您是否遇到成功請求或總請求限制，以及在什麼視窗內。總請求情況通常意味著您在重試錯誤 — 首先修復這些問題。
+  </Step>
+  <Step title="用抖動進行指數退避">
+    在 `429` 上，等待並以加倍延遲加隨機抖動重試，以便並行用戶端不會重新碰撞。典型時程表：1s、2s、4s、8s、上限約為 ~30s，具有重試上限。
+
+    <CodeGroup>
+
+    ```python Python
+    import time, random, httpx
+
+    def post_with_backoff(url, headers, json, max_retries=5):
+        delay = 1.0
+        for attempt in range(max_retries):
+            r = httpx.post(url, headers=headers, json=json, timeout=120)
+            if r.status_code != 429:
+                return r
+            time.sleep(min(delay, 30) + random.uniform(0, 0.5))
+            delay *= 2
+        return r  # surface the final 429 to the caller
+    ```
+
+    ```javascript JavaScript
+    async function postWithBackoff(url, init, maxRetries = 5) {
+      let delay = 1000;
+      for (let attempt = 0; attempt < maxRetries; attempt++) {
+        const res = await fetch(url, init);
+        if (res.status !== 429) return res;
+        const wait = Math.min(delay, 30000) + Math.random() * 500;
+        await new Promise((r) => setTimeout(r, wait));
+        delay *= 2;
+      }
+      return await fetch(url, init); // surface the final 429
+    }
+    ```
+
+    </CodeGroup>
+  </Step>
+  <Step title="限制並行性，不只是重試">
+    限制在途請求（一個小的信號量/工作者池）可以防止觸發視窗的暴增。這比事後重試更有效。
+  </Step>
+  <Step title="停止盲目重試非 429 失敗">
+    認證 (`401`)、權限 (`403`) 和錯誤參數 (`400`) 錯誤仍計入總請求限制。重試它們會浪費您的預算，並可能限制其他正常流量的速率。僅重試 `429` 和暫時 `5xx`。
+  </Step>
+</Steps>
+
+<Tip>
+  如果一個正常工作的整合始終遇到上限，修復方法是一個具有更高（或無限制）限制的群組，而不是更緊密的用戶端側節流。聯繫您的帳戶經理以檢查您的群組，或請參閱[使用者級別](/guides/user-levels)以瞭解群組如何分配。
+</Tip>

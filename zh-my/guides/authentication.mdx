@@ -1,47 +1,102 @@
 ---
-title: "鉴权与密钥"
-description: "如何创建、传递和管理 API Key。"
+title: "身份认证"
+description: "如何创建、传递和管理 API 密钥。"
 ---
 
-所有请求都通过 API Key 鉴权。密钥在 [控制台](https://bearlab.ai) 的「令牌 / API Keys」页创建，形如 `sk-xxxxxxxx`。
+每个请求都使用 API 密钥进行身份认证。在 [控制台](https://bearlab.ai) 的 API Tokens 下方创建密钥；密钥格式为 `sk-...`。
+
+BearLab AI 基于 New API 网关构建，所以同一个密钥在 OpenAI 兼容和 Anthropic 兼容协议中都能使用。您在每个端点上都使用单一 Bearer 令牌进行身份认证——不存在每个协议单独的密钥。
 
 <Note>
-  亚太区域用户:请改用专用域名 `https://bearlab.in`，而非 `https://bearlab.ai`。详见 [服务区域](/zh-my/guides/availability)。
+  选择您地区的基础 URL。亚太区用户应使用 `https://bearlab.space`；美国/欧洲用户使用 `https://bearlab.ai`。密钥和请求格式在各地区相同。详见 [服务可用性](/zh-my/guides/availability)。
 </Note>
 
-## 如何传递密钥
+## 传递密钥
 
-两套协议的鉴权头不同：
+将您的密钥放在 `Authorization` 标头中作为 Bearer 令牌。两种协议都相同。
 
-| 协议 | 请求头 |
-| --- | --- |
-| OpenAI 兼容 | `Authorization: Bearer YOUR_API_KEY` |
-| Anthropic 兼容 | `x-api-key: YOUR_API_KEY` |
+| 协议 | 基础 URL | Auth 标头 |
+| --- | --- | --- |
+| OpenAI 兼容 | `<domain>/v1` | `Authorization: Bearer sk-...` |
+| Anthropic 兼容 | `<domain>` (调用 `/v1/messages`) | `Authorization: Bearer sk-...` |
+
+其中 `<domain>` 为 `https://bearlab.ai`（美国/欧洲）或 `https://bearlab.space`（亚太区）。
+
+<Note>
+  Anthropic 兼容端点另外还需要 `anthropic-version` 标头（例如 `anthropic-version: 2023-06-01`），与原生 Anthropic API 的要求完全相同。
+</Note>
 
 <CodeGroup>
-```bash OpenAI 兼容
+
+```bash OpenAI (US/EU)
 curl https://bearlab.ai/v1/chat/completions \
-  -H "Authorization: Bearer YOUR_API_KEY" ...
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
 ```
 
-```bash Anthropic 兼容
-curl https://bearlab.ai/v1/messages \
-  -H "x-api-key: YOUR_API_KEY" ...
+```bash OpenAI (Asia-Pacific)
+curl https://bearlab.space/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
 ```
+
+```bash Anthropic (US/EU)
+curl https://bearlab.ai/v1/messages \
+  -H "Authorization: Bearer sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-7",
+    "max_tokens": 1024,
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash Anthropic (Asia-Pacific)
+curl https://bearlab.space/v1/messages \
+  -H "Authorization: Bearer sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-7",
+    "max_tokens": 1024,
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
 </CodeGroup>
 
-## 密钥管理建议
+## 密钥管理
 
-- **一处一密钥**：为不同项目 / 客户端分别创建密钥，方便单独停用和统计用量。
-- **设置额度上限**：可在创建时给单个密钥设定可用额度，降低泄露风险。
-- **不要硬编码**：用环境变量注入，不要写进代码仓库。
-- **泄露即吊销**：怀疑泄露时，在控制台删除该密钥并新建。
+- **每个用途一个密钥**：为每个项目或客户端创建单独的密钥，便于撤销和按密钥使用统计。
+- **设置配额上限**：在创建密钥时指定单一密钥的花费限额，以降低风险。
+- **不要硬编码**：通过环境变量注入；切勿将密钥提交到代码仓库。
+- **泄露时撤销**：如果密钥可能已泄露，请在控制台上删除它并创建新密钥。
 
-## 常见鉴权错误
+## 分组
 
-| 现象 | 原因 |
+网关上的模型被组织成**分组**。分组决定模型路由到哪个上游并应用计费倍数（其分组比例）。每个密钥属于一个或多个分组，密钥只能调用其可访问分组公开的模型。
+
+- 模型只有在您密钥的某个分组启用该模型时，您的密钥才能调用它。
+- 同一模型可在多个分组中以不同价格点出现；分组的比例决定每次调用的成本。
+- 如果您调用分组未公开的模型，请求会在网关层被拒绝，不会到达任何上游。
+
+此密钥已在**`default`**分组中配置，因此它能看到的模型是基础混合目录。您可以在 [模型与定价](/zh-my/guides/pricing) 页面上或通过实时 [模型列表](/zh-my/guides/models) 端点浏览您的密钥能访问的确切模型及其定价，该端点只返回您有权使用的模型。
+
+## 常见认证错误
+
+| 症状 | 原因 |
 | --- | --- |
-| `401 Unauthorized` | 密钥错误、已删除，或鉴权头写错（Bearer / x-api-key 混用）。 |
-| `403 Forbidden` | 密钥被禁用、余额不足，或无权访问该模型 / 分组；最常见的权限问题是模型需要实名认证。 |
+| `401 Unauthorized` | 缺少、格式错误、错误或已删除的密钥。检查标头是否确实为 `Authorization: Bearer sk-...`。 |
+| `403 Forbidden` | 密钥已禁用、余额不足，或请求的模型未由您密钥可访问的任何分组公开。 |
+| `404` on a model | 模型名称不存在或对您的密钥分组不可用。获取 [模型列表](/zh-my/guides/models) 以查看您可以调用的确切 ID。 |
 
-更多状态码见 [错误处理](/zh-my/guides/errors)。
+详见 [错误处理](/zh-my/guides/errors) 以了解更多代码。

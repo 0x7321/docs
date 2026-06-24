@@ -1,24 +1,47 @@
 ---
 title: "Cursor"
-description: "Cursor में BearLab conversational models का उपयोग करें।"
+description: "Cursor में BearLab AI conversational models का उपयोग करें।"
 ---
 
-[Cursor](https://cursor.com) एक लोकप्रिय AI code editor है। इसे OpenAI-compatible interface के माध्यम से connect करें।
+[Cursor](https://cursor.com) एक लोकप्रिय AI code editor है। इसे BearLab AI के OpenAI-compatible interface के माध्यम से connect करें।
+
+Cursor केवल OpenAI protocol को support करता है, इसलिए हमेशा `/v1` base URL का उपयोग करें और अपनी `sk-...` key के साथ authenticate करें।
 
 <Steps>
   <Step title="Model settings खोलें">
-    Settings, Models खोलें।
+    **Settings → Models** खोलें।
   </Step>
   <Step title="Base URL को override करें">
-    OpenAI API Key area में, Override OpenAI Base URL को expand करें और set करें:
-    - **Base URL**: `https://bearlab.ai/v1`
-    - **API Key**: आपकी `sk-...` key
+    **OpenAI API Key** area में, **Override OpenAI Base URL** को expand करें और अपने region के लिए value set करें:
+
+    <Tabs>
+      <Tab title="US / EU">
+        - **Base URL**: `https://bearlab.ai/v1`
+        - **API Key**: आपकी `sk-...` key
+      </Tab>
+      <Tab title="Asia-Pacific">
+        - **Base URL**: `https://bearlab.space/v1`
+        - **API Key**: आपकी `sk-...` key
+      </Tab>
+    </Tabs>
   </Step>
   <Step title="Models add करें और verify करें">
-    Model names add करें जो आप चाहते हैं (e.g. `gpt-4o`, `claude-sonnet-4-6`), save करें, फिर Verify पर click करें।
+    जब custom base URL set किया जाता है, तो Cursor model list को automatically नहीं लाता है, इसलिए आपको model names को manually add करना होगा। [models endpoint](/hi/guides/models) में दिखाई देने वाली IDs का उपयोग करें, उदाहरण:
+
+    - `gpt-5.5`
+    - `claude-sonnet-4-6`
+    - `claude-opus-4-7`
+    - `gemini-3.1-pro-preview`
+    - `deepseek-v4-pro`
+
+    Save करें, फिर **Verify** पर click करें।
   </Step>
 </Steps>
 
 <Note>
-  Cursor केवल OpenAI-compatible protocol का उपयोग करता है, इसलिए base URL `/v1` के साथ समाप्त होता है। Model names [models endpoint](/hi/guides/models) में exist करने चाहिए। यदि verification fail होता है, तो [Quickstart](/hi/guides/quickstart) curl के साथ key को confirm करें।
+  Model names को [models endpoint](/hi/guides/models) द्वारा returned ID से बिल्कुल मेल खाना चाहिए, suffix सहित। एक name जो exist नहीं करता है, verification में fail हो जाएगा। अगर verification still fail होता है, तो पहले [Quickstart](/hi/guides/quickstart) में curl के साथ key को confirm करें।
 </Note>
+
+<Warning>
+  वह base URL चुनें जो आपके region से match करता हो। `https://bearlab.ai` US/EU को serve करता है और `https://bearlab.space` Asia-Pacific को serve करता है; path दोनों के लिए `/v1` है। एक region की key को दूसरे region के base URL के साथ mix न करें।
+</Warning>

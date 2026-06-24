@@ -1,25 +1,90 @@
 ---
-title: "用户等级"
-description: "Tier 1 与 Tier 2 的差别，以及如何升级。"
+title: "用户级别"
+description: "模型群组如何控制访问、您的令牌所属群组的控制内容，以及如何调用不同群组中的模型。"
 ---
 
-平台有两个用户等级，主要影响[速率限制](/zh-my/guides/rate-limits)与折扣。
+在 BearLab AI 上，您可以调用的内容由**模型群组**决定，而非数字「层级」。每个 API 密钥都属于一个群组，模型只有在您的群组位于该模型的允许清单中时才可调用。这是标准的 new-api 群组机制：一个群组中的密钥只能访问分配给该群组的通道和模型。
 
-| 等级 | 获得方式 | 速率限制 |
-| --- | --- | --- |
-| **Tier 1** | 注册后默认 | 5 RPM |
-| **Tier 2** | 任意一次储值后自动升级 | 无限制 |
+<Note>
+  亚太地区用户：请在下方所有示例中将 `https://bearlab.ai` 替换为 `https://bearlab.space`。请参阅[服务可用性](/zh-my/guides/availability)。
+</Note>
 
-## Tier 1
+## 群组如何控制访问
 
-所有新账户从 Tier 1 起步，受 **5 RPM**（每分钟 5 次请求）限制，适合轻度测试与探索。
+每个模型都有一个 `enable_groups` 允许清单。您的 API 密钥(令牌)具有一个群组。两者之间的匹配就是整个访问规则：
 
-## Tier 2
+| 概念 | 它控制的内容 |
+| --- | --- |
+| **用户群组** | 分配给您账户的群组。您的密钥继承的默认群组。 |
+| **令牌群组** | 在单个 API 密钥上设置的群组。可能不同于您的用户群组；`auto` 表示「按优先顺序选择可用群组」。 |
+| **模型 `enable_groups`** | 允许调用该模型的群组清单。如果您的令牌群组不在其中，该模型将不可调用，也不会出现在您的 `/v1/models` 清单中。 |
 
-账户**任意金额储值**后即自动升级到 Tier 2，取消速率限制。升级**即时生效**，无需手动申请。
+由 [`/v1/models`](/zh-my/guides/models#fetch-the-live-list) 返回的目录始终根据您的令牌群组进行筛选，因此实时清单是「此密钥可以调用什么」的权威答案。
 
-更高等级还可能享受额外的价格折扣，详见[计费与储值](/zh-my/guides/pricing)。
+## `auto` 群组
 
-## 查看当前等级
+设置为 `auto` 群组的令牌不会固定为单一群组。平台会按优先顺序为每个请求选择可用的群组，当一个上游饱和时提供跨群组故障转移。当您想要弹性且不需要强制特定群组时，请使用 `auto`；当您必须针对已知的模型集或价格时，请使用具名群组。
 
-登录后进入 **控制台 → 个人设置** 查看当前等级。
+## 此平台上的群组
+
+用于生成这些文档的令牌会看到 **`default` 群组** — 覆盖每个模型系列的基础混合目录(请参阅[模型目录](/zh-my/guides/models))。其他群组会公开更大或专门的模型集。可供令牌分配的群组为：
+
+| 群组 | 它携带的内容 |
+| --- | --- |
+| `default` | 基础混合目录(最大的单一群组，覆盖每个模型系列) |
+| `openai` | OpenAI / GPT 系列模型 |
+| `grok` | xAI Grok 模型 |
+| `gemini`, `gemini-guan`, `gemini次数`, `gemini-cli`, `gemini-image` | Gemini 路由(标准、官方、按请求、CLI、图像) |
+| `claudecode`, `claudecode特价`, `claude次数`, `claude逆向`, `claude官转纯`, `ccmax特价`, `claude max` | Claude/Anthropic 路由(Claude Code、折扣、按请求、官方等) |
+| `claudeAWS`, `claudeAWS2`, `claudeAWS3`, `claudekiro2`, `claudekiro3缓`, `claude反重力` | 经由替代上游的 Claude(AWS Bedrock、Kiro、antigravity) |
+| `codex2`, `codex3`, `codext12` | Codex / 编码调优路由 |
+| `国产` | 国内模型(DeepSeek、GLM、Qwen、Kimi、MiniMax 等) |
+
+<Note>
+  群组名称和成员资格会随着通道的添加或停用而变化。将上表视为快照。您自己的 `/v1/models` 响应(限定于您的密钥群组)始终是真实的来源。
+</Note>
+
+## 群组和定价
+
+群组会隔离账单和访问：同一模型在不同群组间可以有不同的有效价格，因为每个群组都可以在模型基础价格和提供者乘数之上应用自己的账单乘数。选择群组因此既是访问决定，也是价格决定。
+
+请参阅[定价与账单](/zh-my/guides/pricing)，了解模型基础价格和[提供者](/zh-my/guides/providers)乘数如何组合，以及[速率限制](/zh-my/guides/rate-limits)，了解每个群组适用的限制。
+
+## 设置或更改令牌的群组
+
+在**仪表板、API 令牌**中创建 API 密钥时选择群组，或编辑现有密钥的群组。若要使用来自不同群组的模型，请将您的令牌分配给其 `enable_groups` 包含该模型的群组。
+
+<Steps>
+  <Step title="打开 API 令牌">
+    登录并前往仪表板、API 令牌。
+  </Step>
+  <Step title="选择群组">
+    在令牌的「群组」字段上，选择具名群组或 `auto` 以进行优先顺序故障转移。
+  </Step>
+  <Step title="使用 /v1/models 验证">
+    使用该密钥调用实时模型清单，并确认您想要的模型存在。
+
+    <Tabs>
+      <Tab title="美国 / 欧盟 (bearlab.ai)">
+        ```bash
+        curl https://bearlab.ai/v1/models \
+          -H "Authorization: Bearer sk-..."
+        ```
+      </Tab>
+      <Tab title="亚太地区 (bearlab.space)">
+        ```bash
+        curl https://bearlab.space/v1/models \
+          -H "Authorization: Bearer sk-..."
+        ```
+      </Tab>
+    </Tabs>
+  </Step>
+</Steps>
+
+## 当模型超出您的群组时
+
+如果您发送的 `model` 其 `enable_groups` 不包含您的令牌群组，请求将被拒绝 — 密钥无法到达该通道。通过将令牌切换到包含该模型的群组，或调用您当前的群组已包含的模型来修复此问题。
+
+<Tip>
+  在仪表板、设置中检查您当前的账户群组。在仪表板、API 令牌下检查特定密钥的群组。
+</Tip>

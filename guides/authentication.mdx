@@ -1,47 +1,102 @@
 ---
-title: "鑑權與金鑰"
-description: "如何建立、傳遞和管理 API Key。"
+title: "身份驗證"
+description: "如何建立、傳遞和管理 API 密鑰。"
 ---
 
-所有請求都透過 API Key 鑑權。金鑰在 [控制檯](https://bearlab.ai) 的「令牌 / API Keys」頁建立，形如 `sk-xxxxxxxx`。
+每個請求都使用 API 密鑰進行身份驗證。在 [控制台](https://bearlab.ai) 的 API Tokens 下方建立密鑰；密鑰格式為 `sk-...`。
+
+BearLab AI 基於 New API 閘道構建，所以同一個密鑰在 OpenAI 相容和 Anthropic 相容協定中都能使用。您在每個端點上都使用單一 Bearer 令牌進行身份驗證——不存在每個協定單獨的密鑰。
 
 <Note>
-  亞太區域使用者:請改用專用網域 `https://bearlab.in`，而非 `https://bearlab.ai`。詳見 [服務區域](/guides/availability)。
+  選擇您地區的基礎 URL。亞太區使用者應使用 `https://bearlab.space`；美國/歐洲使用者使用 `https://bearlab.ai`。密鑰和請求格式在各地區相同。詳見 [服務可用性](/guides/availability)。
 </Note>
 
-## 如何傳遞金鑰
+## 傳遞密鑰
 
-兩套協議的鑑權頭不同：
+將您的密鑰放在 `Authorization` 標頭中作為 Bearer 令牌。兩種協定都相同。
 
-| 協議 | 請求頭 |
-| --- | --- |
-| OpenAI 相容 | `Authorization: Bearer YOUR_API_KEY` |
-| Anthropic 相容 | `x-api-key: YOUR_API_KEY` |
+| 協定 | 基礎 URL | Auth 標頭 |
+| --- | --- | --- |
+| OpenAI 相容 | `<domain>/v1` | `Authorization: Bearer sk-...` |
+| Anthropic 相容 | `<domain>` (呼叫 `/v1/messages`) | `Authorization: Bearer sk-...` |
+
+其中 `<domain>` 為 `https://bearlab.ai`（美國/歐洲）或 `https://bearlab.space`（亞太區）。
+
+<Note>
+  Anthropic 相容端點另外還需要 `anthropic-version` 標頭（例如 `anthropic-version: 2023-06-01`），與原生 Anthropic API 的要求完全相同。
+</Note>
 
 <CodeGroup>
-```bash OpenAI 相容
+
+```bash OpenAI (US/EU)
 curl https://bearlab.ai/v1/chat/completions \
-  -H "Authorization: Bearer YOUR_API_KEY" ...
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
 ```
 
-```bash Anthropic 相容
-curl https://bearlab.ai/v1/messages \
-  -H "x-api-key: YOUR_API_KEY" ...
+```bash OpenAI (Asia-Pacific)
+curl https://bearlab.space/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
 ```
+
+```bash Anthropic (US/EU)
+curl https://bearlab.ai/v1/messages \
+  -H "Authorization: Bearer sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-7",
+    "max_tokens": 1024,
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash Anthropic (Asia-Pacific)
+curl https://bearlab.space/v1/messages \
+  -H "Authorization: Bearer sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-7",
+    "max_tokens": 1024,
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
 </CodeGroup>
 
-## 金鑰管理建議
+## 密鑰管理
 
-- **一處一金鑰**：為不同專案 / 客戶端分別建立金鑰，方便單獨停用和統計用量。
-- **設定額度上限**：可在建立時給單個金鑰設定可用額度，降低洩露風險。
-- **不要硬編碼**：用環境變數注入，不要寫進程式碼倉庫。
-- **洩露即吊銷**：懷疑洩露時，在控制檯刪除該金鑰並新建。
+- **每個用途一個密鑰**：為每個專案或用戶端建立單獨的密鑰，便於撤銷和按密鑰使用統計。
+- **設定配額上限**：在建立密鑰時指定單一密鑰的花費限額，以降低風險。
+- **不要硬編碼**：透過環境變數注入；切勿將密鑰提交到版本庫。
+- **洩露時撤銷**：如果密鑰可能已洩露，請在控制台上刪除它並建立新密鑰。
 
-## 常見鑒權錯誤
+## 群組
 
-| 現象 | 原因 |
+閘道上的模型被組織成**群組**。群組決定模型路由到哪個上游並套用計費倍數（其群組比例）。每個密鑰屬於一個或多個群組，密鑰只能呼叫其可存取群組公開的模型。
+
+- 模型只有在您密鑰的某個群組啟用該模型時，您的密鑰才能呼叫它。
+- 同一模型可在多個群組中以不同價格點出現；群組的比例決定每次呼叫的成本。
+- 如果您呼叫群組未公開的模型，請求會在閘道層被拒絕，不會到達任何上游。
+
+此密鑰已在**`default`**群組中佈建，因此它能看到的模型是基礎混合目錄。您可以在 [模型與定價](/guides/pricing) 頁面上或透過實時 [模型列表](/guides/models) 端點瀏覽您的密鑰能存取的確切模型及其定價，該端點只返回您有權使用的模型。
+
+## 常見驗證錯誤
+
+| 症狀 | 原因 |
 | --- | --- |
-| `401 Unauthorized` | 金鑰錯誤、已刪除，或鑑權頭寫錯（Bearer / x-api-key 混用）。 |
-| `403 Forbidden` | 金鑰被禁用、餘額不足，或無權訪問該模型 / 分組；最常見的權限問題是模型需要實名認證。 |
+| `401 Unauthorized` | 缺少、格式錯誤、錯誤或已刪除的密鑰。檢查標頭是否確實為 `Authorization: Bearer sk-...`。 |
+| `403 Forbidden` | 密鑰已停用、餘額不足，或請求的模型未由您密鑰可存取的任何群組公開。 |
+| `404` on a model | 模型名稱不存在或對您的密鑰群組不可用。取得 [模型列表](/guides/models) 以查看您可以呼叫的確切 ID。 |
 
-更多狀態碼見 [錯誤處理](/guides/errors)。
+詳見 [錯誤處理](/guides/errors) 以了解更多代碼。

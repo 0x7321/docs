@@ -1,53 +1,201 @@
 ---
 title: "プロンプトキャッシング"
-description: "繰り返されるコンテンツのコストを削減し、リクエストIDを使用してルーティングを一貫性に保ち、ヒット率を向上させます。"
+description: "ゲートウェイを通じて Anthropic および OpenAI のプロンプトキャッシングを使用し、複数ターンのリクエストを同じバックエンドチャネルに保つことで、キャッシュが実際に再利用されるようにします。"
 ---
 
-## プロンプトキャッシングとは
+プロンプトキャッシングにより、プロバイダーは処理済みコンテキストプレフィックスの計算を再利用できます。これにより**レイテンシーと入力トークンコストが大幅に削減**されます。BearLab AI はプロバイダーのキャッシング機能をそのまま提供し、*チャネルアフィニティ*メカニズムを追加して、同じ呼び出し元からの連続したリクエストが同じバックエンドにルーティングされるようにします。これが、マルチチャネルリレー上でクロスリクエストキャッシングの効果を生み出す鍵となります。
 
-多くのプロバイダー(Anthropic ClaudeおよびOpenAIを含む)はプロンプトキャッシングをネイティブにサポートしています。同じコンテキストが繰り返して送信されたとき、プロバイダーは以前の計算を再利用し、**遅延とトークンコストを削減します**。
+<Note>
+  BearLab AI は 2 つのリージョンにサービスを提供しています。米国／欧州のユーザーは `https://bearlab.ai` を呼び出してください。アジア太平洋地域のユーザーは `https://bearlab.space` を呼び出してください。両リージョンは同じキー、モデルカタログ、キャッシング動作を共有しています。[サービス可用性](/ja/guides/availability)を参照してください。
+</Note>
 
-## キャッシングの制限事項
+## プロバイダーキャッシングの仕組み
 
-**キャッシュはアカウント間で共有できません**。これはプラットフォーム側の制限ではなく、プロバイダー側の制限です。
+キャッシングはアップストリームプロバイダーによって完全に実装されます。ゲートウェイはリクエストを転送し、キャッシュフィールドをユーザーに報告します。2 つのプロトコルは、明示的にオプトインが必要かどうかで異なります。
 
-マルチチャネルリレーとして、同じアカウントからの2つの連続したリクエストが同じバックエンドチャネルをヒットすることを保証できません。異なるチャネルに行く場合、既存のキャッシュを再利用できず、ヒット率を低下させてコストを上げます。
+<Tabs>
+  <Tab title="Anthropic（オプトイン）">
+    Claude キャッシングは**明示的**です。コンテンツブロック（またはリクエストレベル）に `cache_control` を使用してキャッシュブレークポイントをマークします。そのブロックとそれより前のすべての内容がキャッシュされます。
 
-## ルーティングを一貫性に保つ
+    - マーカー：`"cache_control": {"type": "ephemeral"}`
+    - デフォルト TTL：**5 分間**、キャッシュヒットのたびにリフレッシュされます。1 時間の TTL は基本入力価格の 2 倍で利用可能です。
+    - レスポンスの使用フィールド：`cache_creation_input_tokens`（最初の呼び出し時に書き込み）および `cache_read_input_tokens`（その後キャッシュから提供）。
 
-これに対処するには、前のリクエストのIDを後のリクエストに含めます。システムは新しいリクエストを同じチャネルにルーティングしようとし、キャッシュ再利用を最大化します。
+    安定したコンテンツ（システムプロンプト、長いドキュメント、ツール定義）をブレークポイントの前に配置して、キャッシュプレフィックスがターン間で同一に保たれるようにしてください。
+  </Tab>
+  <Tab title="OpenAI（自動）">
+    OpenAI キャッシングは**自動的**です — リクエストの変更不要、追加料金なし。
 
-| ヘッダー | ソース | TTL |
+    - プロンプトが **1024 トークン以上**のとき時にトリガーします。より短いプロンプトはキャッシュされません。
+    - レスポンスの使用フィールド：`usage.prompt_tokens_details.cached_tokens`（キャッシュヒットの入力トークン数。キャッシュなしの場合は `0`）。
+    - オプショナルの `prompt_cache_key` フィールドはプレフィックスハッシュと組み合わされ、多くのリクエストが長い共通プレフィックスを共有する場合に**ルーティングを改善し、ヒット率を向上**させます。
+  </Tab>
+</Tabs>
+
+## リレーがヒット率を低下させる理由
+
+キャッシュは、それを作成した正確なバックエンドアカウントに結び付けられています — **アカウント間で共有することができません**。これはプロバイダー側のルールであり、ゲートウェイのルールではありません。
+
+BearLab AI は複数のアップストリームチャネル間で負荷分散するため、同じ呼び出し元からの 2 つの連続したリクエストが同じバックエンドをヒットすることは保証されません。別々のチャネルに落ちた場合、以前のキャッシュは見えず、プレフィックスは全価格で課金されます。
+
+## チャネルアフィニティが同じチャネルにとどまらせる
+
+これを解決するために、ゲートウェイは**チャネルアフィニティ**を実行します。リクエストがチャネル上で成功すると、同じアフィニティ値を持つ後続のリクエストは、TTL ウィンドウの間、そのチャネルにルーティングされ直し、プロバイダー側のキャッシュは到達可能なままになります。
+
+アフィニティはリクエスト本文の値によってキー化されます。デフォルトルールは次の通りです：
+
+| プロトコル | パス | アフィニティキー（リクエスト本文フィールド） |
 | --- | --- | --- |
-| `X-Request-Id` | 前のレスポンスのrequest-idヘッダー | 5分 |
-| `X-Response-Id` | 前のレスポンスJSON内の会話ID(例えば、ClaudeのCanonical.id`) | 5分 |
+| OpenAI 互換 | `/v1/responses` | `prompt_cache_key` |
+| Anthropic 互換 | `/v1/messages` | `metadata.user_id` |
 
-### 例
+1 つの会話のターン全体で、そのフィールドに**安定した値**を送信し、ゲートウェイはそれらを同じチャネルに固定します。関連のない会話を開始するときは新しい値を使用してください。アフィニティエントリは不活動 TTL（デフォルト 1 時間）の後に期限切れになります。
 
-```python
-import anthropic
+<Warning>
+  アフィニティはベストエフォートです。固定チャネルが利用不可の場合、リクエストは別のチャネルで処理されます — そのターンでそのチャネルのキャッシュは再利用されません。アフィニティの正確性に依存しないでください。コスト削減にのみ使用してください。
+</Warning>
 
-client = anthropic.Anthropic(base_url="https://bearlab.ai", api_key="API_KEY")
+## 例
 
-response = client.messages.create(
-    model="claude-sonnet-4-6",
-    max_tokens=1024,
-    messages=[{"role": "user", "content": "Hello!"}],
-)
-response_id = response.id
+<Tabs>
+  <Tab title="Anthropic（cache_control + アフィニティ）">
+    `cache_control` で長いシステムプロンプトをキャッシュし、安定した `metadata.user_id` で会話をピンします。
 
-response2 = client.messages.create(
-    model="claude-sonnet-4-6",
-    max_tokens=1024,
-    messages=[
-        {"role": "user", "content": "Hello!"},
-        {"role": "assistant", "content": response.content[0].text},
-        {"role": "user", "content": "Continue our conversation..."},
-    ],
-    extra_headers={"X-Response-Id": response_id},
-)
-```
+    <CodeGroup>
+      ```bash 米国／欧州
+      curl https://bearlab.ai/v1/messages \
+        -H "Authorization: Bearer sk-..." \
+        -H "anthropic-version: 2023-06-01" \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "claude-sonnet-4-6",
+          "max_tokens": 1024,
+          "metadata": {"user_id": "conversation-7f3a"},
+          "system": [
+            {
+              "type": "text",
+              "text": "<a long, stable system prompt or document>",
+              "cache_control": {"type": "ephemeral"}
+            }
+          ],
+          "messages": [{"role": "user", "content": "Summarize the document."}]
+        }'
+      ```
 
-## ヒント
+      ```bash アジア太平洋
+      curl https://bearlab.space/v1/messages \
+        -H "Authorization: Bearer sk-..." \
+        -H "anthropic-version: 2023-06-01" \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "claude-sonnet-4-6",
+          "max_tokens": 1024,
+          "metadata": {"user_id": "conversation-7f3a"},
+          "system": [
+            {
+              "type": "text",
+              "text": "<a long, stable system prompt or document>",
+              "cache_control": {"type": "ephemeral"}
+            }
+          ],
+          "messages": [{"role": "user", "content": "Summarize the document."}]
+        }'
+      ```
+    </CodeGroup>
 
-変わらないコンテンツを最初(システムプロンプト、長いドキュメント)に置き、変数コンテンツを最後(最新のユーザーメッセージ)に置くことで、プレフィックスのヒットを最大化します。プレフィックスが長く、頻繁に再利用されるほど、節約できます。
+    この会話の後続のターンごとに同じ `metadata.user_id` を再利用してください。ゲートウェイはそれらを同じチャネルにルーティングするため、`cache_read_input_tokens` は高く保たれます。
+  </Tab>
+
+  <Tab title="OpenAI（自動 + アフィニティ）">
+    OpenAI は自動的にキャッシュします。後続のリクエストが同じチャネルにとどまるように、安定した `prompt_cache_key` を送信するだけです。
+
+    <CodeGroup>
+      ```bash 米国／欧州
+      curl https://bearlab.ai/v1/responses \
+        -H "Authorization: Bearer sk-..." \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "gpt-5.5",
+          "prompt_cache_key": "conversation-7f3a",
+          "input": "Continue summarizing the attached document."
+        }'
+      ```
+
+      ```bash アジア太平洋
+      curl https://bearlab.space/v1/responses \
+        -H "Authorization: Bearer sk-..." \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "gpt-5.5",
+          "prompt_cache_key": "conversation-7f3a",
+          "input": "Continue summarizing the attached document."
+        }'
+      ```
+    </CodeGroup>
+
+    同じ `prompt_cache_key` は、OpenAI 自体のルーティングを改善し、ゲートウェイのチャネルアフィニティを駆動するため、`cached_tokens` は実際の再利用を反映しています。
+  </Tab>
+
+  <Tab title="Anthropic SDK">
+    ```python
+    import anthropic
+
+    client = anthropic.Anthropic(
+        base_url="https://bearlab.ai",   # アジア太平洋：https://bearlab.space
+        api_key="sk-...",
+    )
+
+    SYSTEM = "<a long, stable system prompt or document>"
+    USER_ID = "conversation-7f3a"  # 会話全体で安定しています
+
+    first = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=1024,
+        metadata={"user_id": USER_ID},
+        system=[{
+            "type": "text",
+            "text": SYSTEM,
+            "cache_control": {"type": "ephemeral"},
+        }],
+        messages=[{"role": "user", "content": "Summarize the document."}],
+    )
+
+    follow_up = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=1024,
+        metadata={"user_id": USER_ID},  # 同じ値 → 同じチャネル → キャッシュヒット
+        system=[{
+            "type": "text",
+            "text": SYSTEM,
+            "cache_control": {"type": "ephemeral"},
+        }],
+        messages=[
+            {"role": "user", "content": "Summarize the document."},
+            {"role": "assistant", "content": first.content[0].text},
+            {"role": "user", "content": "Now list the action items."},
+        ],
+    )
+
+    print(follow_up.usage.cache_read_input_tokens)
+    ```
+  </Tab>
+</Tabs>
+
+## ヒット率の最大化
+
+<Steps>
+  <Step title="安定したコンテンツを先に順序付け">
+    変わらないコンテンツ（システムプロンプト、長いドキュメント、ツールスキーマ）を前に配置し、変数部分（最新のユーザーメッセージ）を最後に配置して、キャッシュプレフィックスがバイト単位で同一に保たれるようにしてください。プレフィックスが長く、より頻繁に再利用されるほど、節約量は増えます。
+  </Step>
+  <Step title="キャッシュブレークポイントを設定（Claude のみ）">
+    安定したブロックの後に `cache_control: {"type": "ephemeral"}` を追加してください。OpenAI はマーカーが不要です — プロンプトが 1024 トークンに達すると、自動的にキャッシュされます。
+  </Step>
+  <Step title="会話をピンします">
+    ターンを通じて安定したアフィニティ値を送信します — `/v1/messages` の場合 `metadata.user_id`、`/v1/responses` の場合 `prompt_cache_key`。会話全体で再利用してください。関連のない会話には新しい値を使用してください。
+  </Step>
+  <Step title="使用状況で検証">
+    レスポンスの使用を確認します：`cache_read_input_tokens`（Claude）または `prompt_tokens_details.cached_tokens`（OpenAI）。ヒット数の増加は、プレフィックスとアフィニティ値の両方が安定していることを確認します。
+  </Step>
+</Steps>
+
+完全なリクエストパラメータについては [チャットコンプリーション](/ja/guides/chat) を、キャッシュ済みおよび未キャッシュの入力トークンの課金方法については [料金](/ja/guides/pricing) をご覧ください。

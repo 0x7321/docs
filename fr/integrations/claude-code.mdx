@@ -3,45 +3,132 @@ title: "Claude Code"
 description: "Utilisez BearLab AI dans le CLI officiel Claude Code d'Anthropic."
 ---
 
-[Claude Code](https://docs.anthropic.com/fr/docs/claude-code/overview) est le CLI de codage IA officiel d'Anthropic, se connectant nativement via le protocole Anthropic.
+[Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview) est le CLI officiel de codage IA d'Anthropic. Il utilise le protocole Anthropic Messages natif (`POST /v1/messages`), il se connecte donc à BearLab AI en pointant simplement son URL de base sur notre passerelle.
+
+## URL de base
+
+BearLab AI fournit le protocole Anthropic à partir de la racine du domaine — Claude Code ajoute lui-même `/v1/messages`, ne **pas** ajouter de suffixe de chemin.
+
+<CodeGroup>
+
+```bash US / EU
+export ANTHROPIC_BASE_URL="https://bearlab.ai"
+```
+
+```bash Asia-Pacific
+export ANTHROPIC_BASE_URL="https://bearlab.space"
+```
+
+</CodeGroup>
+
+Choisissez la région la plus proche de vous. Les deux servent la même API et acceptent la même clé.
 
 ## Modèles supportés
 
-| Modèle | ID | Idéal pour |
+Claude Code communique avec le point de terminaison Anthropic, utilisez donc un modèle qui expose le type de point de terminaison `anthropic`. Ces ID sont en direct sur la passerelle :
+
+| Modèle | ID | Meilleur pour |
 | --- | --- | --- |
-| Claude Opus 4.8 | `claude-opus-4-8` | Raisonnement le plus puissant, architecture complexe |
-| Claude Sonnet 4.6 | `claude-sonnet-4-6` | Performance équilibrée, développement quotidien |
-| Claude Haiku 4.5 | `claude-haiku-4-5` | Le plus rapide, complétion légère |
+| Claude Opus 4.8 | `claude-opus-4-8` | Raisonnement le plus fort, architecture complexe |
+| Claude Opus 4.7 | `claude-opus-4-7` | Raisonnement haut de gamme, grands refactorisations |
+| Claude Sonnet 4.6 | `claude-sonnet-4-6` | Performances équilibrées, codage quotidien |
+| Claude Haiku 4.5 | `claude-haiku-4-5` | Le plus rapide, complétions légères |
+
+<Note>
+  La disponibilité du modèle dépend du groupe attaché à votre clé API. Parcourez la liste complète en direct sur la page [Modèles](/fr/guides/models) ; tout modèle dont les types de points de terminaison incluent `anthropic` fonctionne avec Claude Code.
+</Note>
 
 ## Configuration
 
-Pointez les variables d'environnement vers le point de terminaison de la plateforme :
+Définissez l'URL de base et votre clé API, puis lancez :
 
-```bash
+<CodeGroup>
+
+```bash US / EU
 export ANTHROPIC_BASE_URL="https://bearlab.ai"
-export ANTHROPIC_API_KEY="YOUR_API_KEY"
+export ANTHROPIC_API_KEY="sk-..."
 
 claude
 ```
 
-`ANTHROPIC_API_KEY` et `ANTHROPIC_AUTH_TOKEN` sont tous les deux reconnus et totalement équivalents — utilisez l'un ou l'autre.
+```bash Asia-Pacific
+export ANTHROPIC_BASE_URL="https://bearlab.space"
+export ANTHROPIC_API_KEY="sk-..."
 
-## Spécifier le modèle (optionnel)
-
-```bash
-export ANTHROPIC_MODEL="claude-sonnet-4-6"           # Remplace le modèle principal
-export ANTHROPIC_SMALL_FAST_MODEL="claude-haiku-4-5" # Remplace le modèle rapide interne
+claude
 ```
 
-Sans configuration, Claude Code utilise sa propre logique de sélection de modèle.
-
-## Rendre persistant
-
-```bash
-echo 'export ANTHROPIC_BASE_URL="https://bearlab.ai"' >> ~/.zshrc
-echo 'export ANTHROPIC_API_KEY="YOUR_API_KEY"' >> ~/.zshrc
-```
+</CodeGroup>
 
 <Note>
-  Définissez `ANTHROPIC_BASE_URL` sur le domaine racine de la plateforme, sans suffixe `/v1`. Les IDs de modèles doivent exister dans le [point de terminaison des modèles](/fr/guides/models).
+  `ANTHROPIC_API_KEY` et `ANTHROPIC_AUTH_TOKEN` sont tous deux reconnus et équivalents — définissez l'un ou l'autre. La clé est envoyée en tant que jeton Bearer dans l'en-tête `Authorization`.
 </Note>
+
+## Remplacer le modèle (Optionnel)
+
+Forcer Claude Code à router vers un modèle spécifique au lieu de ses valeurs par défaut intégrées :
+
+```bash
+export ANTHROPIC_MODEL="claude-opus-4-8"            # Modèle principal
+export ANTHROPIC_SMALL_FAST_MODEL="claude-haiku-4-5" # Modèle de sous-tâche rapide
+```
+
+S'il n'est pas défini, Claude Code utilise sa propre sélection de modèle par défaut.
+
+## Persister
+
+Ajoutez les exports à votre profil shell afin que chaque nouvelle session soit configurée. Choisissez l'URL de base de votre région :
+
+<CodeGroup>
+
+```bash US / EU
+echo 'export ANTHROPIC_BASE_URL="https://bearlab.ai"' >> ~/.zshrc
+echo 'export ANTHROPIC_API_KEY="sk-..."' >> ~/.zshrc
+```
+
+```bash Asia-Pacific
+echo 'export ANTHROPIC_BASE_URL="https://bearlab.space"' >> ~/.zshrc
+echo 'export ANTHROPIC_API_KEY="sk-..."' >> ~/.zshrc
+```
+
+</CodeGroup>
+
+Rechargez avec `source ~/.zshrc` (ou `~/.bashrc` pour Bash).
+
+## Vérifier
+
+Confirmez la connexion avec une demande d'une ligne avant d'ouvrir le CLI :
+
+<CodeGroup>
+
+```bash US / EU
+curl https://bearlab.ai/v1/messages \
+  -H "Authorization: Bearer sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-8",
+    "max_tokens": 64,
+    "messages": [{"role": "user", "content": "ping"}]
+  }'
+```
+
+```bash Asia-Pacific
+curl https://bearlab.space/v1/messages \
+  -H "Authorization: Bearer sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-8",
+    "max_tokens": 64,
+    "messages": [{"role": "user", "content": "ping"}]
+  }'
+```
+
+</CodeGroup>
+
+Une réponse JSON avec un tableau `content` signifie que vous êtes prêt — exécutez `claude`.
+
+<Warning>
+  Définissez `ANTHROPIC_BASE_URL` à la racine du domaine uniquement (pas de suffixe `/v1` ou `/v1/messages`) ; Claude Code ajoute le chemin lui-même. L'ID du modèle doit exister dans la liste [Modèles](/fr/guides/models) et exposer le type de point de terminaison `anthropic`.
+</Warning>

@@ -1,19 +1,106 @@
 ---
-title: "サービス提供地域"
-description: "BearLabが直接サービスする場所、およびアジア太平洋地域がどのように接続するか。"
+title: "サービス可用性"
+description: "BearLab AI のサービス提供地域と、対応する地域別ベース URL。"
 ---
 
-BearLab (bearlab.ai) は、**米国およびヨーロッパ連合**の管轄区域にサービスを直接提供しています。
+BearLab AI は同じゲートウェイを 2 つの地域ベース URL を通じて公開しています。リクエストの発信元に最適なものを選択してから、すべての OpenAI 互換または Anthropic の呼び出しをそのドメインに向けます。
 
-### アジア太平洋
+| 地域 | ベース URL |
+| --- | --- |
+| アメリカ / ヨーロッパ | `https://bearlab.ai` |
+| アジア太平洋 | `https://bearlab.space` |
 
-アジア太平洋地域は**インドの地域パートナー**によってサービスされます。
+<Note>
+2 つの地域は同じ API サーフェス、モデル カタログ、および価格を共有します。ホストのみが変わります — API キー、リクエスト ボディ、モデル ID は両地域で同じままです。
+</Note>
 
-この地域からの API リクエストは、`https://bearlab.ai` の代わりに専用ドメイン `https://bearlab.in` を使用する必要があります。
+## 地域の選択
 
-このリージョンのサービスのポリシーは地域パートナーによって設定され、ユーザーは適用される現地法令への準拠に責任を負います。
+<Steps>
+  <Step title="トラフィックの発信地を特定する">
+    クライアントまたはサーバーに最も近いドメインを使用します。米国/EU のトラフィックは `https://bearlab.ai` を対象にしてください。アジア太平洋地域のクライアントは、レイテンシを削減するために `https://bearlab.space` を対象にしてください。
+  </Step>
+  <Step title="ベース URL を設定する">
+    SDK または HTTP クライアントを設定して、地域別ベース URL と以下のプロトコル パスを使用します。
+  </Step>
+  <Step title="認証">
+    `Authorization` ヘッダーで Bearer トークンとして BearLab AI API キーを送信します。同じ `sk-...` キーは両地域で機能します。
+  </Step>
+</Steps>
 
-| 地域 | API ドメイン | OpenAI | Anthropic |
+## プロトコルごとのベース URL
+
+BearLab AI は 2 つのリクエスト形式に対応しています。追加するパスは、使用する形式によって異なります。
+
+| プロトコル | パス | 米国 / EU | アジア太平洋 |
 | --- | --- | --- | --- |
-| 米国 / EU | `https://bearlab.ai` | `https://bearlab.ai/v1/chat/completions` | `https://bearlab.ai/v1/messages` |
-| アジア太平洋 | `https://bearlab.in` | `https://bearlab.in/v1/chat/completions` | `https://bearlab.in/v1/messages` |
+| OpenAI 互換 | `/v1/chat/completions` | `https://bearlab.ai/v1/chat/completions` | `https://bearlab.space/v1/chat/completions` |
+| Anthropic | `/v1/messages` | `https://bearlab.ai/v1/messages` | `https://bearlab.space/v1/messages` |
+
+OpenAI SDK の場合は、ベース URL を `<domain>/v1` に設定します。Anthropic SDK の場合は、ベース URL を `<domain>` に設定します（SDK は自動的に `/v1/messages` を追加します）。
+
+## クイック例
+
+<CodeGroup>
+
+```bash US / EU (OpenAI-compatible)
+curl https://bearlab.ai/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash Asia-Pacific (OpenAI-compatible)
+curl https://bearlab.space/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash US / EU (Anthropic)
+curl https://bearlab.ai/v1/messages \
+  -H "x-api-key: sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-7",
+    "max_tokens": 1024,
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash Asia-Pacific (Anthropic)
+curl https://bearlab.space/v1/messages \
+  -H "x-api-key: sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-7",
+    "max_tokens": 1024,
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+</CodeGroup>
+
+<Note>
+Anthropic エンドポイントはネイティブ Claude ヘッダー スタイル（`x-api-key` と `anthropic-version`）を受け入れます。両方のプロトコルは、標準の `Authorization: Bearer sk-...` ヘッダーも受け入れます。
+</Note>
+
+## 地域の切り替え
+
+地域間の移行には、ベース URL のホストを変更するだけで済みます。統合内の他のすべてのものは変わりません。
+
+- 同じ API キー（`sk-...`）を保持します。
+- 同じモデル ID を保持します — 完全なカタログについては [Models](/ja/guides/models) を参照してください。
+- 同じリクエスト ボディとレスポンス ボディを保持します。
+
+<Warning>
+可能な限り、クライアントごとに 1 つの地域を使用してください。1 つのアプリケーション内で `bearlab.ai` と `bearlab.space` を混在させるメリットはなく、レイテンシの推論が難しくなります — トラフィックに最も近いホストを選択して使用してください。
+</Warning>

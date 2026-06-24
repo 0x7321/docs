@@ -1,48 +1,96 @@
 ---
 title: "錯誤處理"
-description: "常見 HTTP 狀態碼、含義與排查方法。"
+description: "常見 HTTP 狀態碼、其含義和故障排除方法。"
 ---
 
-介面遵循標準 HTTP 狀態碼，錯誤響應體為 JSON，並帶一個請求 ID 頭（用於排查與[快取路由](/guides/prompt-caching)），通常形如：
+API 使用標準 HTTP 狀態碼。錯誤回應體為 JSON 格式。每個回應還包含 `X-Oneapi-Request-Id` header，網關會將相同的請求 id 嵌入到 `error.message` 中——聯絡支援時請引用它。
+
+## 錯誤回應格式
+
+網關與 OpenAI 相容，因此錯誤使用 OpenAI 錯誤信封格式。`type` 欄位告訴您錯誤的來源（來自網關本身或上游供應商）。
 
 ```json
 {
   "error": {
-    "code": "",
-    "message": "具體錯誤描述（含 request id）",
-    "type": "bearlab_api_error"
+    "message": "model not found (request id: 20260624153012abc...)",
+    "type": "new_api_error",
+    "param": "",
+    "code": "model_not_found"
   }
 }
 ```
 
+| 欄位 | 說明 |
+| --- | --- |
+| `message` | 人類可讀的描述。請求 id 嵌入其中。 |
+| `type` | 錯誤的來源。網關側錯誤使用 `new_api_error`；供應商側錯誤會被傳遞為 `openai_error`、`claude_error`、`gemini_error` 或 `upstream_error`。 |
+| `param` | 有問題的請求參數（如適用）。可能為空。 |
+| `code` | 短錯誤碼（字串）或 `null`。供應商傳遞錯誤保留上游的碼。 |
+
+<Note>
+  當錯誤來自上游模型供應商時（`type` 為 `openai_error` / `claude_error` / `gemini_error` / `upstream_error`），`message` 和 `code` 基本上會原文轉發——按照供應商自己的錯誤方式來讀取它們。
+</Note>
+
 ## 常見狀態碼
 
-| 狀態碼 | 含義 | 常見原因與排查 |
+| 碼 | 含義 | 原因和修復 |
 | --- | --- | --- |
-| `400` | 引數錯誤 | 引數缺失 / 型別錯誤；Anthropic 協議漏填 `max_tokens`。按 `message` 修正。 |
-| `401` | 鑑權失敗 | API Key 未正確設定（金鑰錯誤 / 已刪除，或 `Bearer` 與 `x-api-key` 混用）。 |
-| `403` | 餘額不足或無許可權 | 餘額耗盡；或無權訪問該模型 / 分組。最常見的無許可權是**該模型需要實名認證**。 |
-| `429` | 觸發限速 | RPM / RPD / TPM / TPD 等達上限，見 [速率限制](/guides/rate-limits)；也可能是引數錯誤導致反覆重試觸發。 |
-| `503` / `504` | 系統負載高 | 稍後重試；對話請求可改用流式 `"stream": true`。 |
-| `500` | 服務未知錯誤 | 帶上 request id 聯絡客服排查。 |
+| `400` | 參數錯誤 | 缺少或類型錯誤的參數。在 Anthropic (`/v1/messages`) 下，`max_tokens` 是必需的。根據 `error.message` / `error.param` 進行修復。 |
+| `401` | 認證失敗 | API 密鑰缺失或無效（錯誤/已刪除的密鑰）。檢查 `Authorization: Bearer sk-...` header，以及 OpenAI (`/v1`) 和 Anthropic (`/v1/messages`) 協議是否與您的用戶端匹配。 |
+| `403` | 無權限 | 該密鑰的群組無權存取請求的模型，或模型已被停用。從 [models 端點](/guides/models) 選擇一個模型。 |
+| `404` | 找不到 | 未知路由或未知 `model`。驗證 base_url 路徑和 `model` 是否存在。 |
+| `429` | 速率限制 | 達到 RPM / TPM 限制。退避並重試；參見 [速率限制](/guides/rate-limits)。 |
+| `500` | 上游 / 伺服器錯誤 | 上游供應商或網關失敗。重試；如果持續，請使用請求 id 聯絡支援。 |
+| `503` / `504` | 高負載或逾時 | 上游繁忙或緩慢。稍後重試；對於聊天，最好使用 `"stream": true` 以避免長請求逾時。 |
 
-## 排查清單
+<Note>
+  餘額不足和配額問題通常透過 `error.message`（例如「insufficient quota」）顯示，通常伴隨 `403`。讀取訊息而不是僅依賴狀態碼——供應商傳遞錯誤可能將餘額/配額問題對應到其他碼。
+</Note>
+
+## Base URL 和協議
+
+認證和路由錯誤是 `401` / `404` 最常見的原因。確認您正在訪問正確的區域和協議：
+
+<CodeGroup>
+
+```bash US / EU (bearlab.ai)
+# OpenAI-compatible
+https://bearlab.ai/v1/chat/completions
+# Anthropic
+https://bearlab.ai/v1/messages
+```
+
+```bash Asia-Pacific (bearlab.space)
+# OpenAI-compatible
+https://bearlab.space/v1/chat/completions
+# Anthropic
+https://bearlab.space/v1/messages
+```
+
+</CodeGroup>
+
+所有請求都使用 `Authorization: Bearer sk-...` 進行認證。
+
+## 檢查清單
 
 <Steps>
-  <Step title="先看 error.message">
-    大多數問題描述裡已寫明原因。
+  <Step title="先讀 error.message">
+    大多數問題都在這裡解釋，並且它包含您支援所需的請求 id。
   </Step>
-  <Step title="核對 base_url 與協議">
-    `/v1`（OpenAI）還是 `/v1/messages`（Anthropic），鑑權頭要匹配。
+  <Step title="檢查 error.type">
+    `new_api_error` 表示網關拒絕了請求（認證、模型、配額）。任何其他（`openai_error`、`claude_error`、`gemini_error`、`upstream_error`）都是傳遞的上游供應商錯誤。
   </Step>
-  <Step title="核對模型名">
-    用 [模型介面](/guides/models) 確認 `model` 拼寫存在。
+  <Step title="檢查 base_url 和協議">
+    `/v1`（OpenAI）vs. `/v1/messages`（Anthropic）。美國/歐盟使用 `bearlab.ai`，亞太地區使用 `bearlab.space`。必須有 `Authorization: Bearer` header。
   </Step>
-  <Step title="檢查餘額 / 重試">
-    `403` 即餘額或權限問題；`5xx` / `429` 用指數退避重試，持續失敗再聯絡客服。
+  <Step title="檢查模型名稱">
+    確認 `model` 存在且您的群組有權透過 [models 端點](/guides/models) 存取。
+  </Step>
+  <Step title="重試瞬時錯誤">
+    使用指數退避重試 `5xx` / `429`。如果 `403`/`5xx` 持續，請使用 `X-Oneapi-Request-Id` 聯絡支援。
   </Step>
 </Steps>
 
 <Note>
-  `stream: true` 時，錯誤可能在建立連線後以 SSE 事件返回。客戶端應處理流中途出現的 `error` 事件，而不僅依賴 HTTP 狀態碼。
+  使用 `stream: true` 時，連線開啟後錯誤可能作為 SSE 事件到達（HTTP 狀態已是 `200`）。處理串流中間的 `error` 事件，而不僅是初始 HTTP 狀態。
 </Note>

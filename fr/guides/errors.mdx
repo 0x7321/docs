@@ -1,48 +1,96 @@
 ---
-title: "Error Handling"
+title: "Gestion des erreurs"
 description: "Codes de statut HTTP courants, leur signification et comment dépanner."
 ---
 
-L'API utilise les codes de statut HTTP standard. Les corps d'erreur sont JSON et portent un en-tête request-id (pour le dépannage et [le routage du cache](/fr/guides/prompt-caching)) :
+L'API utilise les codes de statut HTTP standard. Les corps d'erreur sont JSON. Chaque réponse porte également un en-tête `X-Oneapi-Request-Id`, et la passerelle intègre cet ID de requête dans `error.message` — citez-le lorsque vous contactez le support.
+
+## Format de réponse d'erreur
+
+La passerelle est compatible avec OpenAI, donc les erreurs utilisent l'enveloppe d'erreur OpenAI. Le champ `type` vous indique la source de l'erreur (la passerelle elle-même ou un fournisseur en amont).
 
 ```json
 {
   "error": {
-    "code": "",
-    "message": "A description, including the request id",
-    "type": "bearlab_api_error"
+    "message": "model not found (request id: 20260624153012abc...)",
+    "type": "new_api_error",
+    "param": "",
+    "code": "model_not_found"
   }
 }
 ```
+
+| Champ | Notes |
+| --- | --- |
+| `message` | Description lisible par l'homme. L'ID de requête y est intégré. |
+| `type` | Source de l'erreur. Les erreurs du côté de la passerelle utilisent `new_api_error` ; les erreurs du côté du fournisseur sont transmises comme `openai_error`, `claude_error`, `gemini_error` ou `upstream_error`. |
+| `param` | Le paramètre de requête incriminé, le cas échéant. Peut être vide. |
+| `code` | Un code d'erreur court (chaîne) ou `null`. Les erreurs de transmission du fournisseur conservent le code en amont. |
+
+<Note>
+  Lorsque l'erreur provient du fournisseur de modèle en amont (`type` est `openai_error` / `claude_error` / `gemini_error` / `upstream_error`), le `message` et le `code` sont transmis presque textuellement — lisez-les comme vous le feriez avec l'erreur propre du fournisseur.
+</Note>
 
 ## Codes de statut courants
 
 | Code | Signification | Cause et solution |
 | --- | --- | --- |
-| `400` | Mauvais paramètres | Paramètres manquants ou de mauvais type ; `max_tokens` manquant sous Anthropic. Corriger par `message`. |
-| `401` | Auth échouée | Clé API non définie correctement (clé erronée/supprimée, ou Bearer vs x-api-key mal assorti). |
-| `403` | Solde ou permission insuffisant | Solde épuisé ; ou pas d'accès au modèle/groupe. Le problème de permission le plus courant est un modèle qui nécessite une vérification d'identité. |
-| `429` | Limite de débit atteinte | RPM / RPD / TPM / TPD atteint ; voir [Rate Limits](/fr/guides/rate-limits). Peut également être des tentatives répétées à partir de mauvais paramètres. |
-| `503` / `504` | Charge élevée | Réessayez plus tard ; pour le chat, essayez le streaming avec `"stream": true`. |
-| `500` | Erreur serveur inconnue | Contactez le support avec l'ID de requête. |
+| `400` | Mauvais paramètres | Paramètres manquants ou de mauvais type. Sous Anthropic (`/v1/messages`), `max_tokens` est obligatoire. Corrigez selon `error.message` / `error.param`. |
+| `401` | Authentification échouée | Clé API manquante ou invalide (mauvaise/clé supprimée). Vérifiez l'en-tête `Authorization: Bearer sk-...`, et que le protocole OpenAI (`/v1`) vs. Anthropic (`/v1/messages`) correspond à votre client. |
+| `403` | Pas de permission | Le groupe de la clé n'a pas accès au modèle demandé, ou le modèle est désactivé. Choisissez un modèle du [point de terminaison des modèles](/fr/guides/models). |
+| `404` | Non trouvé | Route inconnue ou `model` inconnu. Vérifiez le chemin base_url et que le `model` existe. |
+| `429` | Limite de débit atteinte | Limite RPM / TPM atteinte. Reculez et réessayez ; voir [Limites de débit](/fr/guides/rate-limits). |
+| `500` | Erreur en amont / serveur | Un fournisseur en amont ou la passerelle a échoué. Réessayez ; si cela persiste, contactez le support avec l'ID de requête. |
+| `503` / `504` | Charge élevée ou délai d'attente | En amont occupé ou lent. Réessayez plus tard ; pour le chat, préférez `"stream": true` pour éviter les délais d'attente de requête longs. |
+
+<Note>
+  Les problèmes de solde insuffisant et de quota apparaissent via `error.message` (par exemple « insufficient quota »), généralement avec un `403`. Lisez le message plutôt que de vous fier au code de statut seul — les erreurs de transmission du fournisseur peuvent mapper les problèmes de solde/quota à d'autres codes.
+</Note>
+
+## Base URL et protocole
+
+Les erreurs d'authentification et de routage sont la cause la plus courante de `401` / `404`. Confirmez que vous accédez à la bonne région et au bon protocole :
+
+<CodeGroup>
+
+```bash US / EU (bearlab.ai)
+# OpenAI-compatible
+https://bearlab.ai/v1/chat/completions
+# Anthropic
+https://bearlab.ai/v1/messages
+```
+
+```bash Asia-Pacific (bearlab.space)
+# OpenAI-compatible
+https://bearlab.space/v1/chat/completions
+# Anthropic
+https://bearlab.space/v1/messages
+```
+
+</CodeGroup>
+
+Toutes les requêtes s'authentifient avec `Authorization: Bearer sk-...`.
 
 ## Liste de contrôle
 
 <Steps>
   <Step title="Lire error.message en premier">
-    La plupart des problèmes y sont expliqués.
+    La plupart des problèmes y sont expliqués, et il porte l'ID de requête dont vous avez besoin pour le support.
   </Step>
-  <Step title="Vérifiez base_url et le protocole">
-    `/v1` (OpenAI) vs `/v1/messages` (Anthropic) ; l'en-tête d'auth doit correspondre.
+  <Step title="Vérifier error.type">
+    `new_api_error` signifie que la passerelle a rejeté la requête (auth, modèle, quota). N'importe quoi d'autre (`openai_error`, `claude_error`, `gemini_error`, `upstream_error`) est une erreur de fournisseur en amont transmise.
   </Step>
-  <Step title="Vérifiez le nom du modèle">
-    Confirmez que `model` existe via le [point de terminaison des modèles](/fr/guides/models).
+  <Step title="Vérifier base_url et le protocole">
+    `/v1` (OpenAI) vs. `/v1/messages` (Anthropic). Utilisez `bearlab.ai` pour US/EU et `bearlab.space` pour Asie-Pacifique. L'en-tête `Authorization: Bearer` doit être présent.
   </Step>
-  <Step title="Vérifiez le solde / réessayez">
-    `403` peut être un solde ; réessayez `5xx` / `429` avec backoff exponentiel, puis contactez le support.
+  <Step title="Vérifier le nom du modèle">
+    Confirmez que le `model` existe et que votre groupe y a accès via le [point de terminaison des modèles](/fr/guides/models).
+  </Step>
+  <Step title="Réessayer les erreurs transitoires">
+    Réessayez `5xx` / `429` avec backoff exponentiel. Si un `403`/`5xx` persiste, contactez le support avec le `X-Oneapi-Request-Id`.
   </Step>
 </Steps>
 
 <Note>
-  Avec `stream: true`, les erreurs peuvent arriver sous forme d'événements SSE après l'ouverture de la connexion. Gérez un événement `error` au milieu du stream, pas seulement le statut HTTP.
+  Avec `stream: true`, une erreur peut arriver sous forme d'événement SSE après l'ouverture de la connexion (le statut HTTP est déjà `200`). Gérez un événement `error` au milieu du stream, pas seulement le statut HTTP initial.
 </Note>

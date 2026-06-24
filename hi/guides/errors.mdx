@@ -1,48 +1,96 @@
 ---
-title: "Error Handling"
-description: "Common HTTP status codes, उनका meaning, और troubleshoot कैसे करें।"
+title: "त्रुटि प्रबंधन"
+description: "सामान्य HTTP स्थिति कोड, उनका अर्थ और समस्या निवारण कैसे करें।"
 ---
 
-API standard HTTP status codes का उपयोग करता है। Error bodies JSON हैं और एक request-id header carry करते हैं (troubleshooting और [cache routing](/hi/guides/prompt-caching) के लिए):
+API मानक HTTP स्थिति कोड का उपयोग करता है। त्रुटि प्रतिक्रिया निकाय JSON प्रारूप में हैं। प्रत्येक प्रतिक्रिया में `X-Oneapi-Request-Id` हेडर भी होता है, और गेटवे उसी अनुरोध id को `error.message` में एम्बेड करता है — समर्थन से संपर्क करते समय इसे उद्धृत करें।
+
+## त्रुटि प्रतिक्रिया प्रारूप
+
+गेटवे OpenAI-संगत है, इसलिए त्रुटियां OpenAI त्रुटि लिफाफा का उपयोग करती हैं। `type` फील्ड आपको बताता है कि त्रुटि कहां से आई है (गेटवे स्वयं या अपस्ट्रीम प्रदाता)।
 
 ```json
 {
   "error": {
-    "code": "",
-    "message": "A description, including the request id",
-    "type": "bearlab_api_error"
+    "message": "model not found (request id: 20260624153012abc...)",
+    "type": "new_api_error",
+    "param": "",
+    "code": "model_not_found"
   }
 }
 ```
 
-## Common status codes
+| फील्ड | नोट्स |
+| --- | --- |
+| `message` | मानव-पठनीय विवरण। अनुरोध id इसमें एम्बेड है। |
+| `type` | त्रुटि का स्रोत। गेटवे-पक्ष त्रुटियां `new_api_error` का उपयोग करती हैं; प्रदाता-पक्ष त्रुटियां `openai_error`、`claude_error`、`gemini_error` या `upstream_error` के रूप में पारित होती हैं। |
+| `param` | समस्याग्रस्त अनुरोध पैरामीटर, यदि लागू हो। खाली हो सकता है। |
+| `code` | एक छोटा त्रुटि कोड (स्ट्रिंग) या `null`। प्रदाता पास-थ्रू त्रुटियां अपस्ट्रीम कोड को बनाए रखती हैं। |
 
-| Code | Meaning | Cause और fix |
+<Note>
+  जब त्रुटि अपस्ट्रीम मॉडल प्रदाता से आती है (`type` `openai_error` / `claude_error` / `gemini_error` / `upstream_error` है), `message` और `code` मुख्य रूप से शब्दशः स्थानांतरित होते हैं — उन्हें प्रदाता की अपनी त्रुटि की तरह पढ़ें।
+</Note>
+
+## सामान्य स्थिति कोड
+
+| कोड | अर्थ | कारण और समाधान |
 | --- | --- | --- |
-| `400` | Bad parameters | Missing या wrong-typed parameters; Anthropic के तहत missing `max_tokens`। `message` के अनुसार fix करें। |
-| `401` | Auth failed | API key correctly set नहीं है (wrong/deleted key, या Bearer vs x-api-key mismatch)। |
-| `403` | Insufficient balance या permission | Balance out; या model/group तक कोई access नहीं। सबसे common permission issue एक model है जिसे identity verification की आवश्यकता है। |
-| `429` | Rate limited | RPM / RPD / TPM / TPD reached; [Rate Limits](/hi/guides/rate-limits) देखें। Bad parameters से repeated retries भी हो सकते हैं। |
-| `503` / `504` | High load | बाद में retry करें; chat के लिए, `"stream": true` के साथ streaming try करें। |
-| `500` | Unknown server error | Request id के साथ support को contact करें। |
+| `400` | खराब पैरामीटर | लापता या गलत प्रकार के पैरामीटर। Anthropic (`/v1/messages`) के तहत, `max_tokens` आवश्यक है। `error.message` / `error.param` के अनुसार ठीक करें। |
+| `401` | प्रमाणीकरण विफल | API कुंजी लापता या अमान्य (गलत/हटाई गई कुंजी)। `Authorization: Bearer sk-...` हेडर की जांच करें, और यह सुनिश्चित करें कि OpenAI (`/v1`) बनाम Anthropic (`/v1/messages`) प्रोटोकॉल आपके क्लाइंट से मेल खाता है। |
+| `403` | कोई अनुमति नहीं | कुंजी के समूह को अनुरोधित मॉडल तक पहुंचने की अनुमति नहीं है, या मॉडल अक्षम है। [models endpoint](/hi/guides/models) से एक मॉडल चुनें। |
+| `404` | नहीं मिला | अज्ञात रूट या अज्ञात `model`। base_url पथ और सत्यापित करें कि `model` मौजूद है। |
+| `429` | दर सीमा | RPM / TPM सीमा पहुंच गई। वापस जाएं और पुनः प्रयास करें; [दर सीमाएं](/hi/guides/rate-limits) देखें। |
+| `500` | अपस्ट्रीम / सर्वर त्रुटि | एक अपस्ट्रीम प्रदाता या गेटवे विफल हो गया। पुनः प्रयास करें; यदि यह जारी रहता है, तो अनुरोध id के साथ समर्थन से संपर्क करें। |
+| `503` / `504` | उच्च भार या समय समाप्ति | अपस्ट्रीम व्यस्त या धीमा। बाद में पुनः प्रयास करें; चैट के लिए, लंबी अनुरोध समय समाप्ति से बचने के लिए `"stream": true` को प्राथमिकता दें। |
 
-## Checklist
+<Note>
+  अपर्याप्त शेष और कोटा समस्याएं `error.message` (उदाहरण के लिए "insufficient quota") के माध्यम से सामने आती हैं, आमतौर पर `403` के साथ। केवल स्थिति कोड पर भरोसा न करके संदेश पढ़ें — प्रदाता पास-थ्रू त्रुटियां शेष/कोटा समस्याओं को अन्य कोड में मैप कर सकती हैं।
+</Note>
+
+## Base URL और प्रोटोकॉल
+
+प्रमाणीकरण और रूटिंग त्रुटियां `401` / `404` का सबसे सामान्य कारण हैं। सुनिश्चित करें कि आप सही क्षेत्र और प्रोटोकॉल को हिट कर रहे हैं:
+
+<CodeGroup>
+
+```bash US / EU (bearlab.ai)
+# OpenAI-compatible
+https://bearlab.ai/v1/chat/completions
+# Anthropic
+https://bearlab.ai/v1/messages
+```
+
+```bash Asia-Pacific (bearlab.space)
+# OpenAI-compatible
+https://bearlab.space/v1/chat/completions
+# Anthropic
+https://bearlab.space/v1/messages
+```
+
+</CodeGroup>
+
+सभी अनुरोध `Authorization: Bearer sk-...` के साथ प्रमाणित होते हैं।
+
+## जांच सूची
 
 <Steps>
   <Step title="पहले error.message पढ़ें">
-    अधिकांश issues वहां explained हैं।
+    अधिकांश समस्याएं यहां समझाई जाती हैं, और इसमें आपको समर्थन के लिए आवश्यक अनुरोध id होता है।
   </Step>
-  <Step title="base_url और protocol check करें">
-    `/v1` (OpenAI) vs `/v1/messages` (Anthropic); auth header match करना चाहिए।
+  <Step title="error.type की जांच करें">
+    `new_api_error` का अर्थ है गेटवे ने अनुरोध को अस्वीकार कर दिया (auth, model, quota)। कोई अन्य (`openai_error`, `claude_error`, `gemini_error`, `upstream_error`) एक अपस्ट्रीम प्रदाता त्रुटि है जो पारित की गई है।
   </Step>
-  <Step title="Model name check करें">
-    Confirm करें `model` [models endpoint](/hi/guides/models) के माध्यम से exist करता है।
+  <Step title="base_url और प्रोटोकॉल की जांच करें">
+    `/v1` (OpenAI) बनाम `/v1/messages` (Anthropic)। US/EU के लिए `bearlab.ai` और एशिया-प्रशांत के लिए `bearlab.space` का उपयोग करें। `Authorization: Bearer` हेडर मौजूद होना चाहिए।
   </Step>
-  <Step title="Balance check करें / retry करें">
-    `403` balance हो सकता है; exponential backoff के साथ `5xx` / `429` को retry करें, फिर support को contact करें।
+  <Step title="मॉडल नाम की जांच करें">
+    सुनिश्चित करें कि `model` मौजूद है और आपके समूह के पास [models endpoint](/hi/guides/models) के माध्यम से पहुंच है।
+  </Step>
+  <Step title="क्षणिक त्रुटियों को पुनः प्रयास करें">
+    घातीय बैकऑफ के साथ `5xx` / `429` को पुनः प्रयास करें। यदि `403`/`5xx` जारी रहता है, तो `X-Oneapi-Request-Id` के साथ समर्थन से संपर्क करें।
   </Step>
 </Steps>
 
 <Note>
-  `stream: true` के साथ, errors SSE events के रूप में आ सकते हैं connection खुलने के बाद। एक `error` event को mid-stream में handle करें, केवल HTTP status को नहीं।
+  `stream: true` के साथ, एक त्रुटि कनेक्शन खुलने के बाद SSE event के रूप में आ सकती है (HTTP स्थिति पहले से ही `200` है)। केवल प्रारंभिक HTTP स्थिति नहीं, बल्कि स्ट्रीम के बीच में `error` event को संभालें।
 </Note>

@@ -1,42 +1,100 @@
 ---
 title: "BearLab AI"
-description: "一個 Key，用上所有主流對話模型。OpenAI、Anthropic、Google、DeepSeek 同一個 API 接入。"
+description: "一個密鑰搞定所有頂級對話模型。OpenAI、Anthropic、Google、DeepSeek 等通過單一 API 接入。"
 ---
 
-## 服務區域
+BearLab AI (bearlab.ai) 將來自數十個提供商的對話模型整合到一個 API 中。建立一個密鑰，設定一個 `base_url`，即可呼叫來自 OpenAI、Anthropic、Google、DeepSeek 及其他廠商的最新模型，無需分別向各家廠商註冊和充值。
 
-BearLab AI面向**美國與歐盟**司法管轄區直接提供服務。
+該介面相容於 OpenAI 和 Anthropic 協定，因此現有程式碼通常只需變更一行 `base_url` 就能使用。
 
-| 區域 | API 域名 | OpenAI | Anthropic |
+## 區域 base URL
+
+選擇您所在地區的 base URL，在兩者之間使用相同的 API 密鑰。
+
+| 地區 | API 網域 | OpenAI 相容 | Anthropic 相容 |
 | --- | --- | --- | --- |
-| 美國 / 歐盟 | `https://bearlab.ai` | `https://bearlab.ai/v1/chat/completions` | `https://bearlab.ai/v1/messages` |
-| 亞太區域 | `https://bearlab.in` | `https://bearlab.in/v1/chat/completions` | `https://bearlab.in/v1/messages` |
+| 美國 / 歐洲 | `https://bearlab.ai` | `https://bearlab.ai/v1/chat/completions` | `https://bearlab.ai/v1/messages` |
+| 亞太地區 | `https://bearlab.space` | `https://bearlab.space/v1/chat/completions` | `https://bearlab.space/v1/messages` |
 
-### 亞太區域
+<Note>
+  亞太地區的使用者應使用專用網域 `https://bearlab.space` 而不是 `https://bearlab.ai`。您的 `sk-...` 密鑰在兩個網域上的功能相同。詳見 [服務可用性](/guides/availability)。
+</Note>
 
-亞太區域由**印度區域合作伙伴**提供服務。
+## 兩種協定，一個密鑰
 
-該區域的 API 請求須改用專用網域 `https://bearlab.in`，而非 `https://bearlab.ai`。
+- **OpenAI 相容** — `POST <base_url>/v1/chat/completions`，使用 `Authorization: Bearer sk-...` 進行身份驗證。
+- **Anthropic 相容** — `POST <base_url>/v1/messages`，傳送 `x-api-key: sk-...` 和 `anthropic-version: 2023-06-01`。
 
-該區域服務的相關政策由區域合作伙伴自行制定；亞太區域使用者請自行確保符合所在地的法律法規。
+<Tabs>
+  <Tab title="OpenAI 相容 (美國 / 歐洲)">
+    ```bash
+    curl https://bearlab.ai/v1/chat/completions \
+      -H "Authorization: Bearer sk-..." \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "gpt-5.5",
+        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+      }'
+    ```
+  </Tab>
+  <Tab title="OpenAI 相容 (亞太地區)">
+    ```bash
+    curl https://bearlab.space/v1/chat/completions \
+      -H "Authorization: Bearer sk-..." \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "gpt-5.5",
+        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+      }'
+    ```
+  </Tab>
+  <Tab title="Anthropic 相容 (美國 / 歐洲)">
+    ```bash
+    curl https://bearlab.ai/v1/messages \
+      -H "x-api-key: sk-..." \
+      -H "anthropic-version: 2023-06-01" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "claude-opus-4-7",
+        "max_tokens": 256,
+        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+      }'
+    ```
+  </Tab>
+  <Tab title="Anthropic 相容 (亞太地區)">
+    ```bash
+    curl https://bearlab.space/v1/messages \
+      -H "x-api-key: sk-..." \
+      -H "anthropic-version: 2023-06-01" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "claude-opus-4-7",
+        "max_tokens": 256,
+        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+      }'
+    ```
+  </Tab>
+</Tabs>
 
-詳見 [服務區域](/guides/availability)。
-
-BearLab AI（BearLab.ai）把數十家廠商的對話模型收到一個 API 下。申請一個 Key、配一個 `base_url`，就能調 OpenAI、Anthropic、Google、DeepSeek 的最新對話模型，不用各家分別註冊和充值。
-
-介面同時相容 OpenAI 和 Anthropic 兩套協議，現有程式碼基本不用改。
+## 開始使用
 
 <CardGroup cols={2}>
-  <Card title="快速開始" icon="rocket" href="/guides/quickstart" cta="立即開始">
-    5 分鐘建立金鑰並發出第一個請求。
+  <Card title="快速開始" icon="rocket" href="/guides/quickstart" cta="開始使用">
+    在五分鐘內建立密鑰並發出第一個請求。
   </Card>
-  <Card title="平臺介紹" icon="circle-info" href="/guides/introduction" cta="瞭解平臺">
-    BearLab AI 是什麼、能做什麼。
+  <Card title="介紹" icon="circle-info" href="/guides/introduction" cta="了解更多">
+    認識 BearLab AI 是什麼以及它的功能。
   </Card>
-  <Card title="對話補全" icon="comments" href="/guides/chat" cta="看介面">
-    OpenAI 相容 `/v1` 與 Anthropic 相容 `/v1/messages`，任選其一。
+  <Card title="對話完成" icon="comments" href="/guides/chat" cta="查看 API">
+    OpenAI 相容的 `/v1/chat/completions` 和 Anthropic 相容的 `/v1/messages`。
   </Card>
-  <Card title="客戶端接入" icon="plug" href="/integrations/cursor" cta="去接入">
-    Cursor、Claude Code、Cline、Codex、各類 SDK 即插即用。
+  <Card title="模型" icon="layer-group" href="/guides/models" cta="瀏覽模型">
+    您可以使用單一密鑰呼叫的完整模型目錄。
+  </Card>
+  <Card title="價格" icon="tag" href="/guides/pricing" cta="查看價格">
+    模型比率和計費如何運作。
+  </Card>
+  <Card title="整合" icon="plug" href="/integrations/cursor" cta="連接">
+    Cursor、Claude Code、Cline、Codex 及 SDK，已準備就緒。
   </Card>
 </CardGroup>

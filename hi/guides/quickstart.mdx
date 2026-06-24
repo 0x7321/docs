@@ -1,71 +1,128 @@
 ---
-title: "Quickstart"
-description: "एक key बनाएं और 5 मिनट में अपना पहला request बनाएं।"
+title: "त्वरित शुरुआत"
+description: "5 मिनट में एक कुंजी बनाएं और अपना पहला अनुरोध भेजें।"
 ---
 
-एक model को कॉल करने के लिए तीन steps।
+मॉडल को कॉल करने के लिए तीन चरण: एक कुंजी बनाएं, अपने क्लाइंट को सही बेस URL पर इंगित करें, फिर अपना पहला चैट अनुरोध भेजें।
 
 <Note>
-  Asia-Pacific users: `https://bearlab.ai` के बजाय समर्पित डोमेन `https://bearlab.in` का उपयोग करें। [Service Availability](/hi/guides/availability) देखें।
+  अपने क्षेत्र के लिए बेस URL चुनें। **यूएस / यूई:** `https://bearlab.ai`। **एशिया-प्रशांत:** `https://bearlab.space`। बाकी सब कुछ (कुंजियां, मॉडल, अनुरोध प्रारूप) सभी क्षेत्रों में समान है। [सेवा उपलब्धता](/hi/guides/availability) देखें।
 </Note>
 
 <Steps>
-  <Step title="Sign up और top up करें">
-    [console](https://bearlab.ai) पर register करें और Wallet page पर funds add करें। नए users एक छोटे top-up के साथ test शुरू कर सकते हैं।
+  <Step title="साइन अप करें और शीर्ष अप करें">
+    [कंसोल](https://bearlab.ai) पर रजिस्टर करें और वॉलेट पृष्ठ पर धनराशि जोड़ें। नए उपयोगकर्ता परीक्षण के लिए एक छोटी शीर्ष अप से शुरुआत कर सकते हैं।
   </Step>
-  <Step title="एक API key बनाएं">
-    Dashboard, API Tokens पर जाएं, Add Token पर click करें, और `sk-...` key को copy करें। Key पूरी तरह से केवल एक बार दिखाया जाता है।
+  <Step title="एक API कुंजी बनाएं">
+    डैशबोर्ड पर जाएं, API टोकन, टोकन जोड़ें पर क्लिक करें, और `sk-...` कुंजी को कॉपी करें। कुंजी केवल एक बार पूरी तरह दिखाई जाती है। आप इसे प्रत्येक अनुरोध पर `Authorization: Bearer sk-...` के रूप में पास करते हैं।
   </Step>
-  <Step title="अपना पहला request बनाएं">
-    `YOUR_API_KEY` को अपनी key से replace करें।
+  <Step title="अपना बेस URL सेट करें">
+    अपने क्षेत्र और प्रोटोकॉल से मेल खाने वाला बेस URL उपयोग करें:
+
+    | प्रोटोकॉल | यूएस / यूई | एशिया-प्रशांत |
+    | --- | --- | --- |
+    | OpenAI-संगत | `https://bearlab.ai/v1` | `https://bearlab.space/v1` |
+    | Anthropic | `https://bearlab.ai/v1/messages` | `https://bearlab.space/v1/messages` |
+  </Step>
+  <Step title="अपना पहला अनुरोध करें">
+    नीचे दिया गया उदाहरण भेजें। `sk-...` को अभी बनाई गई कुंजी से बदलें।
   </Step>
 </Steps>
 
 ## उदाहरण
 
-<Tabs>
-  <Tab title="OpenAI-compatible">
-    ```bash
-    curl https://bearlab.ai/v1/chat/completions \
-      -H "Authorization: Bearer YOUR_API_KEY" \
-      -H "Content-Type: application/json" \
-      -d '{
-        "model": "gpt-4o",
-        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
-      }'
-    ```
-  </Tab>
-  <Tab title="Anthropic-compatible">
-    ```bash
-    curl https://bearlab.ai/v1/messages \
-      -H "x-api-key: YOUR_API_KEY" \
-      -H "anthropic-version: 2023-06-01" \
-      -H "Content-Type: application/json" \
-      -d '{
-        "model": "claude-sonnet-4-6",
-        "max_tokens": 256,
-        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
-      }'
-    ```
-  </Tab>
-  <Tab title="Python (OpenAI SDK)">
-    ```python
-    from openai import OpenAI
+OpenAI-संगत एंडपॉइंट `POST /v1/chat/completions` है; Anthropic एंडपॉइंट `POST /v1/messages` है। दोनों `Authorization: Bearer sk-...` के साथ प्रमाणीकृत करते हैं। `model` मान [मॉडल सूची](/hi/guides/models) द्वारा आपकी कुंजी के लिए लौटाया गया कोई एक मान होना चाहिए — नीचे के उदाहरण इस खाते के लिए उपलब्ध मॉडल का उपयोग करते हैं।
 
-    client = OpenAI(
-        api_key="YOUR_API_KEY",
-        base_url="https://bearlab.ai/v1",
-    )
+### OpenAI-संगत
 
-    resp = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[{"role": "user", "content": "Introduce yourself in one sentence"}],
-    )
-    print(resp.choices[0].message.content)
-    ```
-  </Tab>
-</Tabs>
+<CodeGroup>
+```bash US / EU (bearlab.ai)
+curl https://bearlab.ai/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+  }'
+```
+
+```bash Asia-Pacific (bearlab.space)
+curl https://bearlab.space/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+  }'
+```
+</CodeGroup>
+
+### Anthropic
+
+Anthropic एंडपॉइंट `max_tokens` और `anthropic-version` हेडर की अपेक्षा करता है। आप `Authorization: Bearer sk-...` के साथ प्रमाणित कर सकते हैं (गेटवे `x-api-key: sk-...` भी स्वीकार करता है)।
+
+<CodeGroup>
+```bash US / EU (bearlab.ai)
+curl https://bearlab.ai/v1/messages \
+  -H "Authorization: Bearer sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-sonnet-4-6",
+    "max_tokens": 256,
+    "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+  }'
+```
+
+```bash Asia-Pacific (bearlab.space)
+curl https://bearlab.space/v1/messages \
+  -H "Authorization: Bearer sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-sonnet-4-6",
+    "max_tokens": 256,
+    "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+  }'
+```
+</CodeGroup>
+
+### Python (OpenAI SDK)
+
+SDK को अपने क्षेत्र के `/v1` बेस URL पर इंगित करें। SDK स्वचालित रूप से `/chat/completions` को जोड़ता है।
+
+<CodeGroup>
+```python US / EU (bearlab.ai)
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-...",
+    base_url="https://bearlab.ai/v1",
+)
+
+resp = client.chat.completions.create(
+    model="gpt-5.4",
+    messages=[{"role": "user", "content": "Introduce yourself in one sentence"}],
+)
+print(resp.choices[0].message.content)
+```
+
+```python Asia-Pacific (bearlab.space)
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-...",
+    base_url="https://bearlab.space/v1",
+)
+
+resp = client.chat.completions.create(
+    model="gpt-5.4",
+    messages=[{"role": "user", "content": "Introduce yourself in one sentence"}],
+)
+print(resp.choices[0].message.content)
+```
+</CodeGroup>
 
 <Tip>
-  Model list और prices चाहते हैं? [Models & Pricing API](/hi/guides/models) देखें। Cursor या Claude Code को connect कर रहे हैं? [Integrations](/hi/integrations/cursor) देखें।
+  पूरी मॉडल सूची और कीमतें चाहते हैं? [मॉडल और मूल्य निर्धारण API](/hi/guides/models) देखें। Cursor या Claude Code को जोड़ना? [एकीकरण](/hi/integrations/cursor) देखें।
 </Tip>

@@ -1,99 +1,118 @@
 ---
 title: "对话补全"
-description: "对话补全接口的完整说明：请求参数、流式输出、多轮对话与双协议差异。"
+description: "请求参数、流式传输、工具调用与三种兼容协议。"
 ---
 
-对话补全是核心接口。提供 OpenAI、Anthropic、Gemini 三套兼容实现，共用同一密钥。
+对话补全是核心端点，通过三种兼容接口（OpenAI、Anthropic、Gemini）提供，共享一个密钥。
 
 <Note>
-  亚太区域用户:请改用专用域名 `https://bearlab.in`，而非 `https://bearlab.ai`。详见 [服务区域](/zh-my/guides/availability)。
+  BearLab AI 服务两个地区。美国/欧洲用户调用 `https://bearlab.ai`；亚太地区用户调用专用域名 `https://bearlab.space`。两个地区共享相同的密钥和模型目录。见 [服务可用性](/zh-my/guides/availability)。
 </Note>
 
 ## 端点
 
-| 协议 | 方法与路径 |
-| --- | --- |
-| OpenAI 兼容 | `POST https://bearlab.ai/v1/chat/completions` |
-| Anthropic 兼容 | `POST https://bearlab.ai/v1/messages` |
-| Gemini 原生 | `base_url=https://bearlab.ai`，`api_version=v1beta`（Google genai SDK） |
+| 协议 | 方法与路径（美国/欧洲） | 方法与路径（亚太地区） |
+| --- | --- | --- |
+| OpenAI 兼容 | `POST https://bearlab.ai/v1/chat/completions` | `POST https://bearlab.space/v1/chat/completions` |
+| Anthropic 兼容 | `POST https://bearlab.ai/v1/messages` | `POST https://bearlab.space/v1/messages` |
+| Gemini 原生 | `base_url=https://bearlab.ai`, `api_version=v1beta`（Google genai SDK） | `base_url=https://bearlab.space`, `api_version=v1beta` |
+
+使用 API 密钥（`sk-...`）在 `Authorization: Bearer` 标头中验证每个请求。Anthropic 协议另外支持 `x-api-key` 标头。
 
 ## 基本请求
 
 <Tabs>
   <Tab title="OpenAI 兼容">
-    ```bash
-    curl https://bearlab.ai/v1/chat/completions \
-      -H "Authorization: Bearer YOUR_API_KEY" \
-      -H "Content-Type: application/json" \
-      -d '{
-        "model": "gpt-4o",
-        "messages": [
-          {"role": "system", "content": "你是一个简洁的助手。"},
-          {"role": "user", "content": "你好"}
-        ],
-        "temperature": 0.7
-      }'
-    ```
+    <CodeGroup>
+      ```bash 美国/欧洲
+      curl https://bearlab.ai/v1/chat/completions \
+        -H "Authorization: Bearer sk-..." \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "gpt-5.5",
+          "messages": [
+            {"role": "system", "content": "You are a concise assistant."},
+            {"role": "user", "content": "Hello"}
+          ]
+        }'
+      ```
+
+      ```bash 亚太地区
+      curl https://bearlab.space/v1/chat/completions \
+        -H "Authorization: Bearer sk-..." \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "gpt-5.5",
+          "messages": [
+            {"role": "system", "content": "You are a concise assistant."},
+            {"role": "user", "content": "Hello"}
+          ]
+        }'
+      ```
+    </CodeGroup>
   </Tab>
   <Tab title="Anthropic 兼容">
-    ```bash
-    curl https://bearlab.ai/v1/messages \
-      -H "x-api-key: YOUR_API_KEY" \
-      -H "anthropic-version: 2023-06-01" \
-      -H "Content-Type: application/json" \
-      -d '{
-        "model": "claude-sonnet-4-6",
-        "max_tokens": 1024,
-        "system": "你是一个简洁的助手。",
-        "messages": [{"role": "user", "content": "你好"}]
-      }'
-    ```
+    <CodeGroup>
+      ```bash 美国/欧洲
+      curl https://bearlab.ai/v1/messages \
+        -H "Authorization: Bearer sk-..." \
+        -H "anthropic-version: 2023-06-01" \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "claude-sonnet-4-6",
+          "max_tokens": 1024,
+          "system": "You are a concise assistant.",
+          "messages": [{"role": "user", "content": "Hello"}]
+        }'
+      ```
+
+      ```bash 亚太地区
+      curl https://bearlab.space/v1/messages \
+        -H "Authorization: Bearer sk-..." \
+        -H "anthropic-version: 2023-06-01" \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "claude-sonnet-4-6",
+          "max_tokens": 1024,
+          "system": "You are a concise assistant.",
+          "messages": [{"role": "user", "content": "Hello"}]
+        }'
+      ```
+    </CodeGroup>
   </Tab>
 </Tabs>
 
-## 常用参数
+## 常见参数
 
-| 参数 | 说明 |
-| --- | --- |
-| `model` | 模型 ID。可用列表见 [模型与定价接口](/zh-my/guides/models)。 |
-| `messages` | 多轮对话消息数组，按时间顺序排列。 |
-| `temperature` | 采样温度，`0`~`2`，越高越发散。 |
-| `top_p` | 核采样，与 `temperature` 二选一调节即可。 |
-| `max_tokens` | 最大生成 token 数。Anthropic 协议下为**必填**。 |
-| `stream` | 是否流式返回，`true` 时以 SSE 推送。 |
-| `stop` | 停止序列。 |
+| 参数 | 必需 | 说明 |
+| --- | --- | --- |
+| `model` | 是 | 模型 ID。见 [模型与定价 API](/zh-my/guides/models)。 |
+| `messages` | 是 | 有序的对话消息数组。 |
+| `max_tokens` | OpenAI：可选 · Anthropic：**必需** | 最大输出 token 数。 |
+| `temperature` | 否 | 采样温度。OpenAI 范围 `0`-`2`；Anthropic 范围 `0`-`1`。 |
+| `stream` | 否 | 当为 `true` 时通过 SSE 流式传输响应。 |
+| `tools` | 否 | 工具调用的函数/工具定义。 |
 
 <Warning>
-  **协议差异**：OpenAI 协议把 system 提示放进 `messages` 的 `role: system`；Anthropic 协议用顶层 `system` 字段，且 `max_tokens` 必填。
+  协议差异：OpenAI 协议将系统提示词放在 `messages` 中作为 `role: system`，`max_tokens` 为可选。Anthropic 协议使用顶层 `system` 字段且**必需** `max_tokens`。
 </Warning>
 
-## 多轮对话
+## 流式传输
 
-把历史消息按顺序全部放进 `messages` 即可，服务端不保存上下文，每次请求需自带完整历史。
+设置 `stream: true` 通过 Server-Sent Events 接收响应。
 
-```json
-{
-  "model": "gpt-4o",
-  "messages": [
-    {"role": "user", "content": "我叫小明"},
-    {"role": "assistant", "content": "你好，小明！"},
-    {"role": "user", "content": "我叫什么？"}
-  ]
-}
-```
+- **OpenAI 协议** — 增量 `delta` 数据块，以最终 `data: [DONE]` 行结束。
+- **Anthropic 协议** — 类型化 SSE 事件（`message_start`、`content_block_delta`、`message_stop` 等）；没有 `[DONE]` 哨兵。
 
-## 流式输出
-
-设 `stream: true`，响应以 SSE 分块推送，最后以 `data: [DONE]` 结束（OpenAI 协议）。
-
-```python
+<CodeGroup>
+```python 美国/欧洲
 from openai import OpenAI
 
-client = OpenAI(api_key="YOUR_API_KEY", base_url="https://bearlab.ai/v1")
+client = OpenAI(api_key="sk-...", base_url="https://bearlab.ai/v1")
 
 stream = client.chat.completions.create(
-    model="gpt-4o",
-    messages=[{"role": "user", "content": "写一首四行小诗"}],
+    model="gpt-5.5",
+    messages=[{"role": "user", "content": "Write a short poem about spring."}],
     stream=True,
 )
 for chunk in stream:
@@ -102,108 +121,95 @@ for chunk in stream:
         print(delta, end="", flush=True)
 ```
 
-## 响应结构（OpenAI 协议）
+```python 亚太地区
+from openai import OpenAI
 
-```json
-{
-  "id": "chatcmpl-...",
-  "object": "chat.completion",
-  "model": "gpt-4o",
-  "choices": [
-    {
-      "index": 0,
-      "message": {"role": "assistant", "content": "..."},
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": { "prompt_tokens": 23, "completion_tokens": 58, "total_tokens": 81 }
-}
+client = OpenAI(api_key="sk-...", base_url="https://bearlab.space/v1")
+
+stream = client.chat.completions.create(
+    model="gpt-5.5",
+    messages=[{"role": "user", "content": "Write a short poem about spring."}],
+    stream=True,
+)
+for chunk in stream:
+    delta = chunk.choices[0].delta.content
+    if delta:
+        print(delta, end="", flush=True)
 ```
+</CodeGroup>
 
-`usage` 中的 token 数即本次计费依据，详见 [计费与储值](/zh-my/guides/pricing)。
+## 工具调用
 
-## 工具调用（Function Calling）
+OpenAI 和 Anthropic 协议都支持工具调用。
 
-OpenAI 与 Anthropic 协议都支持工具调用。
+```python
+from openai import OpenAI
 
-<Tabs>
-  <Tab title="OpenAI 兼容">
-    ```python
-    from openai import OpenAI
+client = OpenAI(base_url="https://bearlab.ai/v1", api_key="sk-...")
 
-    client = OpenAI(base_url="https://bearlab.ai/v1", api_key="YOUR_API_KEY")
-
-    tools = [{
-        "type": "function",
-        "function": {
-            "name": "get_weather",
-            "description": "Get the current weather for a city",
-            "parameters": {
-                "type": "object",
-                "properties": {"city": {"type": "string"}},
-                "required": ["city"],
-            },
-        },
-    }]
-
-    resp = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[{"role": "user", "content": "What's the weather in London?"}],
-        tools=tools,
-    )
-    print(resp.choices[0].message)
-    ```
-  </Tab>
-  <Tab title="Anthropic 兼容">
-    ```python
-    import anthropic
-
-    client = anthropic.Anthropic(base_url="https://bearlab.ai", api_key="YOUR_API_KEY")
-
-    tools = [{
+tools = [{
+    "type": "function",
+    "function": {
         "name": "get_weather",
         "description": "Get the current weather for a city",
-        "input_schema": {
+        "parameters": {
             "type": "object",
             "properties": {"city": {"type": "string"}},
             "required": ["city"],
         },
-    }]
+    },
+}]
 
-    msg = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=1024,
-        tools=tools,
-        messages=[{"role": "user", "content": "What's the weather in London?"}],
-    )
-    print(msg.content)
-    ```
-  </Tab>
-</Tabs>
+resp = client.chat.completions.create(
+    model="gpt-5.5",
+    messages=[{"role": "user", "content": "What's the weather in London?"}],
+    tools=tools,
+)
+print(resp.choices[0].message)
+```
+
+<Note>
+  亚太地区用户：改为设置 `base_url="https://bearlab.space/v1"`。
+</Note>
 
 ## Gemini 原生协议
 
-Gemini 模型可直接用 Google AI Studio 的原生格式调用，无需转成 OpenAI 格式，适合已在用 `genai` SDK 的项目。
+Gemini 模型可以用原生 Google AI Studio 格式调用，无需转换为 OpenAI 格式。
 
-```python
+<CodeGroup>
+```python 美国/欧洲
 from google import genai
 from google.genai import types
 
 client = genai.Client(
-    api_key="YOUR_API_KEY",
+    api_key="sk-...",
     http_options=types.HttpOptions(api_version="v1beta", base_url="https://bearlab.ai"),
 )
 
-resp = client.models.generate_content(model="gemini-2.5-pro", contents="你好")
+resp = client.models.generate_content(model="gemini-3.1-pro-preview", contents="Hello")
 print(resp.text)
 ```
 
+```python 亚太地区
+from google import genai
+from google.genai import types
+
+client = genai.Client(
+    api_key="sk-...",
+    http_options=types.HttpOptions(api_version="v1beta", base_url="https://bearlab.space"),
+)
+
+resp = client.models.generate_content(model="gemini-3.1-pro-preview", contents="Hello")
+print(resp.text)
+```
+</CodeGroup>
+
 <Warning>
-  1. `base_url` 设为 `https://bearlab.ai`（不带 `/v1beta` 后缀，SDK 会自动追加）
-  2. `api_version` 设为 `v1beta`
-  3. 依赖：Python `pip install google-genai`、Node.js `npm install @google/genai`
+  1. 将 `base_url` 设置为地区根目录（`https://bearlab.ai` 或 `https://bearlab.space`）；不要追加 `/v1beta`，SDK 会自动添加。
+  2. 将 `api_version` 设置为 `v1beta`。
+  3. 安装：Python `pip install google-genai`，Node.js `npm install @google/genai`。
 </Warning>
 
 <Tip>
-  重复的长前缀（固定 system 提示、长文档）可启用 [提示词缓存](/zh-my/guides/prompt-caching)，显著降低重复部分的费用。
+  重复的长前缀（固定系统提示词、长文档）可以使用 [提示词缓存](/zh-my/guides/prompt-caching) 降低重复部分的成本。
 </Tip>

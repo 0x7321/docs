@@ -1,80 +1,117 @@
 ---
-title: "チャット完了"
-description: "リクエストパラメータ、ストリーミング、ツール呼び出し、3つの互換プロトコル。"
+title: "チャット補完"
+description: "リクエストパラメータ、ストリーミング、ツール呼び出し、および3つの互換プロトコル。"
 ---
 
-チャット完了はコアエンドポイントであり、1つのキーを共有する3つの互換インターフェース(OpenAI、Anthropic、Gemini)を通じて提供されます。
+チャット補完はコアエンドポイントで、3つの互換インターフェース（OpenAI、Anthropic、Gemini）を通じて提供され、1つのキーを共有します。
 
 <Note>
-  アジア太平洋ユーザー: `https://bearlab.ai` の代わりに専用ドメイン `https://bearlab.in` を使用してください。[サービス提供地域](/ja/guides/availability)を参照してください。
+  BearLab AI は2つのリージョンをサービスしています。米国/EU ユーザーは `https://bearlab.ai` を呼び出します。アジア太平洋ユーザーは専用ドメイン `https://bearlab.space` を呼び出します。2つのリージョンは同じキーとモデルカタログを共有します。[サービス可用性](/ja/guides/availability) を参照。
 </Note>
 
 ## エンドポイント
 
-| プロトコル | メソッドとパス |
-| --- | --- |
-| OpenAI互換 | `POST https://bearlab.ai/v1/chat/completions` |
-| Anthropic互換 | `POST https://bearlab.ai/v1/messages` |
-| Gemini native | `base_url=https://bearlab.ai`, `api_version=v1beta` (Google genai SDK) |
+| プロトコル | メソッドとパス（米国/EU） | メソッドとパス（アジア太平洋） |
+| --- | --- | --- |
+| OpenAI互換 | `POST https://bearlab.ai/v1/chat/completions` | `POST https://bearlab.space/v1/chat/completions` |
+| Anthropic互換 | `POST https://bearlab.ai/v1/messages` | `POST https://bearlab.space/v1/messages` |
+| Gemini ネイティブ | `base_url=https://bearlab.ai`, `api_version=v1beta`（Google genai SDK） | `base_url=https://bearlab.space`, `api_version=v1beta` |
+
+すべてのリクエストを `Authorization: Bearer` ヘッダー内の API キー（`sk-...`）で認証します。Anthropic プロトコルは `x-api-key` ヘッダーも受け入れます。
 
 ## 基本的なリクエスト
 
 <Tabs>
   <Tab title="OpenAI互換">
-    ```bash
-    curl https://bearlab.ai/v1/chat/completions \
-      -H "Authorization: Bearer YOUR_API_KEY" \
-      -H "Content-Type: application/json" \
-      -d '{
-        "model": "gpt-4o",
-        "messages": [
-          {"role": "system", "content": "You are a concise assistant."},
-          {"role": "user", "content": "Hello"}
-        ]
-      }'
-    ```
+    <CodeGroup>
+      ```bash 米国/EU
+      curl https://bearlab.ai/v1/chat/completions \
+        -H "Authorization: Bearer sk-..." \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "gpt-5.5",
+          "messages": [
+            {"role": "system", "content": "You are a concise assistant."},
+            {"role": "user", "content": "Hello"}
+          ]
+        }'
+      ```
+
+      ```bash アジア太平洋
+      curl https://bearlab.space/v1/chat/completions \
+        -H "Authorization: Bearer sk-..." \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "gpt-5.5",
+          "messages": [
+            {"role": "system", "content": "You are a concise assistant."},
+            {"role": "user", "content": "Hello"}
+          ]
+        }'
+      ```
+    </CodeGroup>
   </Tab>
   <Tab title="Anthropic互換">
-    ```bash
-    curl https://bearlab.ai/v1/messages \
-      -H "x-api-key: YOUR_API_KEY" \
-      -H "anthropic-version: 2023-06-01" \
-      -H "Content-Type: application/json" \
-      -d '{
-        "model": "claude-sonnet-4-6",
-        "max_tokens": 1024,
-        "system": "You are a concise assistant.",
-        "messages": [{"role": "user", "content": "Hello"}]
-      }'
-    ```
+    <CodeGroup>
+      ```bash 米国/EU
+      curl https://bearlab.ai/v1/messages \
+        -H "Authorization: Bearer sk-..." \
+        -H "anthropic-version: 2023-06-01" \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "claude-sonnet-4-6",
+          "max_tokens": 1024,
+          "system": "You are a concise assistant.",
+          "messages": [{"role": "user", "content": "Hello"}]
+        }'
+      ```
+
+      ```bash アジア太平洋
+      curl https://bearlab.space/v1/messages \
+        -H "Authorization: Bearer sk-..." \
+        -H "anthropic-version: 2023-06-01" \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "claude-sonnet-4-6",
+          "max_tokens": 1024,
+          "system": "You are a concise assistant.",
+          "messages": [{"role": "user", "content": "Hello"}]
+        }'
+      ```
+    </CodeGroup>
   </Tab>
 </Tabs>
 
 ## 一般的なパラメータ
 
-| パラメータ | 説明 |
-| --- | --- |
-| `model` | モデルID。[モデル & 価格API](/ja/guides/models)を参照してください。 |
-| `messages` | 会話メッセージの順序付き配列。 |
-| `temperature` | サンプリング温度、`0`-`2`。 |
-| `max_tokens` | 最大出力トークン。**Anthropicプロトコルでは必須です。** |
-| `stream` | `true`の場合、SSEでレスポンスをストリーミングします。 |
+| パラメータ | 必須 | 説明 |
+| --- | --- | --- |
+| `model` | はい | モデル ID。[モデルと価格 API](/ja/guides/models) を参照。 |
+| `messages` | はい | 順序付きの会話メッセージの配列。 |
+| `max_tokens` | OpenAI：オプション · Anthropic：**必須** | 最大出力トークン数。 |
+| `temperature` | いいえ | サンプリング温度。OpenAI の範囲 `0`-`2`、Anthropic の範囲 `0`-`1`。 |
+| `stream` | いいえ | `true` の場合、SSE 経由で応答をストリーミングします。 |
+| `tools` | いいえ | ツール呼び出しのための関数/ツール定義。 |
 
 <Warning>
-  プロトコルの違い: OpenAIプロトコルはシステムプロンプトを`messages`内の`role: system`として置きます。Anthropicプロトコルは最上位の`system`フィールドを使用し、`max_tokens`が必須です。
+  プロトコルの違い：OpenAI プロトコルはシステムプロンプトを `messages` の `role: system` として配置し、`max_tokens` はオプションです。Anthropic プロトコルはトップレベルの `system` フィールドを使用し、`max_tokens` が**必須**です。
 </Warning>
 
 ## ストリーミング
 
-`stream: true`を設定します。レスポンスはSSE経由でプッシュされ、`data: [DONE]` (OpenAIプロトコル)で終了します。
+`stream: true` を設定して、Server-Sent Events 経由で応答を受信します。
 
-```python
+- **OpenAI プロトコル** — 増分 `delta` チャンク、最終 `data: [DONE]` 行で終了。
+- **Anthropic プロトコル** — 型付き SSE イベント（`message_start`、`content_block_delta`、`message_stop` など）；`[DONE]` センチネルなし。
+
+<CodeGroup>
+```python 米国/EU
 from openai import OpenAI
 
-client = OpenAI(api_key="YOUR_API_KEY", base_url="https://bearlab.ai/v1")
+client = OpenAI(api_key="sk-...", base_url="https://bearlab.ai/v1")
 
 stream = client.chat.completions.create(
-    model="gpt-4o",
+    model="gpt-5.5",
     messages=[{"role": "user", "content": "Write a short poem about spring."}],
     stream=True,
 )
@@ -84,14 +121,31 @@ for chunk in stream:
         print(delta, end="", flush=True)
 ```
 
+```python アジア太平洋
+from openai import OpenAI
+
+client = OpenAI(api_key="sk-...", base_url="https://bearlab.space/v1")
+
+stream = client.chat.completions.create(
+    model="gpt-5.5",
+    messages=[{"role": "user", "content": "Write a short poem about spring."}],
+    stream=True,
+)
+for chunk in stream:
+    delta = chunk.choices[0].delta.content
+    if delta:
+        print(delta, end="", flush=True)
+```
+</CodeGroup>
+
 ## ツール呼び出し
 
-OpenAIとAnthropicのプロトコルはどちらもツール呼び出しをサポートしています。
+OpenAI と Anthropic プロトコルの両方がツール呼び出しをサポートしています。
 
 ```python
 from openai import OpenAI
 
-client = OpenAI(base_url="https://bearlab.ai/v1", api_key="YOUR_API_KEY")
+client = OpenAI(base_url="https://bearlab.ai/v1", api_key="sk-...")
 
 tools = [{
     "type": "function",
@@ -107,36 +161,55 @@ tools = [{
 }]
 
 resp = client.chat.completions.create(
-    model="gpt-4o",
+    model="gpt-5.5",
     messages=[{"role": "user", "content": "What's the weather in London?"}],
     tools=tools,
 )
 print(resp.choices[0].message)
 ```
 
-## Gemini native プロトコル
+<Note>
+  アジア太平洋ユーザー：代わりに `base_url="https://bearlab.space/v1"` を設定してください。
+</Note>
 
-Geminiモデルは、OpenAI形式への変換なく、ネイティブのGoogle AI Studio形式で呼び出せます。
+## Gemini ネイティブプロトコル
 
-```python
+Gemini モデルは、OpenAI 形式に変換することなく、ネイティブ Google AI Studio 形式で呼び出すことができます。
+
+<CodeGroup>
+```python 米国/EU
 from google import genai
 from google.genai import types
 
 client = genai.Client(
-    api_key="YOUR_API_KEY",
+    api_key="sk-...",
     http_options=types.HttpOptions(api_version="v1beta", base_url="https://bearlab.ai"),
 )
 
-resp = client.models.generate_content(model="gemini-2.5-pro", contents="Hello")
+resp = client.models.generate_content(model="gemini-3.1-pro-preview", contents="Hello")
 print(resp.text)
 ```
 
+```python アジア太平洋
+from google import genai
+from google.genai import types
+
+client = genai.Client(
+    api_key="sk-...",
+    http_options=types.HttpOptions(api_version="v1beta", base_url="https://bearlab.space"),
+)
+
+resp = client.models.generate_content(model="gemini-3.1-pro-preview", contents="Hello")
+print(resp.text)
+```
+</CodeGroup>
+
 <Warning>
-  1. `base_url`を`https://bearlab.ai`に設定します(`/v1beta`サフィックスなし、SDKが追加します)。
-  2. `api_version`を`v1beta`に設定します。
-  3. インストール: Python `pip install google-genai`, Node.js `npm install @google/genai`。
+  1. `base_url` をリージョンルート（`https://bearlab.ai` または `https://bearlab.space`）に設定します。`/v1beta` を追加しないでください。SDK が追加します。
+  2. `api_version` を `v1beta` に設定します。
+  3. インストール：Python `pip install google-genai`、Node.js `npm install @google/genai`。
 </Warning>
 
 <Tip>
-  長く繰り返されるプレフィックス(固定されたシステムプロンプト、長いドキュメント)は、[プロンプトキャッシング](/ja/guides/prompt-caching)を使用して、繰り返される部分のコストを削減できます。
+  長い繰り返しプレフィックス（固定システムプロンプト、長いドキュメント）は、[プロンプトキャッシング](/ja/guides/prompt-caching) を使用して、繰り返し部分のコストを削減できます。
 </Tip>

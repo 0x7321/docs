@@ -1,46 +1,114 @@
 ---
 title: "परिचय"
-description: "BearLab क्या है और यह क्या करता है।"
+description: "BearLab AI क्या है और इसकी क्षमताएं।"
 ---
 
-> BearLab (BearLab.ai) दर्जनों leading providers के conversational models को एक API के तहत लाता है। OpenAI, Anthropic, Google, और DeepSeek सभी एक single key के साथ accessible हैं।
+> BearLab AI दर्जनों शीर्ष प्रदाताओं के संवादी मॉडलों को एक API के तहत लाता है। OpenAI, Anthropic, Google, DeepSeek और अन्य सभी एक ही कुंजी के साथ सुलभ हैं।
 
-## BearLab क्या है
+## BearLab AI क्या है
 
-BearLab एक conversational-model aggregation platform है। OpenAI, Anthropic, और Google के साथ अलग-अलग registration, top-up, और key management करने के बजाय, आप यहां एक key बनाते हैं, एक `base_url` सेट करते हैं, और उनके नवीनतम conversational models को कॉल करते हैं।
+BearLab AI एक संवादी-मॉडल गेटवे है। OpenAI, Anthropic, Google आदि के साथ अलग-अलग पंजीकरण, शीर्ष-अप और कुंजी प्रबंधन करने के बजाय, आप यहां एक कुंजी बनाते हैं, एक `base_url` की ओर इशारा करते हैं, और उनके नवीनतम संवादी मॉडलों को कॉल करते हैं।
 
-यह interface OpenAI और Anthropic दोनों protocols के साथ compatible है, इसलिए मौजूदा code आमतौर पर endpoint और key को बदलने के बाद काम करता है।
+गेटवे OpenAI और Anthropic दोनों प्रोटोकॉल के साथ संगत है, इसलिए मौजूदा कोड आमतौर पर अंत बिंदु और कुंजी को बदलने के बाद काम करता है — अन्य कोई बदलाव आवश्यक नहीं है।
 
-हम एक काम करते हैं, conversational models, जो interface को सरल, billing को स्पष्ट, और सेवा को स्थिर रखता है।
+हम एक काम करते हैं, संवादी मॉडल, जो इंटरफेस को सरल, बिलिंग को स्पष्ट और सेवा को स्थिर रखता है।
+
+## आधार URLs
+
+आपके सबसे निकट की क्षेत्र चुनें। प्रत्येक क्षेत्र दोनों प्रोटोकॉल के पीछे समान मॉडलों को उजागर करता है।
+
+<Tabs>
+  <Tab title="US / EU">
+    | प्रोटोकॉल | आधार URL |
+    | --- | --- |
+    | OpenAI-संगत | `https://bearlab.ai/v1` |
+    | Anthropic | `https://bearlab.ai/v1/messages` |
+  </Tab>
+  <Tab title="Asia-Pacific">
+    | प्रोटोकॉल | आधार URL |
+    | --- | --- |
+    | OpenAI-संगत | `https://bearlab.space/v1` |
+    | Anthropic | `https://bearlab.space/v1/messages` |
+  </Tab>
+</Tabs>
+
+<Note>
+दोनों क्षेत्र विनिमेय हैं — समान कुंजी दोनों पर काम करती है। नेटवर्क विलंबता के आधार पर चुनें, न कि सुविधा के आधार पर, क्योंकि मॉडल कैटलॉग और प्रोटोकॉल समान हैं।
+</Note>
+
+## प्रमाणीकरण
+
+प्रत्येक अनुरोध `Authorization` हेडर में एक Bearer टोकन के रूप में आपकी API कुंजी को वहन करता है। कुंजियां `sk-` से शुरू होती हैं।
+
+<CodeGroup>
+
+```bash OpenAI-compatible
+curl https://bearlab.ai/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.5",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash Anthropic
+curl https://bearlab.ai/v1/messages \
+  -H "Authorization: Bearer sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-8",
+    "max_tokens": 1024,
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash Asia-Pacific
+curl https://bearlab.space/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.5",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+</CodeGroup>
+
+Anthropic अंत बिंदु को अतिरिक्त रूप से `anthropic-version` हेडर की आवश्यकता है, जो अपस्ट्रीम Anthropic संदेश API से मेल खाता हो।
 
 ## मुख्य क्षमताएं
 
-**हर model के लिए एक key**
-विभिन्न vendors और models एक unified interface के माध्यम से। एक account access के लिए, एक bill spend के लिए, एक जगह usage देखने के लिए।
+**सभी मॉडलों के लिए एक कुंजी**
+एकीकृत इंटरफेस के माध्यम से कई विक्रेताओं और मॉडलों को एक्सेस करें। पहुंच के लिए एक खाता, खर्च के लिए एक बिल, उपयोग देखने के लिए एक जगह।
 
-**OpenAI / Anthropic dual protocol**
-दोनों protocols natively supported हैं। Cursor, Claude Code, Cline, और Codex endpoint सेट करके connect करते हैं, बिना यह परवाह किए कि एक model के पीछे कौन सा vendor है।
+**OpenAI / Anthropic दोहरी प्रोटोकॉल समर्थन**
+दोनों प्रोटोकॉल को मूल रूप से समर्थित किया जाता है। Cursor, Claude Code, Cline और Codex आधार URL और कुंजी सेट करके कनेक्ट करते हैं — आपको इस बात की चिंता नहीं करनी है कि कौन सा विक्रेता एक मॉडल के पीछे है। Anthropic प्रोटोकॉल को उजागर करने वाले मॉडल `openai` और `anthropic` दोनों अंत बिंदुओं के लिए टैग किए गए हैं; अन्य केवल OpenAI हैं।
+
+**व्यापक मॉडल कवरेज**
+मॉडल कैटलॉग GPT (5.x परिवार), Claude (Opus / Sonnet / Haiku), Gemini (3.x), Grok, DeepSeek, GLM, Qwen, Kimi और अन्य संवादी मॉडलों को शामिल करता है। आप जो सटीक सूची देख सकते हैं वह आपकी कुंजी के समूह पर निर्भर करती है।
 
 **स्थिर और उपलब्ध**
-लोकप्रिय models कई providers द्वारा backed हैं। यदि एक fail हो जाता है, requests स्वचालित रूप से दूसरे को fail over कर जाते हैं।
+लोकप्रिय मॉडलों को कई अपस्ट्रीम चैनलों द्वारा समर्थित किया जाता है। यदि कोई विफल हो जाता है, तो अनुरोध स्वचालित रूप से दूसरे पर विफल हो जाते हैं।
 
-**Pay as you go**
-केवल जो आप उपयोग करते हैं उसके लिए भुगतान करें। कोई monthly fee नहीं, कोई minimum top-up नहीं। Prices upstream providers को track करते हैं, और balance real time में visible है।
+**प्रयोग के अनुसार भुगतान करें**
+केवल वही भुगतान करें जो आप उपयोग करते हैं। कोई मासिक शुल्क नहीं, कोई न्यूनतम शीर्ष-अप नहीं। कीमतें अपस्ट्रीम प्रदाताओं को ट्रैक करती हैं, और शेष वास्तविक समय में दिखाई देता है।
 
-**Observable usage**
-हर call अपना request, response, और token consumption record करता है, जिससे troubleshoot करना और cost के लिए account करना आसान हो जाता है।
+**प्रेक्षक्य उपयोग**
+प्रत्येक कॉल अपने अनुरोध, प्रतिक्रिया और टोकन खपत को रिकॉर्ड करता है, जिससे समस्या निवारण और लागत लेखांकन आसान हो जाता है।
 
-## केवल Conversational models
+## केवल संवादी मॉडल
 
-BearLab image, audio, video, music, या embedding models नहीं प्रदान करता है। हम conversational models को स्थिर और complete बनाने पर focus करते हैं। उन अन्य क्षमताओं के लिए, एक dedicated platform का उपयोग करें।
+BearLab AI संवादी मॉडलों पर ध्यान केंद्रित करता है और इसे सामान्य छवि, ऑडियो, वीडियो, संगीत या एम्बेडिंग प्लेटफॉर्म के रूप में स्थान नहीं दिया गया है। लक्ष्य संवादी मॉडलों को स्थिर और पूर्ण रखना है। अन्य क्षमताओं के लिए, एक समर्पित प्लेटफॉर्म का उपयोग करें।
 
 ## अगला
 
 <CardGroup cols={2}>
-  <Card title="Quickstart" icon="rocket" href="/hi/guides/quickstart" cta="शुरू करें">
-    एक key बनाएं और अपना पहला request बनाएं।
+  <Card title="त्वरित शुरुआत" icon="rocket" href="/hi/guides/quickstart" cta="शुरू करें">
+    एक कुंजी बनाएं और अपना पहला अनुरोध करें।
   </Card>
-  <Card title="Chat Completions" icon="comments" href="/hi/guides/chat" cta="API देखें">
-    Parameters, streaming, और protocol differences।
+  <Card title="चैट पूर्ण" icon="comments" href="/hi/guides/chat" cta="API देखें">
+    पैरामीटर, स्ट्रीमिंग और प्रोटोकॉल अंतर।
   </Card>
 </CardGroup>

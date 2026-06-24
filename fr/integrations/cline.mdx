@@ -1,21 +1,39 @@
 ---
 title: "Cline / Roo Code"
-description: "Utilisez BearLab dans les extensions VS Code Cline ou Roo Code."
+description: "Utilisez BearLab AI dans les extensions VS Code Cline ou Roo Code."
 ---
 
-[Cline](https://github.com/cline/cline) et son fork amélioré [Roo Code](https://github.com/RooVetGit/Roo-Code) sont des extensions de codage IA VS Code, connectées via l'interface compatible OpenAI.
+[Cline](https://github.com/cline/cline) et son fork amélioré [Roo Code](https://github.com/RooVetGit/Roo-Code) sont des extensions de codage IA VS Code. Connectez-les à BearLab AI via l'interface compatible OpenAI.
 
 <Steps>
   <Step title="Sélectionnez le fournisseur">
     Dans les paramètres de l'extension, définissez API Provider sur **OpenAI Compatible**.
   </Step>
   <Step title="Remplissez les détails de connexion">
-    - **Base URL**: `https://bearlab.ai/v1`
-    - **API Key**: votre clé `sk-...`
-    - **Model ID**: par ex. `claude-sonnet-4-6` ou `gpt-4o`
+    - **Base URL** : utilisez le point de terminaison de votre région
+
+      <Tabs>
+        <Tab title="US / EU">
+          ```
+          https://bearlab.ai/v1
+          ```
+        </Tab>
+        <Tab title="Asia-Pacific">
+          ```
+          https://bearlab.space/v1
+          ```
+        </Tab>
+      </Tabs>
+
+    - **API Key** : votre clé `sk-...`
+    - **Model ID** : un ID de modèle exact du [point de terminaison des modèles](/fr/guides/models), par ex. `claude-sonnet-4-6`, `gpt-5.4` ou `deepseek-v4-pro`
   </Step>
 </Steps>
 
 <Note>
-  Choisissez **OpenAI Compatible**, pas Anthropic, avec une URL de base `/v1`. L'ID du modèle doit exister dans le [point de terminaison des modèles](/fr/guides/models).
+  Choisissez **OpenAI Compatible**, pas Anthropic, et conservez le suffixe `/v1` sur l'URL de base. Cline appelle `POST /v1/chat/completions` avec votre clé dans l'en-tête `Authorization: Bearer sk-...`.
 </Note>
+
+<Warning>
+  L'**ID du modèle** doit correspondre exactement à un id renvoyé par le [point de terminaison des modèles](/fr/guides/models). Les noms comme `gpt-4o` qui ne figurent pas dans cette liste ne sont pas des IDs de modèle valides et les demandes seront rejetées.
+</Warning>

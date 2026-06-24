@@ -1,47 +1,83 @@
 ---
 title: "OpenAI Codex CLI"
-description: "Utilisez BearLab AI dans le Codex CLI d'OpenAI."
+description: "Utilisez BearLab AI dans Codex CLI d'OpenAI."
 ---
 
-[Codex CLI](https://github.com/openai/codex) est l'agent de codage officiel en ligne de commande d'OpenAI, connecté via un fournisseur personnalisé.
+[Codex CLI](https://github.com/openai/codex) est l'agent de codage en ligne de commande officiel d'OpenAI. Vous pouvez le connecter à BearLab AI en ajoutant un fournisseur personnalisé qui pointe vers la passerelle BearLab AI.
 
 <Warning>
-  Codex utilise l'**API Responses** d'OpenAI (`wire_api = "responses"`), un protocole propriétaire OpenAI qui **fonctionne uniquement avec les modèles OpenAI** (`gpt-*` / `o*`). Les modèles Claude, Gemini et autres ne peuvent pas être utilisés via Codex — pour Claude, utilisez [Claude Code](/fr/integrations/claude-code), [Cursor](/fr/integrations/cursor) ou [Cline](/fr/integrations/cline).
+  Codex utilise l'**API Responses** d'OpenAI (`wire_api = "responses"`), un protocole propriétaire d'OpenAI qui **ne fonctionne qu'avec les modèles de la famille OpenAI** (`gpt-*` / `gpt-oss-*`). Claude, Gemini, GLM et autres modèles non-OpenAI ne peuvent pas être pilotés via Codex — utilisez plutôt [Claude Code](/fr/guides/claude-code), [Cursor](/fr/guides/cursor) ou [Cline](/fr/guides/cline).
 </Warning>
+
+## URLs de base
+
+Codex communique avec le point de terminaison compatible OpenAI, donc `base_url` se termine par `/v1`. Sélectionnez la région la plus proche de vous :
+
+| Région | `base_url` |
+| --- | --- |
+| États-Unis / Europe | `https://bearlab.ai/v1` |
+| Asie-Pacifique | `https://bearlab.space/v1` |
 
 ## Modèles recommandés
 
-| Modèle | ID | Idéal pour |
+Utilisez un ID de modèle de la famille OpenAI exactement comme il apparaît dans votre [liste de modèles](/fr/guides/models). Les ID de la famille OpenAI disponibles incluent :
+
+| Modèle | ID | Meilleur pour |
 | --- | --- | --- |
-| GPT-5.5 | `gpt-5.5` | Dernier modèle généraliste, défaut actuel de Codex |
-| GPT-5.2-Codex | `gpt-5.2-codex` | Optimisé Codex pour le codage, idéal en workflow clé API |
+| GPT-5.5 | `gpt-5.5` | Dernier modèle général, choix par défaut puissant pour Codex |
+| GPT-5.4 | `gpt-5.4` | Qualité et vitesse équilibrées |
 | GPT-5.4-mini | `gpt-5.4-mini` | Léger et rapide, sous-tâches et éditions interactives |
+| GPT-5.2 | `gpt-5.2` | Cheval de bataille fiable pour les changements quotidiens |
+| GPT-5 | `gpt-5` | Base stable, large compatibilité |
+
+<Note>
+  Les ID de modèle sont sensibles à la casse et doivent correspondre exactement au [point de terminaison des modèles](/fr/guides/models). Exécutez une liste rapide pour confirmer ce que votre clé peut voir avant de configurer Codex.
+</Note>
 
 ## Configuration
 
-Modifiez `~/.codex/config.toml` et ajoutez un fournisseur pointant vers BearLab :
+Modifiez `~/.codex/config.toml` et ajoutez un fournisseur pointant vers BearLab AI.
 
-```toml
-model = "gpt-5.5"
-model_provider = "bearlab"
+<Tabs>
+  <Tab title="États-Unis / Europe">
+    ```toml
+    model = "gpt-5.5"
+    model_provider = "bearlab"
 
-# Les fournisseurs tiers doivent désactiver le stockage des réponses
-disable_response_storage = true
+    # Third-party providers must disable response storage
+    disable_response_storage = true
 
-[model_providers.bearlab]
-name = "BearLab AI"
-base_url = "https://bearlab.ai/v1"
-env_key = "BEARLAB_API_KEY"
-wire_api = "responses"
-```
+    [model_providers.bearlab]
+    name = "BearLab AI"
+    base_url = "https://bearlab.ai/v1"
+    env_key = "BEARLAB_API_KEY"
+    wire_api = "responses"
+    ```
+  </Tab>
+  <Tab title="Asie-Pacifique">
+    ```toml
+    model = "gpt-5.5"
+    model_provider = "bearlab"
 
-Exportez la clé et exécutez :
+    # Third-party providers must disable response storage
+    disable_response_storage = true
+
+    [model_providers.bearlab]
+    name = "BearLab AI"
+    base_url = "https://bearlab.space/v1"
+    env_key = "BEARLAB_API_KEY"
+    wire_api = "responses"
+    ```
+  </Tab>
+</Tabs>
+
+Exportez votre clé API et exécutez :
 
 ```bash
-export BEARLAB_API_KEY="YOUR_API_KEY"
+export BEARLAB_API_KEY="sk-..."
 codex
 ```
 
 <Note>
-  Utilisez l'adresse compatible OpenAI se terminant par `/v1`. `wire_api = "responses"` et `disable_response_storage = true` sont requis pour un fournisseur tiers au format OpenAI. `model` doit être un ID de la famille OpenAI existant dans le [point de terminaison des modèles](/fr/guides/models).
+  Utilisez l'adresse compatible OpenAI se terminant par `/v1`. `wire_api = "responses"` et `disable_response_storage = true` sont requis pour un fournisseur de format OpenAI tiers. L'authentification est une clé Bearer (`sk-...`) que Codex envoie dans l'en-tête `Authorization` via `env_key`. `model` doit être un ID de la famille OpenAI qui existe dans votre [liste de modèles](/fr/guides/models).
 </Note>

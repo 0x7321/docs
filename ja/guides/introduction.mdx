@@ -1,46 +1,114 @@
 ---
 title: "はじめに"
-description: "BearLabとは何か、何ができるかについて。"
+description: "BearLab AIとは何か、およびその機能。"
 ---
 
-> BearLab (BearLab.ai) は、数十の主要プロバイダーの会話型モデルを1つのAPIで統合します。OpenAI、Anthropic、Google、DeepSeekはすべて1つのキーで利用できます。
+> BearLab AIは、数十の主要プロバイダーの会話型モデルを1つのAPIで統合します。OpenAI、Anthropic、Google、DeepSeekはすべて1つのキーでアクセスできます。
 
-## BearLabとは
+## BearLab AIとは
 
-BearLabは会話型モデルの集約プラットフォームです。OpenAI、Anthropic、Googleのそれぞれでキーを登録、入金、管理する代わりに、ここで1つのキーを作成し、1つの`base_url`を設定して、最新の会話型モデルを呼び出すことができます。
+BearLab AIは会話型モデルゲートウェイです。OpenAI、Anthropic、Googleなどで個別にキーを登録、充金、管理する代わりに、ここで1つのキーを作成し、1つの`base_url`を指定して、それらの最新の会話型モデルを呼び出すことができます。
 
-インターフェースはOpenAIおよびAnthropicのプロトコルの両方に対応しているため、既存のコードはエンドポイントとキーを変更した後、通常は動作します。
+このゲートウェイはOpenAIおよびAnthropicプロトコルの両方に対応しているため、既存のコードはエンドポイントとキーを変更した後、通常は動作します。変更は不要です。
 
-私たちは会話型モデルという1つのことに専念しているため、インターフェースはシンプル、課金は明確、サービスは安定しています。
+会話型モデルというひとつのことに専念しているため、インターフェースはシンプル、課金は明確、サービスは安定しています。
+
+## ベースURL
+
+最も近いリージョンを選択します。各リージョンは両方のプロトコルの背後に同じモデルを公開しています。
+
+<Tabs>
+  <Tab title="US / EU">
+    | プロトコル | ベースURL |
+    | --- | --- |
+    | OpenAI互換 | `https://bearlab.ai/v1` |
+    | Anthropic | `https://bearlab.ai/v1/messages` |
+  </Tab>
+  <Tab title="Asia-Pacific">
+    | プロトコル | ベースURL |
+    | --- | --- |
+    | OpenAI互換 | `https://bearlab.space/v1` |
+    | Anthropic | `https://bearlab.space/v1/messages` |
+  </Tab>
+</Tabs>
+
+<Note>
+2つのリージョンは交換可能です——同じキーは両方のリージョンで機能します。リージョンを選択する際は、機能ではなくネットワーク遅延を基準にしてください。モデルカタログとプロトコルは同じです。
+</Note>
+
+## 認証
+
+すべてのリクエストは`Authorization`ヘッダーにBearer tokenとしてAPIキーを含みます。キーは`sk-`で始まります。
+
+<CodeGroup>
+
+```bash OpenAI-compatible
+curl https://bearlab.ai/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.5",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash Anthropic
+curl https://bearlab.ai/v1/messages \
+  -H "Authorization: Bearer sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-8",
+    "max_tokens": 1024,
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash Asia-Pacific
+curl https://bearlab.space/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.5",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+</CodeGroup>
+
+Anthropicエンドポイントはさらに`anthropic-version`ヘッダーを必要とし、アップストリームのAnthropicメッセージAPIと一致する必要があります。
 
 ## 主な機能
 
 **すべてのモデルに対応する1つのキー**
-異なるベンダーやモデルを統一されたインターフェースで利用できます。アクセスのための1つのアカウント、支出のための1つの請求書、使用状況を確認する1つの場所。
+統一されたインターフェースを通じて複数のベンダーとモデルにアクセスします。アクセスのための1つのアカウント、支出のための1つの請求書、使用状況を確認する1つの場所。
 
-**OpenAI / Anthropic デュアルプロトコル**
-両方のプロトコルがネイティブに対応しています。Cursor、Claude Code、Cline、Codexは、エンドポイントを設定するだけで接続でき、背後にどのベンダーがいるかを気にする必要はありません。
+**OpenAI / Anthropic デュアルプロトコルサポート**
+両方のプロトコルがネイティブにサポートされています。Cursor、Claude Code、Cline、CodexはベースURLとキーを設定するだけで接続でき、モデルの背後にどのベンダーがいるかを気にする必要はありません。Anthropicプロトコルを公開するモデルは`openai`と`anthropic`エンドポイント両方にタグされています。その他のモデルはOpenAIのみです。
 
-**安定して利用可能**
-人気のあるモデルは複数のプロバイダーによって支援されています。1つが失敗した場合、リクエストは自動的に別のプロバイダーにフェイルオーバーします。
+**広範なモデルカバレッジ**
+モデルカタログはGPT（5.xファミリー）、Claude（Opus / Sonnet / Haiku）、Gemini（3.x）、Grok、DeepSeek、GLM、Qwen、Kimi、その他の会話型モデルをカバーしています。あなたが見られる正確なリストはあなたのキーのグループに依存します。
+
+**安定で利用可能**
+人気のあるモデルは複数のアップストリームチャネルによってサポートされています。1つが失敗した場合、リクエストは自動的に別のモデルにフェイルオーバーします。
 
 **従量課金**
-使用した分だけ支払います。月額料金なし、最小入金額なし。価格はアップストリームプロバイダーに追従し、残高はリアルタイムで表示されます。
+使用した分だけ支払います。月額料金なし、最小チャージなし。価格はアップストリームプロバイダーに追従し、残高はリアルタイムで表示されます。
 
-**利用状況の可視化**
-すべての呼び出しはリクエスト、レスポンス、トークン消費を記録するため、トラブルシューティングとコスト計算が簡単です。
+**利用可能な使用状況**
+すべての呼び出しはリクエスト、レスポンス、トークン消費を記録し、トラブルシューティングとコスト会計が簡単になります。
 
 ## 会話型モデルのみ
 
-BearLabは画像、音声、ビデオ、音楽、または埋め込みモデルを提供していません。私たちは会話型モデルを安定かつ完全にすることに焦点を当てています。その他の機能については、専用プラットフォームを使用してください。
+BearLab AIは会話型モデルに焦点を当てており、一般的な画像、音声、ビデオ、音楽、埋め込みプラットフォームとしては位置付けられていません。目標は会話型モデルを安定かつ完全に保つことです。その他の機能については、専門プラットフォームを使用してください。
 
 ## 次のステップ
 
 <CardGroup cols={2}>
   <Card title="クイックスタート" icon="rocket" href="/ja/guides/quickstart" cta="始める">
-    キーを作成し、最初のリクエストを行います。
+    キーを作成し、最初のリクエストを実行します。
   </Card>
-  <Card title="チャット完了" icon="comments" href="/ja/guides/chat" cta="APIを見る">
-    パラメータ、ストリーミング、プロトコルの違い。
+  <Card title="チャット補完" icon="comments" href="/ja/guides/chat" cta="APIを見る">
+    パラメータ、ストリーミング、プロトコル差。
   </Card>
 </CardGroup>

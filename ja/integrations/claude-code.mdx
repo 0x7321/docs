@@ -1,47 +1,134 @@
 ---
 title: "Claude Code"
-description: "AnthropicのClaude Code CLIでBearLab AIを使用します。"
+description: "Anthropic の公式 Claude Code CLI で BearLab AI を使用します。"
 ---
 
-[Claude Code](https://docs.anthropic.com/ja/docs/claude-code/overview) はAnthropicの公式AIコーディングCLIで、Anthropicプロトコルをネイティブに使用して接続します。
+[Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview) は Anthropic の公式 AI コーディング CLI です。ネイティブな Anthropic Messages プロトコル（`POST /v1/messages`）を採用しているため、その base URL を私たちのゲートウェイに指定するだけで、BearLab AI に接続できます。
 
-## サポートモデル
+## Base URL
 
-| モデル | ID | 用途 |
+BearLab AI はドメインルートから Anthropic プロトコルを提供します — Claude Code はそれ自体で `/v1/messages` を追加するため、パス サフィックスを**追加しないでください**。
+
+<CodeGroup>
+
+```bash US / EU
+export ANTHROPIC_BASE_URL="https://bearlab.ai"
+```
+
+```bash Asia-Pacific
+export ANTHROPIC_BASE_URL="https://bearlab.space"
+```
+
+</CodeGroup>
+
+あなたに最も近い地域を選択してください。両方とも同じ API を提供し、同じキーを受け入れます。
+
+## サポートされているモデル
+
+Claude Code は Anthropic エンドポイントと通信するため、`anthropic` エンドポイント タイプを公開するモデルを使用してください。これらの ID はゲートウェイでライブです：
+
+| モデル | ID | 最適用途 |
 | --- | --- | --- |
-| Claude Opus 4.8 | `claude-opus-4-8` | 最高推論、複雑なアーキテクチャ |
-| Claude Sonnet 4.6 | `claude-sonnet-4-6` | バランス性能、日常開発向け |
-| Claude Haiku 4.5 | `claude-haiku-4-5` | 最速、軽量補完・クイック応答 |
+| Claude Opus 4.8 | `claude-opus-4-8` | 最強の推論、複雑なアーキテクチャ |
+| Claude Opus 4.7 | `claude-opus-4-7` | ハイエンド推論、大規模リファクタリング |
+| Claude Sonnet 4.6 | `claude-sonnet-4-6` | バランスの取れたパフォーマンス、日常的なコーディング |
+| Claude Haiku 4.5 | `claude-haiku-4-5` | 最速、軽量な補完 |
+
+<Note>
+  モデルの利用可能性は、API キーに添付されたグループによって異なります。[モデル](/ja/guides/models) ページの完全なライブ リストを参照してください。エンドポイント タイプに `anthropic` が含まれるモデルはすべて Claude Code で機能します。
+</Note>
 
 ## 設定
 
-環境変数をプラットフォームエンドポイントに向けます:
+base URL と API キーを設定してから起動します：
 
-```bash
+<CodeGroup>
+
+```bash US / EU
 export ANTHROPIC_BASE_URL="https://bearlab.ai"
-export ANTHROPIC_API_KEY="YOUR_API_KEY"
+export ANTHROPIC_API_KEY="sk-..."
 
 claude
 ```
 
-`ANTHROPIC_API_KEY` と `ANTHROPIC_AUTH_TOKEN` はどちらも認識され、完全に同等です。どちらでも使用できます。
+```bash Asia-Pacific
+export ANTHROPIC_BASE_URL="https://bearlab.space"
+export ANTHROPIC_API_KEY="sk-..."
 
-## モデルを指定する（オプション）
-
-```bash
-export ANTHROPIC_MODEL="claude-sonnet-4-6"           # メインモデルをオーバーライド
-export ANTHROPIC_SMALL_FAST_MODEL="claude-haiku-4-5" # 内部高速サブタスク用モデルをオーバーライド
+claude
 ```
 
-設定しない場合、Claude Code は自身のデフォルトモデル選択ロジックを使用します。
+</CodeGroup>
+
+<Note>
+  `ANTHROPIC_API_KEY` と `ANTHROPIC_AUTH_TOKEN` の両方が認識され、等価です — どちらか一方を設定してください。キーは `Authorization` ヘッダーの Bearer トークンとして送信されます。
+</Note>
+
+## モデルのオーバーライド（オプション）
+
+Claude Code を強制的に特定のモデルに ルーティングします（内置デフォルト値の代わり）：
+
+```bash
+export ANTHROPIC_MODEL="claude-opus-4-8"            # メインモデル
+export ANTHROPIC_SMALL_FAST_MODEL="claude-haiku-4-5" # 高速サブタスク モデル
+```
+
+設定されていない場合、Claude Code は独自のデフォルト モデル選択を使用します。
 
 ## 永続化
 
-```bash
+`export` をシェル プロファイルに追加して、すべての新しいセッションが設定されるようにします。地域の base URL を選択してください：
+
+<CodeGroup>
+
+```bash US / EU
 echo 'export ANTHROPIC_BASE_URL="https://bearlab.ai"' >> ~/.zshrc
-echo 'export ANTHROPIC_API_KEY="YOUR_API_KEY"' >> ~/.zshrc
+echo 'export ANTHROPIC_API_KEY="sk-..."' >> ~/.zshrc
 ```
 
-<Note>
-  `ANTHROPIC_BASE_URL` にはプラットフォームのルートドメインを設定します（`/v1` は不要）。モデルIDは[modelsエンドポイント](/ja/guides/models)に存在するものを使用してください。
-</Note>
+```bash Asia-Pacific
+echo 'export ANTHROPIC_BASE_URL="https://bearlab.space"' >> ~/.zshrc
+echo 'export ANTHROPIC_API_KEY="sk-..."' >> ~/.zshrc
+```
+
+</CodeGroup>
+
+`source ~/.zshrc`（Bash の場合は `~/.bashrc`）で再度読み込みます。
+
+## 検証
+
+CLI を起動する前に、1 行のリクエストで接続を確認してください：
+
+<CodeGroup>
+
+```bash US / EU
+curl https://bearlab.ai/v1/messages \
+  -H "Authorization: Bearer sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-8",
+    "max_tokens": 64,
+    "messages": [{"role": "user", "content": "ping"}]
+  }'
+```
+
+```bash Asia-Pacific
+curl https://bearlab.space/v1/messages \
+  -H "Authorization: Bearer sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-8",
+    "max_tokens": 64,
+    "messages": [{"role": "user", "content": "ping"}]
+  }'
+```
+
+</CodeGroup>
+
+`content` 配列を含む JSON レスポンスは準備ができていることを示します — `claude` を実行してください。
+
+<Warning>
+  `ANTHROPIC_BASE_URL` をドメイン ルートのみに設定してください（`/v1` または `/v1/messages` サフィックスなし）。Claude Code はパスを追加します。モデル ID は [モデル](/ja/guides/models) リストに存在し、`anthropic` エンドポイント タイプを公開する必要があります。
+</Warning>

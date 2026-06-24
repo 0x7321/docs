@@ -1,48 +1,96 @@
 ---
 title: "エラーハンドリング"
-description: "一般的なHTTPステータスコード、その意味、トラブルシューティング方法。"
+description: "一般的なHTTPステータスコード、その意味とトラブルシューティング方法。"
 ---
 
-APIは標準的なHTTPステータスコードを使用します。エラー本文はJSONであり、リクエストIDヘッダー([キャッシュルーティング](/ja/guides/prompt-caching)のためのトラブルシューティング)を含みます。
+APIは標準的なHTTPステータスコードを使用します。エラーレスポンスボディはJSON形式です。すべてのレスポンスには `X-Oneapi-Request-Id` ヘッダが含まれ、ゲートウェイは同じリクエストIDを `error.message` に埋め込みます——サポートに連絡するときはそれを引用してください。
+
+## エラーレスポンス形式
+
+ゲートウェイはOpenAI互換であるため、エラーはOpenAIのエラーエンベロープを使用します。`type` フィールドはエラーの出所（ゲートウェイ自体またはアップストリームプロバイダ）を示します。
 
 ```json
 {
   "error": {
-    "code": "",
-    "message": "A description, including the request id",
-    "type": "bearlab_api_error"
+    "message": "model not found (request id: 20260624153012abc...)",
+    "type": "new_api_error",
+    "param": "",
+    "code": "model_not_found"
   }
 }
 ```
+
+| フィールド | 説明 |
+| --- | --- |
+| `message` | 人間が読める説明。リクエストIDが埋め込まれています。 |
+| `type` | エラーの出所。ゲートウェイ側のエラーは `new_api_error` を使用します。プロバイダ側のエラーは `openai_error`、`claude_error`、`gemini_error`、または `upstream_error` として渡されます。 |
+| `param` | 問題のあるリクエストパラメータ（該当する場合）。空の場合があります。 |
+| `code` | 短いエラーコード（文字列）または `null`。プロバイダパススルーエラーはアップストリームコードを保持します。 |
+
+<Note>
+  エラーがアップストリームモデルプロバイダから来ている場合（`type` が `openai_error` / `claude_error` / `gemini_error` / `upstream_error`）、`message` と `code` は基本的にそのまま転送されます——プロバイダ自身のエラーのようにそれらを読んでください。
+</Note>
 
 ## 一般的なステータスコード
 
 | コード | 意味 | 原因と修正 |
 | --- | --- | --- |
-| `400` | 不正なパラメータ | 不正なまたは間違ったタイプのパラメータ; Anthropicで`max_tokens`が不正です。`message`に従い修正してください。 |
-| `401` | 認証失敗 | APIキーが正しく設定されていません(間違った/削除されたキー、またはBearerとX-api-keyの不一致)。 |
-| `403` | 残高不足またはアクセス権限なし | 残高不足; またはモデル/グループへのアクセスがありません。最も一般的な権限の問題は、本人確認が必要なモデルです。 |
-| `429` | レート制限 | RPM / RPD / TPM / TPDに達しました。[レート制限](/ja/guides/rate-limits)を参照してください。不正なパラメータからの繰り返される再試行の場合もあります。 |
-| `503` / `504` | 高負荷 | 後で再試行してください。チャットの場合は、`"stream": true`でストリーミングを試みてください。 |
-| `500` | 不明なサーバーエラー | リクエストIDを記載してサポートにお問い合わせください。 |
+| `400` | 不正なパラメータ | パラメータが不正またはタイプが間違っています。Anthropic (`/v1/messages`) では、`max_tokens` が必須です。`error.message` / `error.param` に従って修正してください。 |
+| `401` | 認証失敗 | APIキーが指定されていないか無効です（間違った/削除されたキー）。`Authorization: Bearer sk-...` ヘッダを確認し、OpenAI (`/v1`) とAnthropicプロトコル (`/v1/messages`) がクライアントと一致しているか確認してください。 |
+| `403` | 権限がありません | キーのグループがリクエストされたモデルにアクセスする権限がないか、モデルが無効になっています。[modelsエンドポイント](/ja/guides/models) からモデルを選択してください。 |
+| `404` | 見つかりません | 不明なルートまたは不明な `model`。base_urlパスと `model` が存在するか確認してください。 |
+| `429` | レート制限 | RPM / TPM制限に達しました。バックオフして再試行してください。[レート制限](/ja/guides/rate-limits) を参照してください。 |
+| `500` | アップストリーム/サーバーエラー | アップストリームプロバイダまたはゲートウェイが失敗しました。再試行してください。持続する場合は、リクエストIDを指定してサポートに連絡してください。 |
+| `503` / `504` | 高負荷またはタイムアウト | アップストリームが忙しいまたは遅い。後で再試行してください。チャットの場合は、長いリクエストタイムアウトを避けるために `"stream": true` を優先してください。 |
+
+<Note>
+  残高不足と配額の問題は `error.message`（例：「insufficient quota」）を通じて表示され、通常は `403` に伴います。ステータスコードだけに頼らずにメッセージを読んでください——プロバイダパススルーエラーは残高/配額の問題を他のコードにマップできます。
+</Note>
+
+## Base URLとプロトコル
+
+認証とルーティングエラーは `401` / `404` の最も一般的な原因です。正しいリージョンとプロトコルにアクセスしていることを確認してください：
+
+<CodeGroup>
+
+```bash US / EU (bearlab.ai)
+# OpenAI-compatible
+https://bearlab.ai/v1/chat/completions
+# Anthropic
+https://bearlab.ai/v1/messages
+```
+
+```bash Asia-Pacific (bearlab.space)
+# OpenAI-compatible
+https://bearlab.space/v1/chat/completions
+# Anthropic
+https://bearlab.space/v1/messages
+```
+
+</CodeGroup>
+
+すべてのリクエストは `Authorization: Bearer sk-...` で認証されます。
 
 ## チェックリスト
 
 <Steps>
   <Step title="error.messageを最初に読む">
-    ほとんどの問題はそこで説明されています。
+    ほとんどの問題はここで説明されており、サポートに必要なリクエストIDが含まれています。
+  </Step>
+  <Step title="error.typeを確認">
+    `new_api_error` はゲートウェイがリクエストを拒否したことを意味します（認証、モデル、配額）。その他（`openai_error`、`claude_error`、`gemini_error`、`upstream_error`）はアップストリームプロバイダエラーの転送です。
   </Step>
   <Step title="base_urlとプロトコルを確認">
-    `/v1` (OpenAI) vs `/v1/messages` (Anthropic); 認証ヘッダーが一致する必要があります。
+    `/v1`（OpenAI）vs. `/v1/messages`（Anthropic）。US/EUは `bearlab.ai`、アジア太平洋は `bearlab.space` を使用してください。`Authorization: Bearer` ヘッダが必須です。
   </Step>
   <Step title="モデル名を確認">
-    [modelsエンドポイント](/ja/guides/models)経由で`model`が存在することを確認してください。
+    `model` が存在し、[modelsエンドポイント](/ja/guides/models) を通じてグループがアクセス権を持っていることを確認してください。
   </Step>
-  <Step title="残高を確認 / 再試行">
-    `403`は残高の場合があります。`5xx` / `429`を指数バックオフで再試行してから、サポートに連絡してください。
+  <Step title="一時的なエラーを再試行">
+    指数バックオフで `5xx` / `429` を再試行してください。`403`/`5xx` が続く場合は、`X-Oneapi-Request-Id` を指定してサポートに連絡してください。
   </Step>
 </Steps>
 
 <Note>
-  `stream: true`の場合、エラーはHTTPステータスではなく、接続が開いた後SSEイベントとして到達する場合があります。ストリーム中盤の`error`イベントを処理してください。
+  `stream: true` の場合、エラーは接続開始後SSEイベントとして到達できます（HTTPステータスは既に `200` です）。初期HTTPステータスだけでなく、ストリーム中の `error` イベントを処理してください。
 </Note>

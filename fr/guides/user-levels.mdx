@@ -1,23 +1,90 @@
 ---
-title: "User Levels"
-description: "La différence entre Tier 1 et Tier 2, et comment mettre à niveau."
+title: "Niveaux d'utilisateur"
+description: "Comment les groupes de modèles contrôlent l'accès, ce que votre groupe de jetons contrôle, et comment appeler des modèles d'un groupe différent."
 ---
 
-La plateforme a deux niveaux d'utilisateur, affectant principalement [les limites de débit](/fr/guides/rate-limits) et les remises.
+Sur BearLab AI, ce que vous pouvez appeler est décidé par les **groupes de modèles**, pas par un « niveau » numérique. Chaque clé API appartient à un groupe, et un modèle n'est callable que si votre groupe figure sur la liste d'autorisation de ce modèle. C'est le mécanisme de groupe new-api standard : une clé dans un groupe ne peut accéder qu'aux canaux et modèles affectés à ce groupe.
 
-| Tier | Comment l'obtenir | Limite de débit |
-| --- | --- | --- |
-| **Tier 1** | Par défaut après l'inscription | 5 RPM |
-| **Tier 2** | Automatique après n'importe quelle recharge | Pas de limite |
+<Note>
+  Utilisateurs d'Asie-Pacifique : remplacez `https://bearlab.ai` par `https://bearlab.space` dans tous les exemples ci-dessous. Voir [Disponibilité des services](/fr/guides/availability).
+</Note>
 
-## Tier 1
+## Comment les groupes contrôlent l'accès
 
-Tous les nouveaux comptes commencent au Tier 1, limité à **5 RPM** (5 requêtes par minute), adapté pour les tests légers.
+Chaque modèle a une liste d'autorisation `enable_groups`. Votre clé API (token) a un groupe. L'alignement entre les deux est la règle d'accès entière :
 
-## Tier 2
+| Concept | Ce qu'il contrôle |
+| --- | --- |
+| **Groupe d'utilisateur** | Le groupe affecté à votre compte. Le groupe par défaut que vos clés héritent. |
+| **Groupe de token** | Le groupe défini sur une clé API individuelle. Peut différer de votre groupe d'utilisateur ; `auto` signifie « choisir un groupe disponible par ordre de priorité ». |
+| **Modèle `enable_groups`** | La liste des groupes autorisés à appeler ce modèle. Si votre groupe de token n'est pas dedans, le modèle n'est pas callable et n'apparaît pas dans votre liste `/v1/models`. |
 
-Après **n'importe quelle recharge**, votre compte est automatiquement mis à niveau vers Tier 2 sans limite de débit. La mise à niveau est immédiate, sans demande manuelle. Les niveaux plus élevés peuvent également recevoir des remises de prix ; voir [Pricing](/fr/guides/pricing).
+Le catalogue renvoyé par [`/v1/models`](/fr/guides/models#fetch-the-live-list) est toujours filtré selon votre groupe de token, donc la liste en direct est la réponse faisant autorité à « qu'est-ce que cette clé peut appeler ».
 
-## Vérifiez votre niveau
+## Le groupe `auto`
 
-Connectez-vous et accédez à Dashboard, Paramètres de profil pour voir votre niveau actuel.
+Un token défini au groupe `auto` ne se verrouille pas sur un seul groupe. La plateforme sélectionne un groupe disponible par ordre de priorité pour chaque requête, offrant un basculement intergroupe lorsqu'un amont est saturé. Utilisez `auto` quand vous voulez la résilience et n'avez pas besoin de forcer un groupe spécifique ; utilisez un groupe nommé quand vous devez cibler un ensemble de modèles ou une tarification connus.
+
+## Groupes sur cette plateforme
+
+Le token utilisé pour générer ces documents voit le groupe **`default`** — le catalogue mixte basique couvrant chaque famille de modèles (voir [Catalogue de modèles](/fr/guides/models)). D'autres groupes exposent des ensembles de modèles plus importants ou spécialisés. Les groupes disponibles pour l'affectation de tokens sont :
+
+| Groupe | Ce qu'il contient |
+| --- | --- |
+| `default` | Catalogue mixte basique (plus grand groupe unique, couvrant chaque famille de modèles) |
+| `openai` | Modèles OpenAI / famille GPT |
+| `grok` | Modèles xAI Grok |
+| `gemini`, `gemini-guan`, `gemini次数`, `gemini-cli`, `gemini-image` | Routes Gemini (standard, officiel, par requête, CLI, image) |
+| `claudecode`, `claudecode特价`, `claude次数`, `claude逆向`, `claude官转纯`, `ccmax特价`, `claude max` | Routes Claude/Anthropic (Claude Code, remisé, par requête, officiel, etc.) |
+| `claudeAWS`, `claudeAWS2`, `claudeAWS3`, `claudekiro2`, `claudekiro3缓`, `claude反重力` | Claude via amonts alternatifs (AWS Bedrock, Kiro, antigravity) |
+| `codex2`, `codex3`, `codext12` | Routes Codex / ajustées pour le code |
+| `国产` | Modèles domestiques (DeepSeek, GLM, Qwen, Kimi, MiniMax, etc.) |
+
+<Note>
+  Les noms et l'adhésion des groupes changent à mesure que des canaux sont ajoutés ou supprimés. Traitez le tableau ci-dessus comme un instantané. Votre propre réponse `/v1/models`, limitée au groupe de votre clé, est toujours la source faisant autorité.
+</Note>
+
+## Groupes et tarification
+
+Les groupes isolent la facturation et l'accès : le même modèle peut avoir un prix effectif différent selon les groupes, car chaque groupe peut appliquer son propre multiplicateur de facturation en plus du prix de base du modèle et du multiplicateur du fournisseur. Choisir un groupe est donc à la fois une décision d'accès et une décision de prix.
+
+Voir [Tarification et facturation](/fr/guides/pricing) pour savoir comment le prix de base du modèle et le multiplicateur du [fournisseur](/fr/guides/providers) se combinent, et [Limites de débit](/fr/guides/rate-limits) pour les limites applicables par groupe.
+
+## Définir ou modifier le groupe d'un token
+
+Choisissez un groupe quand vous créez une clé API, ou modifiez le groupe d'une clé existante, dans **Dashboard, API Tokens**. Pour utiliser un modèle d'un groupe différent, affectez votre token à un groupe dont `enable_groups` inclut ce modèle.
+
+<Steps>
+  <Step title="Ouvrir API Tokens">
+    Connectez-vous et accédez à Dashboard, API Tokens.
+  </Step>
+  <Step title="Choisir un groupe">
+    Sur le champ Groupe du token, sélectionnez un groupe nommé, ou `auto` pour le basculement par ordre de priorité.
+  </Step>
+  <Step title="Vérifier avec /v1/models">
+    Appelez la liste des modèles en direct avec cette clé et confirmez que le modèle que vous voulez est présent.
+
+    <Tabs>
+      <Tab title="États-Unis / UE (bearlab.ai)">
+        ```bash
+        curl https://bearlab.ai/v1/models \
+          -H "Authorization: Bearer sk-..."
+        ```
+      </Tab>
+      <Tab title="Asie-Pacifique (bearlab.space)">
+        ```bash
+        curl https://bearlab.space/v1/models \
+          -H "Authorization: Bearer sk-..."
+        ```
+      </Tab>
+    </Tabs>
+  </Step>
+</Steps>
+
+## Quand un modèle est en dehors de votre groupe
+
+Si vous envoyez un `model` dont `enable_groups` n'inclut pas votre groupe de token, la requête est rejetée — la clé ne peut pas atteindre ce canal. Corrigez-le en changeant le token vers un groupe qui inclut le modèle, ou en appelant un modèle que votre groupe actuel contient déjà.
+
+<Tip>
+  Vérifiez votre groupe de compte actuel sous Dashboard, Paramètres de profil. Vérifiez le groupe d'une clé spécifique sous Dashboard, API Tokens.
+</Tip>

@@ -3,33 +3,100 @@ title: "認証"
 description: "APIキーの作成、渡し方、管理方法。"
 ---
 
-すべてのリクエストはAPIキーで認証されます。[コンソール](https://bearlab.ai)の[APIトークン]の下でキーを作成します。ボタンは `sk-xxxxxxxx` のような形式です。
+すべてのリクエストはAPIキーで認証されます。[コンソール](https://bearlab.ai)のAPIトークン下でキーを作成します。形式は `sk-...` のようになります。
+
+BearLab AIはNew APIゲートウェイ上に構築されているため、同じキーがOpenAI互換プロトコルとAnthropicプロトコルの両方で機能します。すべてのエンドポイントで単一のBearer トークンで認証します。プロトコルごとに個別のキーはありません。
 
 <Note>
-  アジア太平洋ユーザー: `https://bearlab.ai` の代わりに専用ドメイン `https://bearlab.in` を使用してください。[サービス提供地域](/ja/guides/availability)を参照してください。
+  あなたのリージョンの基礎 URL を選択してください。アジア太平洋ユーザーは `https://bearlab.space` を使用し、US/EUユーザーは `https://bearlab.ai` を使用してください。キーとリクエスト形式はリージョン間で同じです。[サービス可用性](/ja/guides/availability)を参照してください。
 </Note>
 
 ## キーを渡す
 
-2つのプロトコルは異なる認証ヘッダーを使用します。
+キーを `Authorization` ヘッダーに Bearer トークンとして入れてください。両方のプロトコルで同じです。
 
-| プロトコル | ヘッダー |
-| --- | --- |
-| OpenAI互換 | `Authorization: Bearer YOUR_API_KEY` |
-| Anthropic互換 | `x-api-key: YOUR_API_KEY` |
+| プロトコル | 基礎 URL | Auth ヘッダー |
+| --- | --- | --- |
+| OpenAI互換 | `<domain>/v1` | `Authorization: Bearer sk-...` |
+| Anthropic互換 | `<domain>` (`/v1/messages` を呼び出し) | `Authorization: Bearer sk-...` |
+
+ここで `<domain>` は `https://bearlab.ai`（US/EU）または `https://bearlab.space`（アジア太平洋）です。
+
+<Note>
+  Anthropic互換エンドポイントはさらに `anthropic-version` ヘッダー（例えば `anthropic-version: 2023-06-01`）を要求します。ネイティブAnthropicAPIが期待するのとまったく同じです。
+</Note>
+
+<CodeGroup>
+
+```bash OpenAI (US/EU)
+curl https://bearlab.ai/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash OpenAI (Asia-Pacific)
+curl https://bearlab.space/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash Anthropic (US/EU)
+curl https://bearlab.ai/v1/messages \
+  -H "Authorization: Bearer sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-7",
+    "max_tokens": 1024,
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash Anthropic (Asia-Pacific)
+curl https://bearlab.space/v1/messages \
+  -H "Authorization: Bearer sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-7",
+    "max_tokens": 1024,
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+</CodeGroup>
 
 ## キー管理
 
 - **用途ごとに1つのキー**: プロジェクトやクライアントごとに個別のキーを作成して、簡単に無効化でき、キーごとの使用統計を取得できます。
-- **クォータ上限を設定する**: 単一のキーに支出制限を設定して、露出を減らします。
+- **クォータ上限を設定する**: 単一のキーに支出制限を設定して、リスクを軽減します。
 - **ハードコードしない**: 環境変数経由で注入し、キーをリポジトリにコミットしないでください。
 - **漏洩時は無効化する**: キーが漏洩した可能性がある場合は、コンソールで削除して新しいキーを作成してください。
+
+## グループ
+
+ゲートウェイ上のモデルは**グループ**に編成されています。グループはモデルをどのアップストリームにルーティングするかを決定し、請求乗数（そのグループ比率）を適用します。すべてのキーは1つ以上のグループに属し、キーはアクセスできるグループが公開するモデルのみを呼び出すことができます。
+
+- モデルは、キーのグループの1つがそのモデルを有効にしている場合にのみ、キーで呼び出せます。
+- 同じモデルは複数のグループに異なる価格ポイントで表示される場合があります。グループの比率は各呼び出しのコストを決定します。
+- グループが公開していないモデルを呼び出すと、リクエストはゲートウェイレベルで拒否され、アップストリームに到達しません。
+
+このキーは**`default`**グループにプロビジョニングされているため、表示されるモデルはベースの混合カタログです。[モデルと価格設定](/ja/guides/pricing) ページで、またはリアルタイムの[モデルリスト](/ja/guides/models) エンドポイント経由で、キーがアクセスできる正確なモデルと価格設定を確認できます。このエンドポイントは、使用する権限があるモデルのみを返します。
 
 ## 一般的な認証エラー
 
 | 症状 | 原因 |
 | --- | --- |
-| `401 Unauthorized` | 間違ったか削除されたキー、またはヘッダーが一致していません(BearerとX-api-keyの違い)。 |
-| `403 Forbidden` | キーが無効化されている、残高が不足している、またはモデルまたはグループへのアクセス権がありません。最も一般的な権限の問題は、本人確認が必要なモデルです。 |
+| `401 Unauthorized` | キーがない、形式が悪い、間違っている、または削除されている。ヘッダーが正確に `Authorization: Bearer sk-...` であることを確認してください。 |
+| `403 Forbidden` | キーが無効化されている、残高が不足している、または要求されたモデルがキーがアクセスできるグループで公開されていません。 |
+| `404` on a model | モデル名が存在しないか、キーのグループで利用できません。呼び出せる正確なIDを確認するには[モデルリスト](/ja/guides/models)を取得してください。 |
 
-[エラーハンドリング](/ja/guides/errors)で詳細なコードを参照してください。
+詳細は[エラーハンドリング](/ja/guides/errors) を参照してください。

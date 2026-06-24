@@ -1,150 +1,179 @@
 ---
-title: "模型与定价接口"
-description: "公开免鉴权接口，列出所有可用对话模型及其公开价格，遵循 OpenRouter Providers 规范。"
+title: "模型目录"
+description: "您的 API 密钥可用的每一个模型，按系列分组，以及模型群组如何管制访问。"
 ---
 
-`/v1/models/pricing` 是一个**公开、免鉴权**的聚合接口，返回平台当前所有可用对话模型及其公开价格。响应严格遵循 [OpenRouter Providers 规范](https://openrouter.ai/docs/guides/community/for-providers)，可被 OpenRouter、第三方比价工具或任意自定义客户端直接读取。
+本页列出您的 API 密钥可以调用的模型，按系列分组。在聊天请求的 `model` 字段中传入模型的确切 `id`。
 
 <Note>
-  亚太区域用户:请改用专用域名 `https://bearlab.in`，而非 `https://bearlab.ai`。详见 [服务区域](/zh-my/guides/availability)。
+  亚太地区用户：请改用专用域名 `https://bearlab.space` 而非 `https://bearlab.ai`。详见 [服务可用性](/zh-my/guides/availability)。
 </Note>
+
+## 如何阅读本目录
+
+您看到的目录受限于 **您的令牌群组**。每个 API 密钥属于一个模型群组，模型只有在您的群组被允许调用时才会出现在您的清单中。下方的模型是当前的正式生产阵容；您的密钥实际看到的子集取决于您的群组。
+
+| 概念 | 含义 |
+| --- | --- |
+| **模型 `id`** | 您在 `model` 字段中传送的确切字符串。区分大小写，请逐字复制。 |
+| **模型群组** | 您的密钥所属的访问层级。决定您可以调用哪些模型以及以什么价格。 |
+| **端点类型** | 模型接受的协议：OpenAI 兼容、Anthropic 或 Gemini。 |
+
+## 可用的模型
+
+下方的每个 `id` 都是真实的模型标识符。在同一个系列中，**旗舰 / 推荐** id 列在最前面；较轻量或较旧的变体随后。
+
+<Tabs>
+  <Tab title="Claude (Anthropic)">
+    | 模型 `id` | 备注 |
+    | --- | --- |
+    | `claude-opus-4-8` | Opus 4.8，旗舰推理模型 |
+    | `claude-opus-4-7` | Opus 4.7 |
+    | `claude-opus-4-6` | Opus 4.6 |
+    | `claude-sonnet-4-6` | Sonnet 4.6，均衡型 |
+    | `claude-sonnet-4-5` | Sonnet 4.5 |
+    | `claude-haiku-4-5` | Haiku 4.5，快速且经济 |
+  </Tab>
+  <Tab title="GPT (OpenAI)">
+    | 模型 `id` | 备注 |
+    | --- | --- |
+    | `gpt-5.5` | GPT-5.5，旗舰版本 |
+    | `gpt-5.4` | GPT-5.4 |
+    | `gpt-5.4-mini` | GPT-5.4 Mini，轻量级 |
+    | `gpt-5.2` | GPT-5.2 |
+    | `gpt-5.1` | GPT-5.1 |
+    | `gpt-5` | GPT-5 |
+  </Tab>
+  <Tab title="Gemini (Google)">
+    | 模型 `id` | 备注 |
+    | --- | --- |
+    | `gemini-3-pro` | Gemini 3 Pro，旗舰版本 |
+    | `gemini-3.1-pro` | Gemini 3.1 Pro |
+    | `gemini-3.1-pro-preview` | Gemini 3.1 Pro 预览版 |
+    | `gemini-3.5-flash` | Gemini 3.5 Flash |
+    | `gemini-3-flash` | Gemini 3 Flash |
+    | `gemini-3-flash-preview` | Gemini 3 Flash 预览版 |
+    | `gemini-2.5-flash` | Gemini 2.5 Flash |
+  </Tab>
+  <Tab title="Grok (xAI)">
+    | 模型 `id` | 备注 |
+    | --- | --- |
+    | `grok-4.3` | Grok 4.3，旗舰版本 |
+    | `grok-4.2` | Grok 4.2 |
+    | `grok-4.1` | Grok 4.1 |
+    | `grok-4` | Grok 4 |
+  </Tab>
+  <Tab title="DeepSeek">
+    | 模型 `id` | 备注 |
+    | --- | --- |
+    | `deepseek-v4-pro` | DeepSeek V4 Pro，旗舰版本 |
+    | `deepseek-v4-flash` | DeepSeek V4 Flash，快速版 |
+    | `deepseek-v3.2` | DeepSeek V3.2 |
+  </Tab>
+  <Tab title="GLM (Zhipu)">
+    | 模型 `id` | 备注 |
+    | --- | --- |
+    | `glm-5.2` | GLM 5.2，旗舰版本 |
+    | `glm-5.1` | GLM 5.1 |
+    | `glm-5` | GLM 5 |
+  </Tab>
+  <Tab title="Qwen (Alibaba)">
+    | 模型 `id` | 备注 |
+    | --- | --- |
+    | `qwen3-max` | Qwen3 Max，旗舰版本 |
+    | `qwen3.6-plus` | Qwen 3.6 Plus |
+    | `qwen3-coder-plus` | Qwen3 Coder Plus，代码专用 |
+  </Tab>
+  <Tab title="Kimi (Moonshot)">
+    | 模型 `id` | 备注 |
+    | --- | --- |
+    | `kimi-k2.6` | Kimi K2.6，旗舰版本 |
+    | `kimi-k2.5` | Kimi K2.5 |
+  </Tab>
+  <Tab title="其他">
+    | 模型 `id` | 备注 |
+    | --- | --- |
+    | `MiniMax-M2.5` | MiniMax M2.5 |
+  </Tab>
+</Tabs>
 
 <Note>
-  这是「公开价格」入口，不携带用户身份。返回的是匿名上下文下 `default` 分组的价格。要查询某个已登录用户的实际成交价（分组、等级折扣等），请用控制台内的定价页。
+  本清单只是一个快照。权威的即时清单始终是您自己的 `/v1/models` 回应（见下文）— 模型可用性随着时间而变化。
 </Note>
 
-## 何时使用
+## 获取即时清单
 
-| 场景 | 说明 |
-| --- | --- |
-| 第三方比价 | OpenRouter 等聚合器抓取模型目录与公开价格 |
-| 客户端展示 | App、机器人、SDK 需要渲染模型列表 |
-| 监控 | 跟踪模型目录或价格随时间的变化 |
+`/v1/models` 会返回您的密钥可以调用的模型，采用 OpenAI SDK 格式。它需要您的 API 密钥。回应格式遵循您的请求标头所暗示的格式（默认为 OpenAI；使用 `x-api-key` + `anthropic-version` 时为 Anthropic；使用 `x-goog-api-key` 时为 Gemini）。
 
-## 端点
+<Tabs>
+  <Tab title="美国 / 欧盟 (bearlab.ai)">
+    ```bash
+    curl https://bearlab.ai/v1/models \
+      -H "Authorization: Bearer sk-..."
+    ```
+  </Tab>
+  <Tab title="亚太地区 (bearlab.space)">
+    ```bash
+    curl https://bearlab.space/v1/models \
+      -H "Authorization: Bearer sk-..."
+    ```
+  </Tab>
+</Tabs>
 
-| 项 | 值 |
-| --- | --- |
-| **URL** | `https://bearlab.ai/v1/models/pricing` |
-| **方法** | `GET` |
-| **鉴权** | 无（公开） |
-| **限流** | 严格的单 IP 关键接口限流 |
-| **缓存** | 60 秒进程内缓存；响应带 `Cache-Control: public, max-age=60` |
-
-### 请求示例
-
-<CodeGroup>
-```bash cURL
-curl https://bearlab.ai/v1/models/pricing
-```
-
-```python Python
-import requests
-
-resp = requests.get("https://bearlab.ai/v1/models/pricing", timeout=10)
-data = resp.json()["data"]
-for m in data[:3]:
-    print(m["id"], m["pricing"])
-```
-
-```javascript Node.js
-const resp = await fetch("https://bearlab.ai/v1/models/pricing");
-const { data } = await resp.json();
-console.log(data.slice(0, 3).map(m => ({ id: m.id, pricing: m.pricing })));
-```
-</CodeGroup>
-
-## 响应结构
-
-顶层始终包裹在 `data` 数组里：
+回应（截断）：
 
 ```json
 {
+  "object": "list",
   "data": [
     {
-      "id": "gpt-4o",
-      "name": "GPT-4o",
-      "created": 1715558400,
-      "input_modalities": ["text"],
-      "output_modalities": ["text"],
-      "context_length": 128000,
-      "max_output_length": 16384,
-      "pricing": {
-        "prompt": "0.0000025",
-        "completion": "0.00001",
-        "request": "0",
-        "input_cache_read": "0.00000125"
-      },
-      "supported_sampling_parameters": [
-        "temperature", "top_p", "frequency_penalty", "presence_penalty",
-        "stop", "seed", "max_tokens", "response_format",
-        "tools", "tool_choice", "logprobs"
-      ],
-      "supported_features": ["tools", "json_mode", "structured_outputs", "logprobs"]
+      "id": "claude-opus-4-8",
+      "object": "model",
+      "created": 1626777600,
+      "owned_by": "openai",
+      "supported_endpoint_types": ["openai"]
     }
   ]
 }
 ```
 
-### 模型字段
-
-| 字段 | 类型 | 说明 |
-| --- | --- | --- |
-| `id` | `string` | 模型唯一标识，调用 `/v1/chat/completions` 时填这个值 |
-| `name` | `string` | 展示名（如 `GPT-4o`），未配置时回退为 `id` |
-| `created` | `int64` | 模型发布时间（Unix 秒） |
-| `input_modalities` / `output_modalities` | `string[]` | 输入/输出模态，至少包含 `text` |
-| `context_length` | `int` | 最大上下文窗口（token） |
-| `max_output_length` | `int` | 单次最大输出 token 数 |
-| `pricing` | `Pricing` | 价格对象，见下 |
-| `pricing_tiers` | `Pricing[]` | 阶梯价（最多一项；按上下文长度阈值触发） |
-| `supported_sampling_parameters` | `string[]` | 支持的采样参数 |
-| `supported_features` | `string[]` | 支持的能力标记，见下 |
-
-### 价格字段
-
-价格均为 **USD 字符串**，token 类按 token 计价。
-
-| 字段 | 单位 | 说明 |
-| --- | --- | --- |
-| `prompt` | USD / 输入 token | 输入单价 |
-| `completion` | USD / 输出 token | 输出单价 |
-| `request` | USD / 次 | 每次请求的固定费（多数对话模型为 `"0"`） |
-| `internal_reasoning` | USD / 推理 token | 推理 token 价（o 系 / Claude thinking） |
-| `input_cache_read` | USD / token | 命中缓存的读取价（通常更低） |
-| `input_cache_write` | USD / token | 缓存写入价 |
-| `web_search` | USD / 次 | 内置联网搜索工具费 |
-
-<Note>
-  值为 `"0"` 可能表示「免费」或「该模型不适用此维度」。请结合 `supported_features` 与 `supported_sampling_parameters` 判断能力，不要只看价格。
-</Note>
-
-### `supported_features` 取值
-
-| 值 | 含义 |
+| 字段 | 描述 |
 | --- | --- |
-| `tools` | 函数调用 / 工具使用 |
-| `reasoning` | 返回推理 token（`reasoning_content` / `thinking`） |
-| `json_mode` | 支持 JSON 模式输出 |
-| `structured_outputs` | 支持 schema 约束的结构化输出 |
-| `logprobs` | 返回 token 对数概率 |
-| `web_search` | 内置联网搜索工具 |
+| `id` | 模型标识符；在聊天请求的 `model` 字段中传入此值 |
+| `object` | 始终为 `model` |
+| `created` | 发布时间（Unix 秒） |
+| `owned_by` | 名义所有者字符串 |
+| `supported_endpoint_types` | 接受此模型的端点：`openai`、`anthropic` 和/或 `gemini` |
 
-## 阶梯价
+## 调用一个模型
 
-部分模型在超过某个上下文长度阈值后改用另一档单价（如 Gemini 2.5 Pro 在 ≥128K token 时翻倍）。上层档位通过 `pricing_tiers` 暴露：`pricing` 是基础档，`pricing_tiers[0]` 是上层档，当总输入 token ≥ `min_context` 时整体套用上层档价格（取满足条件中阈值最高的一档，非累进）。
+在 `model` 字段中传送确切的 `id`。两个示例域名均已显示；请选择适合您地区的那个。
 
-## 缓存与更新节奏
+<Tabs>
+  <Tab title="美国 / 欧盟 (bearlab.ai)">
+    ```bash
+    curl https://bearlab.ai/v1/chat/completions \
+      -H "Authorization: Bearer sk-..." \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "claude-sonnet-4-6",
+        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+      }'
+    ```
+  </Tab>
+  <Tab title="亚太地区 (bearlab.space)">
+    ```bash
+    curl https://bearlab.space/v1/chat/completions \
+      -H "Authorization: Bearer sk-..." \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "claude-sonnet-4-6",
+        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+      }'
+    ```
+  </Tab>
+</Tabs>
 
-| 方面 | 行为 |
-| --- | --- |
-| 服务端缓存 | 60 秒进程内缓存，后台改价 1 分钟内生效 |
-| 客户端缓存 | `Cache-Control: public, max-age=60`，CDN / 浏览器可安全缓存 |
-| 建议轮询 | 最多每 5 分钟一次，激进轮询会被限流 |
-
-## 与其它接口的区别
-
-| 接口 | 用途 | 鉴权 |
-| --- | --- | --- |
-| `/v1/models/pricing` | 本接口：OpenRouter 格式的公开价格 | 公开 |
-| `/v1/models` | OpenAI SDK 兼容的模型 id 列表 | 需令牌 |
+<Tip>
+  需要价格和计费规则吗？详见 [定价与计费](/zh-my/guides/pricing)。关于群组如何对应折扣，详见 [用户等级](/zh-my/guides/user-levels)。
+</Tip>

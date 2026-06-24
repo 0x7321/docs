@@ -1,21 +1,39 @@
 ---
 title: "Cline / Roo Code"
-description: "ClineまたはRoo Code VS Code拡張機能でBearLabを使用します。"
+description: "ClineまたはRoo Code VS Code拡張機能でBearLab AIを使用します。"
 ---
 
-[Cline](https://github.com/cline/cline)とその強化版フォーク[Roo Code](https://github.com/RooVetGit/Roo-Code)はVS Code AIコーディング拡張機能で、OpenAI互換インターフェース経由で接続されます。
+[Cline](https://github.com/cline/cline)とその強化版フォーク[Roo Code](https://github.com/RooVetGit/Roo-Code)はVS Code AIコーディング拡張機能です。OpenAI互換インターフェース経由でBearLab AIに接続してください。
 
 <Steps>
   <Step title="プロバイダーを選択">
     拡張機能の設定で、APIプロバイダーを**OpenAI Compatible**に設定します。
   </Step>
   <Step title="接続詳細を入力">
-    - **ベースURL**: `https://bearlab.ai/v1`
-    - **APIキー**: あなたの`sk-...`キー
-    - **モデルID**: 例. `claude-sonnet-4-6`または`gpt-4o`
+    - **ベースURL**：お客様のリージョンのエンドポイントを使用します
+
+      <Tabs>
+        <Tab title="US / EU">
+          ```
+          https://bearlab.ai/v1
+          ```
+        </Tab>
+        <Tab title="Asia-Pacific">
+          ```
+          https://bearlab.space/v1
+          ```
+        </Tab>
+      </Tabs>
+
+    - **APIキー**：あなたの`sk-...`キー
+    - **モデルID**：[modelsエンドポイント](/ja/guides/models)からの正確なモデルid。例：`claude-sonnet-4-6`、`gpt-5.4`または`deepseek-v4-pro`
   </Step>
 </Steps>
 
 <Note>
-  Anthropicではなく**OpenAI Compatible**を選択してください。`/v1`ベースURLを使用します。モデルIDは[modelsエンドポイント](/ja/guides/models)に存在する必要があります。
+  Anthropicではなく**OpenAI Compatible**を選択してください。ベースURLに`/v1`サフィックスを保持してください。ClineはあなたのキーをAuthorizationヘッダー`Authorization: Bearer sk-...`で`POST /v1/chat/completions`を呼び出します。
 </Note>
+
+<Warning>
+  **モデルID**は[modelsエンドポイント](/ja/guides/models)から返されたidと完全に一致する必要があります。`gpt-4o`などのリストにない名前は有効なモデルIDではなく、リクエストは拒否されます。
+</Warning>

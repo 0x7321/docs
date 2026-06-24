@@ -1,23 +1,90 @@
 ---
 title: "User Levels"
-description: "Tier 1 और Tier 2 के बीच का अंतर, और कैसे upgrade करें।"
+description: "Model groups कैसे access को gate करते हैं, आपके token की group क्या control करती है, और किसी different group से models को कैसे call करें।"
 ---
 
-Platform के दो user levels हैं, मुख्य रूप से [rate limits](/hi/guides/rate-limits) और discounts को प्रभावित करते हुए।
+BearLab AI पर, आप जो कुछ call कर सकते हैं वह numeric \"tier\" नहीं बल्कि **model groups** द्वारा decide किया जाता है। हर API key एक group से संबंधित है, और एक model केवल callable है अगर आपकी group उस model की allow-list पर है। यह standard new-api group mechanism है: एक group में key केवल उस group को assign किए गए channels और models तक access कर सकता है।
 
-| Tier | कैसे प्राप्त करें | Rate limit |
-| --- | --- | --- |
-| **Tier 1** | Registration के बाद default | 5 RPM |
-| **Tier 2** | किसी भी top-up के बाद automatic | कोई limit नहीं |
+<Note>
+  Asia-Pacific users: नीचे दिए गए सभी examples में `https://bearlab.ai` को `https://bearlab.space` से replace करें। [Service Availability](/hi/guides/availability) देखें।
+</Note>
 
-## Tier 1
+## Groups कैसे access को control करते हैं
 
-सभी नए accounts Tier 1 पर शुरू होते हैं, **5 RPM** (5 requests per minute) तक limited, light testing के लिए suitable।
+हर model के पास एक `enable_groups` allow-list है। आपके API key (token) के पास एक group है। इन दोनों के बीच match ही पूरा access rule है:
 
-## Tier 2
+| Concept | यह क्या control करता है |
+| --- | --- |
+| **User group** | आपके account को assign किया गया group। आपके keys जो inherit करते हैं वह default group। |
+| **Token group** | एक individual API key पर set किया गया group। आपके user group से अलग हो सकता है; `auto` का मतलब \"priority order में available group choose करें\"। |
+| **Model `enable_groups`** | Groups की list जिन्हें उस model को call करने की permission है। अगर आपका token group इसमें नहीं है, तो model callable नहीं है और आपकी `/v1/models` list में दिखाई नहीं देगा। |
 
-किसी भी **top-up** के बाद, आपका account स्वचालित रूप से Tier 2 में upgrade होता है कोई rate limit के साथ। Upgrade तुरंत है, कोई manual request के साथ नहीं। उच्च levels को भी price discounts मिल सकते हैं; [Pricing](/hi/guides/pricing) देखें।
+[`/v1/models`](/hi/guides/models#fetch-the-live-list) द्वारा return किया गया catalog हमेशा आपके token group के अनुसार filter किया जाता है, इसलिए live list \"यह key क्या call कर सकता है\" का authoritative जवाब है।
 
-## अपना level check करें
+## `auto` Group
 
-Sign in करें और Dashboard, Profile Settings पर जाएं अपना current level देखने के लिए।
+`auto` group पर set किया गया token एक single group पर pin नहीं होता है। Platform प्रत्येक request के लिए priority order में एक available group select करता है, जो जब कोई upstream saturated हो तो cross-group failover provide करता है। `auto` use करें जब आप resilience चाहते हैं और किसी specific group को force करने की जरूरत नहीं है; जब आपको known model set या price को target करना हो तो named group use करें।
+
+## इस platform पर Groups
+
+इन docs को generate करने के लिए use किया गया token **`default` group** को देखता है — एक baseline mixed catalog जो every model family को cover करता है ([Model Catalog](/hi/guides/models) देखें)। Other groups larger या specialized model sets को expose करते हैं। Token assignment के लिए available groups हैं:
+
+| Group | यह क्या carries करता है |
+| --- | --- |
+| `default` | Baseline mixed catalog (largest single group, every model family को cover करता है) |
+| `openai` | OpenAI / GPT-family models |
+| `grok` | xAI Grok models |
+| `gemini`, `gemini-guan`, `gemini次数`, `gemini-cli`, `gemini-image` | Gemini routes (standard, official, per-request, CLI, image) |
+| `claudecode`, `claudecode特价`, `claude次数`, `claude逆向`, `claude官转纯`, `ccmax特价`, `claude max` | Claude/Anthropic routes (Claude Code, discounted, per-request, official, आदि) |
+| `claudeAWS`, `claudeAWS2`, `claudeAWS3`, `claudekiro2`, `claudekiro3缓`, `claude反重力` | Alternate upstreams के through Claude (AWS Bedrock, Kiro, antigravity) |
+| `codex2`, `codex3`, `codext12` | Codex / coding-tuned routes |
+| `国产` | Domestic models (DeepSeek, GLM, Qwen, Kimi, MiniMax, आदि) |
+
+<Note>
+  Group names और membership channels के add या retire होने के साथ change होते हैं। ऊपर दी गई table को एक snapshot माने। आपका खुद का `/v1/models` response, आपकी key की group तक limited, हमेशा truth का source है।
+</Note>
+
+## Groups और Pricing
+
+Groups billing और access को isolate करते हैं: same model को groups के across different effective price हो सकता है, क्योंकि हर group अपना billing multiplier apply कर सकता है model base price और provider multiplier के ऊपर। Group choose करना इसलिए access decision और price decision दोनों है।
+
+[Pricing & Billing](/hi/guides/pricing) देखें कि कैसे model base price और [provider](/hi/guides/providers) multiplier combine होते हैं, और [Rate Limits](/hi/guides/rate-limits) देखें कि हर group के लिए कौन से limits apply होते हैं।
+
+## Token की group को set या change करें
+
+जब आप API key create करते हैं तो **Dashboard, API Tokens** में एक group pick करें, या existing key की group edit करें। अगर आप किसी different group से model use करना चाहते हैं, तो अपने token को एक group के लिए assign करें जिसके `enable_groups` में वह model है।
+
+<Steps>
+  <Step title="API Tokens खोलें">
+    Sign in करें और Dashboard, API Tokens पर जाएं।
+  </Step>
+  <Step title="Group choose करें">
+    Token के Group field पर, एक named group select करें, या priority-order failover के लिए `auto`।
+  </Step>
+  <Step title="/v1/models के साथ Verify करें">
+    इस key के साथ live model list को call करें और confirm करें कि आप जो model चाहते हैं वह present है।
+
+    <Tabs>
+      <Tab title="US / EU (bearlab.ai)">
+        ```bash
+        curl https://bearlab.ai/v1/models \
+          -H "Authorization: Bearer sk-..."
+        ```
+      </Tab>
+      <Tab title="Asia-Pacific (bearlab.space)">
+        ```bash
+        curl https://bearlab.space/v1/models \
+          -H "Authorization: Bearer sk-..."
+        ```
+      </Tab>
+    </Tabs>
+  </Step>
+</Steps>
+
+## जब कोई Model आपके group से बाहर हो
+
+अगर आप एक `model` send करते हैं जिसके `enable_groups` में आपका token group नहीं है, तो request reject कर दिया जाएगा — key वह channel तक नहीं पहुंच सकता। Token को एक group में switch करके fix करें जो model को include करता है, या एक model को call करें जो आपकी current group पहले से ही carry करती है।
+
+<Tip>
+  Dashboard, Profile Settings के under अपने current account group को check करें। Dashboard, API Tokens के under किसी specific key के group को check करें।
+</Tip>

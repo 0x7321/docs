@@ -1,38 +1,106 @@
 ---
 title: "Introduction"
-description: "Qu'est-ce que BearLab et ce qu'il fait."
+description: "Qu'est-ce que BearLab AI et ses fonctionnalités."
 ---
 
-> BearLab (BearLab.ai) réunit les modèles conversationnels de dizaines de fournisseurs majeurs sous une seule API. OpenAI, Anthropic, Google et DeepSeek sont tous accessibles avec une seule clé.
+> BearLab AI réunit les modèles conversationnels de dizaines de fournisseurs majeurs sous une seule API. OpenAI, Anthropic, Google, DeepSeek et bien d'autres sont tous accessibles avec une seule clé.
 
-## Qu'est-ce que BearLab
+## Qu'est-ce que BearLab AI
 
-BearLab est une plateforme d'agrégation de modèles conversationnels. Au lieu de vous inscrire, de recharger et de gérer une clé séparée avec OpenAI, Anthropic et Google individuellement, vous créez une clé ici, définissez une `base_url`, et appelez leurs derniers modèles conversationnels.
+BearLab AI est une passerelle de modèles conversationnels. Au lieu de vous inscrire, de recharger et de gérer une clé séparée avec OpenAI, Anthropic, Google et autres individuellement, vous créez une clé ici, pointez vers une `base_url`, et appelez leurs derniers modèles conversationnels.
 
-L'interface est compatible avec les protocoles OpenAI et Anthropic, donc le code existant fonctionne généralement après avoir changé le point de terminaison et la clé.
+La passerelle est compatible avec les protocoles OpenAI et Anthropic, donc le code existant fonctionne généralement après avoir changé le point de terminaison et la clé — aucun autre changement n'est nécessaire.
 
 Nous faisons une seule chose, les modèles conversationnels, ce qui garde l'interface simple, la facturation claire et le service stable.
 
+## URLs de base
+
+Choisissez la région la plus proche de vous. Chaque région expose les mêmes modèles derrière les deux protocoles.
+
+<Tabs>
+  <Tab title="US / EU">
+    | Protocole | URL de base |
+    | --- | --- |
+    | Compatible OpenAI | `https://bearlab.ai/v1` |
+    | Anthropic | `https://bearlab.ai/v1/messages` |
+  </Tab>
+  <Tab title="Asia-Pacific">
+    | Protocole | URL de base |
+    | --- | --- |
+    | Compatible OpenAI | `https://bearlab.space/v1` |
+    | Anthropic | `https://bearlab.space/v1/messages` |
+  </Tab>
+</Tabs>
+
+<Note>
+Les deux régions sont interchangeables — la même clé fonctionne sur les deux. Choisissez en fonction de la latence réseau, pas selon les fonctionnalités, car le catalogue de modèles et les protocoles sont identiques.
+</Note>
+
+## Authentification
+
+Chaque requête porte votre clé API sous forme de token Bearer dans l'en-tête `Authorization`. Les clés commencent par `sk-`.
+
+<CodeGroup>
+
+```bash OpenAI-compatible
+curl https://bearlab.ai/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.5",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash Anthropic
+curl https://bearlab.ai/v1/messages \
+  -H "Authorization: Bearer sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-opus-4-8",
+    "max_tokens": 1024,
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+```bash Asia-Pacific
+curl https://bearlab.space/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.5",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+</CodeGroup>
+
+Le point de terminaison Anthropic attend également l'en-tête `anthropic-version`, qui doit correspondre à l'API Anthropic Messages en amont.
+
 ## Capacités clés
 
-**Une clé pour chaque modèle**
-Différents fournisseurs et modèles via une interface unifiée. Un compte pour l'accès, une facture pour les dépenses, un endroit pour voir l'utilisation.
+**Une clé pour tous les modèles**
+Accédez à de nombreux fournisseurs et modèles via une interface unifiée. Un compte pour l'accès, une facture pour les dépenses, un endroit pour voir l'utilisation.
 
-**Protocole double OpenAI / Anthropic**
-Les deux protocoles sont nativement supportés. Cursor, Claude Code, Cline et Codex se connectent en définissant le point de terminaison, sans avoir besoin de savoir quel fournisseur est derrière un modèle.
+**Support du protocole double OpenAI / Anthropic**
+Les deux protocoles sont nativement supportés. Cursor, Claude Code, Cline et Codex se connectent en définissant l'URL de base et la clé — pas besoin de savoir quel fournisseur se trouve derrière un modèle. Les modèles exposant le protocole Anthropic sont tagués pour les deux points de terminaison `openai` et `anthropic` ; les autres sont OpenAI uniquement.
+
+**Couverture de modèles étendue**
+Le catalogue couvre GPT (famille 5.x), Claude (Opus / Sonnet / Haiku), Gemini (3.x), Grok, DeepSeek, GLM, Qwen, Kimi et autres modèles conversationnels. La liste exacte que vous voyez dépend du groupe de votre clé.
 
 **Stable et disponible**
-Les modèles populaires sont soutenus par plusieurs fournisseurs. Si l'un échoue, les requêtes basculent automatiquement vers un autre.
+Les modèles populaires sont soutenus par plusieurs canaux en amont. Si l'un échoue, les requêtes basculez automatiquement vers un autre.
 
 **Paiement à l'usage**
-Ne payez que ce que vous utilisez. Pas de frais mensuels, pas de recharge minimale. Les prix suivent les fournisseurs en amont, et le solde est visible en temps réel.
+Payez uniquement ce que vous utilisez. Pas de frais mensuels, pas de recharge minimale. Les prix suivent les fournisseurs en amont, et le solde est visible en temps réel.
 
 **Utilisation observable**
-Chaque appel enregistre sa requête, sa réponse et sa consommation de jetons, ce qui facilite le dépannage et la comptabilité des coûts.
+Chaque appel enregistre sa requête, sa réponse et sa consommation de jetons, facilitant le dépannage et l'imputation des coûts.
 
 ## Modèles conversationnels uniquement
 
-BearLab n'offre pas de modèles d'image, audio, vidéo, musique ou embedding. Nous nous concentrons sur la stabilité et la complétude des modèles conversationnels. Pour ces autres capacités, utilisez une plateforme dédiée.
+BearLab AI se concentre sur les modèles conversationnels et ne se positionne pas comme une plateforme générale d'image, audio, vidéo, musique ou embedding. L'objectif est de maintenir les modèles conversationnels stables et complets. Pour ces autres capacités, utilisez une plateforme dédiée.
 
 ## Étapes suivantes
 
@@ -40,7 +108,7 @@ BearLab n'offre pas de modèles d'image, audio, vidéo, musique ou embedding. No
   <Card title="Démarrage rapide" icon="rocket" href="/fr/guides/quickstart" cta="Commencer">
     Créez une clé et effectuez votre première requête.
   </Card>
-  <Card title="Chat Completions" icon="comments" href="/fr/guides/chat" cta="Voir l'API">
+  <Card title="Complétions de chat" icon="comments" href="/fr/guides/chat" cta="Voir l'API">
     Paramètres, streaming et différences de protocole.
   </Card>
 </CardGroup>

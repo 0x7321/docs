@@ -1,71 +1,128 @@
 ---
 title: "快速開始"
-description: "5 分鐘內建立金鑰並發出第一個對話請求。"
+description: "建立密鑰並在 5 分鐘內進行您的首個請求。"
 ---
 
-只需三步即可呼叫模型。
+三個步驟呼叫模型：建立密鑰、將您的客戶端指向正確的基礎 URL，然後發送您的首個聊天請求。
 
 <Note>
-  亞太區域使用者:API 請改用專用網域 `https://bearlab.in`，而非 `https://bearlab.ai`。詳見 [服務區域](/guides/availability)。
+  根據您的地區選擇基礎 URL。**美國 / 歐洲：** `https://bearlab.ai`。**亞太地區：** `https://bearlab.space`。其他所有內容（密鑰、模型、請求格式）在各地區都是相同的。請參閱[服務可用性](/guides/availability)。
 </Note>
 
 <Steps>
   <Step title="註冊並充值">
-    前往 [控制檯](https://bearlab.ai) 註冊賬號，在「錢包」頁完成充值。新使用者可先小額充值測試。
+    在[控制台](https://bearlab.ai)註冊並在錢包頁面上新增資金。新用戶可以先充值少量金額進行測試。
   </Step>
-  <Step title="建立 API Key">
-    進入「令牌 / API Keys」頁，點選「新建」，複製生成的 `sk-...` 金鑰並妥善保管。金鑰只在建立時完整顯示一次。
+  <Step title="建立 API 密鑰">
+    進入儀表板，選擇 API 令牌，點選新增令牌，並複製 `sk-...` 密鑰。密鑰僅會完整顯示一次。您在每個請求上將其作為 `Authorization: Bearer sk-...` 傳遞。
   </Step>
-  <Step title="發起第一個請求">
-    把下面示例裡的 `YOUR_API_KEY` 換成你的金鑰即可。
+  <Step title="設定您的基礎 URL">
+    使用與您的地區和協議相符的基礎 URL：
+
+    | 協議 | 美國 / 歐洲 | 亞太地區 |
+    | --- | --- | --- |
+    | OpenAI 兼容 | `https://bearlab.ai/v1` | `https://bearlab.space/v1` |
+    | Anthropic | `https://bearlab.ai/v1/messages` | `https://bearlab.space/v1/messages` |
+  </Step>
+  <Step title="進行您的首個請求">
+    發送下面的範例。將 `sk-...` 替換為您剛建立的密鑰。
   </Step>
 </Steps>
 
-## 呼叫示例
+## 範例
 
-<Tabs>
-  <Tab title="OpenAI 相容">
-    ```bash
-    curl https://bearlab.ai/v1/chat/completions \
-      -H "Authorization: Bearer YOUR_API_KEY" \
-      -H "Content-Type: application/json" \
-      -d '{
-        "model": "gpt-4o",
-        "messages": [{"role": "user", "content": "用一句話介紹你自己"}]
-      }'
-    ```
-  </Tab>
-  <Tab title="Anthropic 相容">
-    ```bash
-    curl https://bearlab.ai/v1/messages \
-      -H "x-api-key: YOUR_API_KEY" \
-      -H "anthropic-version: 2023-06-01" \
-      -H "Content-Type: application/json" \
-      -d '{
-        "model": "claude-sonnet-4-6",
-        "max_tokens": 256,
-        "messages": [{"role": "user", "content": "用一句話介紹你自己"}]
-      }'
-    ```
-  </Tab>
-  <Tab title="Python (OpenAI SDK)">
-    ```python
-    from openai import OpenAI
+OpenAI 兼容端點是 `POST /v1/chat/completions`；Anthropic 端點是 `POST /v1/messages`。兩者都使用 `Authorization: Bearer sk-...` 進行身份驗證。`model` 值必須是[模型列表](/guides/models)為您的密鑰傳回的值 — 下面的範例使用此帳戶可用的模型。
 
-    client = OpenAI(
-        api_key="YOUR_API_KEY",
-        base_url="https://bearlab.ai/v1",
-    )
+### OpenAI 兼容
 
-    resp = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[{"role": "user", "content": "用一句話介紹你自己"}],
-    )
-    print(resp.choices[0].message.content)
-    ```
-  </Tab>
-</Tabs>
+<CodeGroup>
+```bash US / EU (bearlab.ai)
+curl https://bearlab.ai/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+  }'
+```
+
+```bash Asia-Pacific (bearlab.space)
+curl https://bearlab.space/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+  }'
+```
+</CodeGroup>
+
+### Anthropic
+
+Anthropic 端點需要 `max_tokens` 和 `anthropic-version` 標頭。您可以使用 `Authorization: Bearer sk-...` 進行身份驗證（閘道也接受 `x-api-key: sk-...`）。
+
+<CodeGroup>
+```bash US / EU (bearlab.ai)
+curl https://bearlab.ai/v1/messages \
+  -H "Authorization: Bearer sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-sonnet-4-6",
+    "max_tokens": 256,
+    "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+  }'
+```
+
+```bash Asia-Pacific (bearlab.space)
+curl https://bearlab.space/v1/messages \
+  -H "Authorization: Bearer sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-sonnet-4-6",
+    "max_tokens": 256,
+    "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+  }'
+```
+</CodeGroup>
+
+### Python（OpenAI SDK）
+
+將 SDK 指向您地區的 `/v1` 基礎 URL。SDK 會自動附加 `/chat/completions`。
+
+<CodeGroup>
+```python US / EU (bearlab.ai)
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-...",
+    base_url="https://bearlab.ai/v1",
+)
+
+resp = client.chat.completions.create(
+    model="gpt-5.4",
+    messages=[{"role": "user", "content": "Introduce yourself in one sentence"}],
+)
+print(resp.choices[0].message.content)
+```
+
+```python Asia-Pacific (bearlab.space)
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-...",
+    base_url="https://bearlab.space/v1",
+)
+
+resp = client.chat.completions.create(
+    model="gpt-5.4",
+    messages=[{"role": "user", "content": "Introduce yourself in one sentence"}],
+)
+print(resp.choices[0].message.content)
+```
+</CodeGroup>
 
 <Tip>
-  想知道支援哪些模型、價格多少？見 [模型與定價介面](/guides/models)。要接入 Cursor / Claude Code？見 [客戶端接入](/integrations/cursor)。
+  想要完整的模型列表和價格？請參閱[模型與定價 API](/guides/models)。連接 Cursor 或 Claude Code？請參閱[整合](/integrations/cursor)。
 </Tip>

@@ -1,53 +1,201 @@
 ---
 title: "Prompt Caching"
-description: "Réduisez les coûts du contenu répété et maintenez un routage cohérent avec les ID de requête pour améliorer les taux de succès."
+description: "Utilisez la mise en cache des prompts Anthropic et OpenAI via la passerelle, et maintenez les demandes multi-tours sur le même canal backend pour que les caches soient réellement réutilisés."
 ---
 
-## Qu'est-ce que le prompt caching
+La mise en cache des prompts permet à un fournisseur de réutiliser le calcul pour un préfixe de contexte répété, **réduisant considérablement la latence et le coût des jetons d'entrée**. BearLab AI transmet la mise en cache du fournisseur directement et ajoute un mécanisme d'*affinité de canal* pour que les demandes consécutives du même appelant soient routées vers le même backend, ce qui est essentiellement pour que la mise en cache cross-requête soit rentable sur un relais multi-canal.
 
-De nombreux fournisseurs (y compris Anthropic Claude et OpenAI) supportent nativement le prompt caching. Quand le même contexte est envoyé à plusieurs reprises, le fournisseur réutilise le calcul antérieur, **réduisant la latence et le coût des jetons**.
+<Note>
+  BearLab AI dessert deux régions. Les utilisateurs des États-Unis / UE doivent appeler `https://bearlab.ai` ; les utilisateurs d'Asie-Pacifique doivent appeler `https://bearlab.space`. Les deux régions partagent la même clé, le catalogue des modèles et le comportement de mise en cache. Voir [Disponibilité des services](/fr/guides/availability).
+</Note>
 
-## Limitations de la mise en cache
+## Comment fonctionne la mise en cache du fournisseur
 
-**Les caches ne peuvent pas être partagés entre comptes**, une restriction côté fournisseur, pas côté plateforme.
+La mise en cache est entièrement implémentée par le fournisseur en amont ; la passerelle transmet la demande et vous renvoie les champs de cache. Les deux protocoles diffèrent dans la nécessité d'accepter explicitement.
 
-En tant que relais multi-canal, nous ne pouvons pas garantir que deux requêtes consécutives d'un compte frappent le même canal backend. S'ils vont à des canaux différents, les caches existants ne peuvent pas être réutilisés, ce qui réduit les taux de succès et augmente les coûts.
+<Tabs>
+  <Tab title="Anthropic（opt-in）">
+    La mise en cache de Claude est **explicite**. Marquez un point de rupture de cache avec `cache_control` sur un bloc de contenu (ou au niveau de la demande). Tout jusqu'à ce bloc et le bloc lui-même est mis en cache.
 
-## Garder le routage cohérent
+    - Marqueur : `"cache_control": {"type": "ephemeral"}`
+    - TTL par défaut : **5 minutes**, actualisé à chaque accès au cache. Un TTL d'une heure est disponible au double du prix d'entrée de base.
+    - Champs d'utilisation dans la réponse : `cache_creation_input_tokens` (écrit au premier appel) et `cache_read_input_tokens` (servi à partir du cache par la suite).
 
-Pour remédier à cela, incluez l'ID d'une requête antérieure dans les requêtes ultérieures. Le système tentera de router la nouvelle requête vers le même canal, maximisant la réutilisation du cache.
+    Placez le contenu stable (prompt système, longs documents, définitions d'outils) avant le point de rupture pour que le préfixe mis en cache reste identique d'un tour à l'autre.
+  </Tab>
+  <Tab title="OpenAI（automatique）">
+    La mise en cache OpenAI est **automatique** — aucune modification de demande requise, pas de frais supplémentaires.
 
-| En-tête | Source | TTL |
+    - Se déclenche sur des prompts de **1024 jetons ou plus** ; les prompts plus courts ne sont jamais mis en cache.
+    - Champ d'utilisation dans la réponse : `usage.prompt_tokens_details.cached_tokens` (combien de jetons d'entrée étaient un accès au cache ; `0` quand rien n'était mis en cache).
+    - Le champ optionnel `prompt_cache_key` est combiné avec le hachage de préfixe pour **améliorer le routage et le taux d'accès** lorsque de nombreuses demandes partagent un long préfixe commun.
+  </Tab>
+</Tabs>
+
+## Pourquoi les relais baissent le taux de succès
+
+Un cache est lié au compte backend exact qui l'a créé — il **ne peut pas être partagé entre les comptes**. C'est une règle côté fournisseur, pas une règle de passerelle.
+
+Parce que BearLab AI équilibre les charges entre plusieurs canaux en amont, deux demandes consécutives du même appelant ne sont pas garanties de frapper le même backend. Quand elles vont sur des canaux différents, le cache antérieur est invisible et le préfixe est facturé au prix fort.
+
+## L'affinité de canal vous garde sur un canal
+
+Pour résoudre ce problème, la passerelle exécute l'**affinité de canal** : une fois qu'une demande réussit sur un canal, les demandes ultérieures portant la même valeur d'affinité sont routées vers ce même canal pour une fenêtre TTL, de sorte que le cache côté fournisseur reste accessible.
+
+L'affinité est basée sur une valeur dans le corps de votre demande. Les règles par défaut sont :
+
+| Protocole | Chemin | Clé d'affinité (champ du corps de demande) |
 | --- | --- | --- |
-| `X-Request-Id` | L'en-tête request-id de la réponse précédente | 5 minutes |
-| `X-Response-Id` | L'ID de conversation dans le JSON de réponse antérieur (par exemple, `message.id` de Claude) | 5 minutes |
+| Compatible OpenAI | `/v1/responses` | `prompt_cache_key` |
+| Compatible Anthropic | `/v1/messages` | `metadata.user_id` |
 
-### Exemple
+Envoyez une **valeur stable** dans ce champ à travers tous les tours d'une conversation, et la passerelle les épingle à un seul canal. Utilisez une nouvelle valeur quand vous démarrez une conversation sans rapport. Les entrées d'affinité expirent après le TTL de règle (1 heure par défaut) d'inactivité.
 
-```python
-import anthropic
+<Warning>
+  L'affinité est au meilleur effort. Si le canal épinglé n'est pas disponible, la demande passe quand même sur un autre canal — elle ne réutilisera simplement pas le cache de ce canal pour ce tour. Ne comptez pas sur l'affinité pour l'exactitude, seulement pour le coût.
+</Warning>
 
-client = anthropic.Anthropic(base_url="https://bearlab.ai", api_key="API_KEY")
+## Exemples
 
-response = client.messages.create(
-    model="claude-sonnet-4-6",
-    max_tokens=1024,
-    messages=[{"role": "user", "content": "Hello!"}],
-)
-response_id = response.id
+<Tabs>
+  <Tab title="Anthropic（cache_control + affinité）">
+    Mettez en cache le long prompt système avec `cache_control`, et épinglez la conversation avec un `metadata.user_id` stable.
 
-response2 = client.messages.create(
-    model="claude-sonnet-4-6",
-    max_tokens=1024,
-    messages=[
-        {"role": "user", "content": "Hello!"},
-        {"role": "assistant", "content": response.content[0].text},
-        {"role": "user", "content": "Continue our conversation..."},
-    ],
-    extra_headers={"X-Response-Id": response_id},
-)
-```
+    <CodeGroup>
+      ```bash États-Unis / UE
+      curl https://bearlab.ai/v1/messages \
+        -H "Authorization: Bearer sk-..." \
+        -H "anthropic-version: 2023-06-01" \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "claude-sonnet-4-6",
+          "max_tokens": 1024,
+          "metadata": {"user_id": "conversation-7f3a"},
+          "system": [
+            {
+              "type": "text",
+              "text": "<a long, stable system prompt or document>",
+              "cache_control": {"type": "ephemeral"}
+            }
+          ],
+          "messages": [{"role": "user", "content": "Summarize the document."}]
+        }'
+      ```
 
-## Conseils
+      ```bash Asie-Pacifique
+      curl https://bearlab.space/v1/messages \
+        -H "Authorization: Bearer sk-..." \
+        -H "anthropic-version: 2023-06-01" \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "claude-sonnet-4-6",
+          "max_tokens": 1024,
+          "metadata": {"user_id": "conversation-7f3a"},
+          "system": [
+            {
+              "type": "text",
+              "text": "<a long, stable system prompt or document>",
+              "cache_control": {"type": "ephemeral"}
+            }
+          ],
+          "messages": [{"role": "user", "content": "Summarize the document."}]
+        }'
+      ```
+    </CodeGroup>
 
-Mettez le contenu inchangeable en premier (prompts système, longs documents) et le contenu variable en dernier (le dernier message utilisateur) pour maximiser les succès de préfixe. Plus le préfixe est long et fréquemment réutilisé, plus vous économisez.
+    Réutilisez le même `metadata.user_id` à chaque tour de suivi de cette conversation ; la passerelle les route vers le même canal pour que `cache_read_input_tokens` reste élevé.
+  </Tab>
+
+  <Tab title="OpenAI（automatique + affinité）">
+    OpenAI met en cache automatiquement ; vous n'avez qu'à envoyer un `prompt_cache_key` stable pour que les demandes de suivi restent sur le même canal.
+
+    <CodeGroup>
+      ```bash États-Unis / UE
+      curl https://bearlab.ai/v1/responses \
+        -H "Authorization: Bearer sk-..." \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "gpt-5.5",
+          "prompt_cache_key": "conversation-7f3a",
+          "input": "Continue summarizing the attached document."
+        }'
+      ```
+
+      ```bash Asie-Pacifique
+      curl https://bearlab.space/v1/responses \
+        -H "Authorization: Bearer sk-..." \
+        -H "Content-Type: application/json" \
+        -d '{
+          "model": "gpt-5.5",
+          "prompt_cache_key": "conversation-7f3a",
+          "input": "Continue summarizing the attached document."
+        }'
+      ```
+    </CodeGroup>
+
+    La même `prompt_cache_key` améliore à la fois le routage d'OpenAI et l'affinité de canal de la passerelle, donc `cached_tokens` reflète la réutilisation réelle.
+  </Tab>
+
+  <Tab title="Anthropic SDK">
+    ```python
+    import anthropic
+
+    client = anthropic.Anthropic(
+        base_url="https://bearlab.ai",   # Asie-Pacifique : https://bearlab.space
+        api_key="sk-...",
+    )
+
+    SYSTEM = "<a long, stable system prompt or document>"
+    USER_ID = "conversation-7f3a"  # stable dans toute la conversation
+
+    first = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=1024,
+        metadata={"user_id": USER_ID},
+        system=[{
+            "type": "text",
+            "text": SYSTEM,
+            "cache_control": {"type": "ephemeral"},
+        }],
+        messages=[{"role": "user", "content": "Summarize the document."}],
+    )
+
+    follow_up = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=1024,
+        metadata={"user_id": USER_ID},  # même valeur → même canal → accès au cache
+        system=[{
+            "type": "text",
+            "text": SYSTEM,
+            "cache_control": {"type": "ephemeral"},
+        }],
+        messages=[
+            {"role": "user", "content": "Summarize the document."},
+            {"role": "assistant", "content": first.content[0].text},
+            {"role": "user", "content": "Now list the action items."},
+        ],
+    )
+
+    print(follow_up.usage.cache_read_input_tokens)
+    ```
+  </Tab>
+</Tabs>
+
+## Maximiser les accès
+
+<Steps>
+  <Step title="Contenu ordonné stable en premier">
+    Placez le contenu inchangé (prompt système, longs documents, schémas d'outils) en avant et mettez la partie variable (le message utilisateur le plus récent) en dernier, de sorte que le préfixe mis en cache reste identique au niveau des octets. Plus le préfixe est long et plus il est fréquemment réutilisé, plus vous économisez.
+  </Step>
+  <Step title="Définir un point de rupture de cache (Claude uniquement)">
+    Ajoutez `cache_control: {"type": "ephemeral"}` après le bloc stable. OpenAI n'a pas besoin de marqueur — dès que le prompt atteint 1024 jetons, il est automatiquement mis en cache.
+  </Step>
+  <Step title="Épingler la conversation">
+    Envoyez une valeur d'affinité stable à travers les tours — `metadata.user_id` pour `/v1/messages`, `prompt_cache_key` pour `/v1/responses` — et réutilisez-la pour toute la conversation. Utilisez une nouvelle valeur pour une conversation sans rapport.
+  </Step>
+  <Step title="Vérifier avec utilisation">
+    Vérifiez l'utilisation de la réponse : `cache_read_input_tokens` (Claude) ou `prompt_tokens_details.cached_tokens` (OpenAI). Un nombre croissant d'accès confirme que le préfixe et la valeur d'affinité sont tous deux stables.
+  </Step>
+</Steps>
+
+Voir [Chat Completions](/fr/guides/chat) pour les paramètres de demande complets et [Tarification](/fr/guides/pricing) pour savoir comment les jetons d'entrée en cache et non mis en cache sont facturés.

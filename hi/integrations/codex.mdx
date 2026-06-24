@@ -3,45 +3,81 @@ title: "OpenAI Codex CLI"
 description: "OpenAI के Codex CLI में BearLab AI का उपयोग करें।"
 ---
 
-[Codex CLI](https://github.com/openai/codex) OpenAI का official command-line coding agent है, एक custom provider के माध्यम से connected।
+[Codex CLI](https://github.com/openai/codex) OpenAI का आधिकारिक कमांड-लाइन कोडिंग एजेंट है। आप BearLab AI गेटवे की ओर इशारा करने वाले कस्टम प्रदाता को जोड़कर इसे BearLab AI से जोड़ सकते हैं।
 
 <Warning>
-  Codex OpenAI **Responses API** (`wire_api = "responses"`) का उपयोग करता है, जो एक OpenAI-proprietary protocol है और **केवल OpenAI models** (`gpt-*` / `o*`) के साथ काम करता है। Claude, Gemini जैसे models को Codex के through use नहीं किया जा सकता — Claude के लिए [Claude Code](/hi/integrations/claude-code), [Cursor](/hi/integrations/cursor) या [Cline](/hi/integrations/cline) का उपयोग करें।
+  Codex OpenAI के **Responses API** (`wire_api = "responses"`) का उपयोग करता है, जो एक OpenAI-मालिकाना प्रोटोकॉल है जो **केवल OpenAI-परिवार के मॉडल के साथ काम करता है** (`gpt-*` / `gpt-oss-*`)। Claude, Gemini, GLM और अन्य गैर-OpenAI मॉडल को Codex के माध्यम से संचालित नहीं किया जा सकता — इसके बजाय [Claude Code](/hi/guides/claude-code), [Cursor](/hi/guides/cursor), या [Cline](/hi/guides/cline) का उपयोग करें।
 </Warning>
 
-## Recommended Models
+## आधार URL
 
-| Model | ID | Best For |
+Codex OpenAI-संगत एंडपॉइंट से बात करता है, इसलिए `base_url` `/v1` में समाप्त होता है। अपने सबसे करीब का क्षेत्र चुनें:
+
+| क्षेत्र | `base_url` |
+| --- | --- |
+| यूएस / यूरोप | `https://bearlab.ai/v1` |
+| एशिया-प्रशांत | `https://bearlab.space/v1` |
+
+## अनुशंसित मॉडल
+
+OpenAI-परिवार के मॉडल ID का उपयोग करें, जैसा कि आपकी [मॉडल सूची](/hi/guides/models) में दिखाई देता है। उपलब्ध OpenAI-परिवार ID में शामिल हैं:
+
+| मॉडल | ID | सर्वोत्तम के लिए |
 | --- | --- | --- |
-| GPT-5.5 | `gpt-5.5` | Latest general model, Codex का current default |
-| GPT-5.2-Codex | `gpt-5.2-codex` | Codex coding-tuned, API-key workflows के लिए best |
-| GPT-5.4-mini | `gpt-5.4-mini` | Lightweight और fast, sub-tasks और interactive edits |
+| GPT-5.5 | `gpt-5.5` | नवीनतम सामान्य मॉडल, Codex के लिए मजबूत डिफ़ॉल्ट |
+| GPT-5.4 | `gpt-5.4` | संतुलित गुणवत्ता और गति |
+| GPT-5.4-mini | `gpt-5.4-mini` | हल्का और तेज, सबटास्क और इंटरैक्टिव संपादन के लिए |
+| GPT-5.2 | `gpt-5.2` | रोजमर्रा की बदलाव के लिए विश्वसनीय कार्यकर्ता |
+| GPT-5 | `gpt-5` | स्थिर आधारभूत, व्यापक संगतता |
 
-## Configuration
+<Note>
+  मॉडल ID केस-संवेदनशील हैं और [मॉडल एंडपॉइंट](/hi/guides/models) से बिल्कुल मेल खाना चाहिए। Codex को कॉन्फ़िगर करने से पहले आपकी कुंजी क्या देख सकती है, यह पुष्टि करने के लिए एक त्वरित सूची चलाएं।
+</Note>
 
-`~/.codex/config.toml` को edit करें और BearLab को point करने वाला provider add करें:
+## कॉन्फ़िगरेशन
 
-```toml
-model = "gpt-5.5"
-model_provider = "bearlab"
+`~/.codex/config.toml` को संपादित करें और BearLab AI की ओर इशारा करने वाला एक प्रदाता जोड़ें।
 
-# Third-party providers को response storage को disable करना चाहिए
-disable_response_storage = true
+<Tabs>
+  <Tab title="यूएस / यूरोप">
+    ```toml
+    model = "gpt-5.5"
+    model_provider = "bearlab"
 
-[model_providers.bearlab]
-name = "BearLab AI"
-base_url = "https://bearlab.ai/v1"
-env_key = "BEARLAB_API_KEY"
-wire_api = "responses"
-```
+    # Third-party providers must disable response storage
+    disable_response_storage = true
 
-Key export करें और run करें:
+    [model_providers.bearlab]
+    name = "BearLab AI"
+    base_url = "https://bearlab.ai/v1"
+    env_key = "BEARLAB_API_KEY"
+    wire_api = "responses"
+    ```
+  </Tab>
+  <Tab title="एशिया-प्रशांत">
+    ```toml
+    model = "gpt-5.5"
+    model_provider = "bearlab"
+
+    # Third-party providers must disable response storage
+    disable_response_storage = true
+
+    [model_providers.bearlab]
+    name = "BearLab AI"
+    base_url = "https://bearlab.space/v1"
+    env_key = "BEARLAB_API_KEY"
+    wire_api = "responses"
+    ```
+  </Tab>
+</Tabs>
+
+अपनी API कुंजी निर्यात करें और चलाएं:
 
 ```bash
-export BEARLAB_API_KEY="YOUR_API_KEY"
+export BEARLAB_API_KEY="sk-..."
 codex
 ```
 
 <Note>
-  `/v1` से ending वाला OpenAI-compatible address use करें। `wire_api = "responses"` और `disable_response_storage = true` third-party OpenAI-format provider के लिए required हैं। `model` [models endpoint](/hi/guides/models) में मौजूद एक OpenAI-family ID होना चाहिए।
+  `/v1` में समाप्त होने वाला OpenAI-संगत पता उपयोग करें। तीसरे पक्ष के OpenAI-प्रारूप प्रदाता के लिए `wire_api = "responses"` और `disable_response_storage = true` आवश्यक हैं। प्रमाणीकरण एक Bearer कुंजी (`sk-...`) है जो Codex `env_key` के माध्यम से `Authorization` हेडर में भेजती है। `model` एक OpenAI-परिवार ID होना चाहिए जो आपकी [मॉडल सूची](/hi/guides/models) में मौजूद है।
 </Note>

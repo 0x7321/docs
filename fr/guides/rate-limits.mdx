@@ -1,48 +1,109 @@
 ---
-title: "Rate Limits"
-description: "Formes de limite, leur relation aux niveaux d'utilisateur et comment répondre."
+title: "Limites de débit"
+description: "Ce que la passerelle limite, comment elle s'applique à votre groupe, et comment vous adapter lorsque vous recevez un 429."
 ---
 
-Pour assurer un usage équitable des ressources et la stabilité du service, la plateforme limite la fréquence des requêtes et l'utilisation des jetons.
+Pour assurer l'équité des capacités entre les clés et la stabilité des services en amont, la passerelle limite le nombre de requêtes qu'une clé peut envoyer dans une fenêtre glissante. Le mécanisme est basé sur le nombre de requêtes et configuré par [groupe](/fr/guides/user-levels) — il n'existe pas de nombre fixe public. Concevez donc votre client pour lire `429` et revenir en arrière plutôt que de coder en dur un débit.
 
-## Formes de limite
+<Note>
+  Utilisateurs Asie-Pacifique : utilisez `https://bearlab.space` à la place de `https://bearlab.ai` dans tous les exemples ci-dessous. Consultez [Disponibilité des services](/fr/guides/availability).
+</Note>
 
-| Forme | Signification |
-| --- | --- |
-| **RPM** | Max requêtes par minute |
-| **RPH** | Max requêtes par heure |
-| **RPD** | Max requêtes par jour |
-| **TPM** | Max jetons par minute (entrée + sortie) |
-| **TPD** | Max jetons par jour |
+## Ce qui est limité
 
-## Relation aux niveaux d'utilisateur
+La passerelle limite **les requêtes par fenêtre glissante**, pas les jetons. Deux compteurs indépendants s'appliquent à votre clé, tous deux sur la même fenêtre (configurée en minutes par l'opérateur) :
 
-Les limites sont principalement entraînées par [le niveau d'utilisateur](/fr/guides/user-levels) :
-
-| Tier | Comment l'obtenir | Limite |
+| Compteur | Ce qu'il compte | Quand il se déclenche |
 | --- | --- | --- |
-| **Tier 1** | Par défaut après l'inscription | 5 RPM |
-| **Tier 2** | Automatique après n'importe quelle recharge | Pas de limite |
+| **Requêtes totales** | Chaque requête que vous envoyez dans la fenêtre, **y compris celles échouées** (mauvais paramètres, erreurs d'authentification, erreurs en amont) | Un flot de tentatives ou de requêtes malformées peut épuiser ce quota même si aucune requête ne réussit |
+| **Requêtes réussies** | Seulement les requêtes qui ont retourné `< 400` | C'est le plafond de débit pour le trafic fonctionnant |
 
-Les nouveaux comptes sont par défaut au Tier 1 (5 RPM) ; **n'importe quelle recharge améliore immédiatement à Tier 2 et supprime la limite de débit**, sans demande manuelle.
+Un compteur défini à `0` pour votre groupe signifie que cette dimension est **illimitée**. Parce que le compteur de requêtes totales inclut les échecs, une boucle de retry serrée sur des erreurs peut vous limiter par elle-même — corrigez l'erreur sous-jacente au lieu de continuer à marteler.
 
-## TPM et max_tokens
+<Note>
+  La passerelle n'applique pas de budget par jeton par minute (TPM) ou par jeton par jour (TPD). Ce qui limite vos dépenses de jetons est votre [solde et tarification par modèle](/fr/guides/pricing), pas un compteur de débit. Le contrôle des coûts et la limitation de débit sont des systèmes distincts.
+</Note>
 
-Le total des jetons ne peut pas être connu quand une requête est envoyée, donc le système estime avec le paramètre `max_tokens` pour la limitation TPM, puis corrige avec les jetons réels après la génération. Définissez `max_tokens` **proche du besoin réel** pour réduire les erreurs de surestimation.
+## Comment cela s'applique à votre groupe
 
-## Quand limité
+Les limites de débit sont attachées au **groupe** de votre clé, le même groupe qui contrôle [les modèles que vous pouvez appeler](/fr/guides/user-levels). Différents groupes peuvent avoir des compteurs différents ; le groupe `default`, les groupes nommés et `auto` peuvent chacun se résoudre à un plafond différent. Il n'y a pas d'« échelle de niveaux » numérique — le groupe est l'unité.
 
-Quand les requêtes ou l'utilisation des jetons atteint le plafond, l'API retourne `429 Too Many Requests` ; les requêtes ultérieures sont temporairement rejetées jusqu'à ce que le refroidissement passe.
+Parce que la limite est par groupe et configurée par l'opérateur, la réponse faisant autorité à « quelle est ma limite » est empirique : envoyez du trafic et observez `429`. Traitez tout nombre que vous voyez cité ailleurs comme un aperçu qui peut changer à mesure que les canaux sont ajoutés ou retirés.
+
+## Quand vous êtes limité
+
+Lorsqu'un des deux compteurs est épuisé, l'API retourne `429 Too Many Requests` avec un corps d'erreur de style OpenAI. Le `message` indique quelle limite vous avez atteinte et la fenêtre :
 
 ```http
 HTTP/1.1 429 Too Many Requests
 Content-Type: application/json
-
-{ "error": { "message": "The current group upstream load is saturated, please try again later", "type": "bearlab_api_error" } }
 ```
 
-## Conseils
+```json
+{
+  "error": {
+    "message": "您已达到请求数限制：N分钟内最多请求M次",
+    "type": "new_api_error"
+  }
+}
+```
 
-- **Backoff exponentiel** : sur `429`, attendez et réessayez avec les délais doublant.
-- **Requêtes par lot** : quand les requêtes sont limitées mais pas les jetons, fusionnez les tâches en une seule requête.
-- **Besoin de plus** : contactez votre responsable de compte pour un quota dédié.
+La variante requêtes totales ajoute que les échecs y comptent — lisez le message pour distinguer les deux :
+
+- **Limite de requêtes réussies** — vous envoyez plus de trafic fonctionnant que votre groupe ne le permet ; ralentissez ou passez à un groupe avec un plafond plus élevé.
+- **Limite de requêtes totales** (`...包括失败次数...`) — les échecs sont comptabilisés ; vous relancez probablement une requête cassée. Corrigez la requête, puis relancez-la.
+
+Chaque réponse inclut un en-tête `X-Oneapi-Request-Id` ; citez-le si vous contactez le support. Consultez [Gestion des erreurs](/fr/guides/errors) pour l'enveloppe d'erreur complète.
+
+## Comment réagir
+
+<Steps>
+  <Step title="Lisez le message 429">
+    Il vous dit si vous avez atteint la limite de requêtes réussies ou de requêtes totales, et sur quelle fenêtre. Le cas requêtes totales signifie généralement que vous relancez des erreurs — corrigez-les d'abord.
+  </Step>
+  <Step title="Reculer exponentiellement avec bruit">
+    Sur `429`, attendez et relancez avec des délais doublés plus du bruit aléatoire afin que les clients parallèles ne se heurtent pas. Un calendrier typique : 1s, 2s, 4s, 8s, plafonné à ~30s, avec un plafond de retry.
+
+    <CodeGroup>
+
+    ```python Python
+    import time, random, httpx
+
+    def post_with_backoff(url, headers, json, max_retries=5):
+        delay = 1.0
+        for attempt in range(max_retries):
+            r = httpx.post(url, headers=headers, json=json, timeout=120)
+            if r.status_code != 429:
+                return r
+            time.sleep(min(delay, 30) + random.uniform(0, 0.5))
+            delay *= 2
+        return r  # surface the final 429 to the caller
+    ```
+
+    ```javascript JavaScript
+    async function postWithBackoff(url, init, maxRetries = 5) {
+      let delay = 1000;
+      for (let attempt = 0; attempt < maxRetries; attempt++) {
+        const res = await fetch(url, init);
+        if (res.status !== 429) return res;
+        const wait = Math.min(delay, 30000) + Math.random() * 500;
+        await new Promise((r) => setTimeout(r, wait));
+        delay *= 2;
+      }
+      return await fetch(url, init); // surface the final 429
+    }
+    ```
+
+    </CodeGroup>
+  </Step>
+  <Step title="Limiter la concurrence, pas seulement les retries">
+    Limiter les requêtes en attente (un petit sémaphore/pool de workers) prévient les rafales qui déclenchent la fenêtre en premier lieu. C'est plus efficace que de relancer après coup.
+  </Step>
+  <Step title="Arrêtez de relancer aveuglément les échecs non-429">
+    Les erreurs d'authentification (`401`), de permission (`403`) et de paramètre invalide (`400`) comptent toujours vers la limite de requêtes totales. Les relancer gaspille votre budget et peut limiter le débit du trafic autrement sain. Relancez uniquement `429` et les erreurs `5xx` transitoires.
+  </Step>
+</Steps>
+
+<Tip>
+  Si une intégration fonctionnant correctement atteint systématiquement le plafond, la solution est un groupe avec une limite plus élevée (ou illimitée) plutôt qu'un throttling client plus strict. Contactez votre gestionnaire de compte pour revoir votre groupe, ou consultez [Niveaux d'utilisateur](/fr/guides/user-levels) pour comprendre comment les groupes sont attribués.
+</Tip>

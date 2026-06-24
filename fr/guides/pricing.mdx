@@ -1,44 +1,127 @@
 ---
-title: "Pricing & Billing"
-description: "Facturation à l'usage, multiplicateurs de fournisseurs, recharges, alertes de solde et remboursements."
+title: "Tarification et Facturation"
+description: "Comment BearLab AI facture les requêtes : solde de crédit, types de quota, multiplicateurs de modèle, ratio d'accomplissement et tarification à l'appel."
 ---
 
-Ne payez que ce que vous utilisez. Pas de minimum, et ça s'adapte élastiquement à votre activité.
+Vous ne payez que ce que vous utilisez. Pas d'abonnement, pas de minimum — chaque requête est débitée sur le solde de votre compte.
 
-## Devise de facturation
+## Comment fonctionne la facturation
 
-La plateforme facture en **USD**, alignée avec la tarification officielle de chaque fournisseur.
+Votre compte détient un **solde de crédit** mesuré en quota BearLab AI. Chaque requête déduit le quota en fonction du modèle que vous appelez et du nombre de tokens qu'il traite (ou, pour certains modèles, un prix fixe par appel). Les montants en dollars affichés dans la console utilisent une conversion fixe :
 
-## Méthode de facturation
+<Note>
+**500 000 quota = 1 USD.** Tous les chiffres par token et par appel sur cette page sont exprimés en USD pour des raisons de lisibilité.
+</Note>
 
-Les modèles conversationnels sont facturés **par jeton** : les jetons d'entrée et de sortie sont tarifés séparément, et les jetons d'entrée qui frappent [prompt caching](/fr/guides/prompt-caching) obtiennent un tarif inférieur.
+Le coût final de toute requête est également mis à l'échelle par le **multiplicateur de groupe** du [groupe de fournisseurs](/fr/guides/providers) par lequel la requête est acheminée, et les [niveaux d'utilisateur](/fr/guides/user-levels) peuvent appliquer des réductions supplémentaires.
 
-L'utilisation des jetons par requête est prise à partir de `prompt_tokens` et `completion_tokens` dans la réponse `usage`.
+## Deux méthodes de facturation
 
-## Multiplicateurs de fournisseurs et remises
+Chaque modèle est facturé de l'une des deux manières, décidée par son `quota_type` :
 
-Chaque [fournisseur](/fr/guides/providers) a son propre **multiplicateur de prix**. Le prix que vous payez est égal au prix de base du modèle multiplié par le multiplicateur du fournisseur. Les [niveaux d'utilisateur](/fr/guides/user-levels) plus élevés peuvent recevoir des remises supplémentaires.
+<CardGroup cols={2}>
+  <Card title="Paiement par token" icon="coins">
+    `quota_type = 0`. Les tokens d'entrée et de sortie sont facturés séparément. Cela couvre les modèles conversationnels/chat — Claude, GPT-5.x, Gemini, Grok et les modèles nationaux.
+  </Card>
+  <Card title="Paiement par appel" icon="receipt">
+    `quota_type = 1`. Un prix fixe est facturé par requête réussie, indépendamment du nombre de tokens. Utilisé pour la génération d'images, les packages CLI/par requête et les points de terminaison mesurés.
+  </Card>
+</CardGroup>
+
+## Tarification au token
+
+Pour les modèles facturés par token, BearLab AI utilise trois nombres :
+
+| Champ | Signification |
+| --- | --- |
+| `model_ratio` | Multiplicateur de prix d'entrée. **USD d'entrée par 1M tokens = `model_ratio` × 2.** |
+| `completion_ratio` | Multiplicateur de sortie par rapport à l'entrée. **USD de sortie par 1M tokens = prix d'entrée × `completion_ratio`.** |
+| `cache_ratio` | Les tokens d'entrée en cas de succès du cache sont facturés à `cache_ratio` du prix d'entrée (la plupart des modèles de chat : `0.1`, c.-à-d. une réduction de 90 %). Consultez [mise en cache des invites](/fr/guides/prompt-caching). |
+
+Les comptes de tokens proviennent de `prompt_tokens` et `completion_tokens` dans l'objet `usage` de la réponse.
+
+<Note>
+**Formule de coût (facturé par token) :**
+`cost = (input_tokens × input_price + output_tokens × input_price × completion_ratio) × group_ratio`
+où `input_price = model_ratio × $2 / 1M tokens`. Les tokens d'entrée en cache remplacent `model_ratio × cache_ratio`.
+</Note>
+
+### Modèles de chat représentatifs
+
+Les prix ci-dessous sont au multiplicateur de groupe `1.0`, en USD par 1M tokens.
+
+| Modèle | `model_ratio` | `completion_ratio` | Entrée / 1M | Sortie / 1M |
+| --- | --- | --- | --- | --- |
+| `claude-opus-4-8` | 2.5 | 5 | $5.00 | $25.00 |
+| `claude-opus-4-6` | 2.5 | 5 | $5.00 | $25.00 |
+| `claude-sonnet-4-5-20250929` | 1.5 | 5 | $3.00 | $15.00 |
+| `claude-sonnet-4-6-thinking` | 1.5 | 5 | $3.00 | $15.00 |
+| `claude-haiku-4-5` | 0.5 | 5 | $1.00 | $5.00 |
+| `gpt-5.5` | 2.5 | 6 | $5.00 | $30.00 |
+| `gpt-5.4` | 1.25 | 6 | $2.50 | $15.00 |
+| `gpt-5.4-mini` | 0.375 | 6 | $0.75 | $4.50 |
+| `gpt-5.2` | 0.875 | 8 | $1.75 | $14.00 |
+| `gpt-5.1` | 0.625 | 8 | $1.25 | $10.00 |
+| `gemini-3-pro` | 1 | 6 | $2.00 | $12.00 |
+| `gemini-3.1-pro-preview` | 1 | 6 | $2.00 | $12.00 |
+| `gemini-3-flash` | 0.25 | 6 | $0.50 | $3.00 |
+| `gemini-2.5-flash` | 0.5 | 2.5 | $1.00 | $2.50 |
+| `grok-4.3` | 1 | 5 | $2.00 | $10.00 |
+| `grok-4.1` | 1.5 | 5 | $3.00 | $15.00 |
+
+<Note>
+Ceci est un échantillon organisé. Le catalogue contient 60+ modèles facturés par token. Lisez toujours le prix actuel dans la page **Tarification** de la console ou la réponse `/v1/models`, qui retournent les valeurs `model_ratio` / `completion_ratio` actuelles par modèle et par groupe.
+</Note>
+
+### Tarification échelonnée/longueur de contexte
+
+Certains modèles — principalement les modèles nationaux acheminés via Alibaba Cloud (DeepSeek, Qwen, GLM, Kimi, MiniMax) — utilisent une **expression échelonnée** : le tarif par token change avec la longueur d'entrée de la requête. Par exemple, Qwen et GLM à plus long contexte facturent un multiplicateur d'entrée plus élevé au-dessus de 32K / 128K / 256K tokens. Ces modèles affichent leurs points d'interruption d'échelon sur la page Tarification de la console ; le tarif facturé est sélectionné automatiquement à partir de la longueur d'entrée de la requête.
+
+## Tarification par appel
+
+Pour les modèles `quota_type = 1`, un `model_price` (USD) fixe est facturé par requête réussie. `model_ratio` et `completion_ratio` ne s'appliquent pas. Le multiplicateur de groupe s'applique toujours.
+
+| Catégorie | Modèles d'exemple | Prix par appel |
+| --- | --- | --- |
+| Génération d'images | `gpt-image-2` | $0.05 |
+| Génération d'images (VIP) | `gpt-image-2-vip` | $0.065 |
+| Génération d'images | `gemini-3-pro-image-preview` | $0.15 |
+| Gemini CLI / par requête | `gemini-2.5-pro-cli`, `gemini-3.1-pro-preview-cli` | $0.0001 |
+| Échelons mesurés Gemini | `gemini-3-pro-preview-c1`, `gemini-2.5-pro-c1` | $0.0002 – $0.0003 |
+| Kiro-Claude par requête | `kiro-claude-opus-4-8`, `kiro-claude-sonnet-4-6` | $0.000305 – $0.00058 |
+
+<Note>
+Le coût par appel est simplement `model_price × group_ratio`. Une requête échouée ou rejetée n'est pas facturée.
+</Note>
+
+## Modèles gratuits
+
+Si votre clé ne se résout qu'au **groupe gratuit**, les modèles que vous voyez (par exemple `claude-opus-4-7`, `deepseek-v4-pro`, `gpt-5.4-mini`, `claude-opus-4-8`) sont acheminés sans frais pour votre solde. La console peut afficher un `model_price` nominal, mais le multiplicateur de groupe effectif pour ces modèles est **0**, ils ne réduisent donc pas le quota. Consultez le [guide des modèles](/fr/guides/models) pour la liste complète des modèles gratuits renvoyée par votre clé.
+
+## Multiplicateurs de groupe et réductions
+
+Le même modèle peut avoir un prix effectif différent en fonction du [groupe de fournisseurs](/fr/guides/providers) auquel votre clé est liée. Le prix que vous payez est égal au prix de base du modèle (par token ou par appel) fois le multiplicateur de groupe. Les [niveaux d'utilisateur](/fr/guides/user-levels) supérieurs peuvent déverrouiller des réductions supplémentaires.
 
 ## Recharge
 
-- Recharge en ligne via **Stripe** (cartes de crédit et de débit) ; le solde est accrédité instantanément.
-- Pour la facturation d'entreprise ou les grandes recharges, [nous contacter](mailto:support@bearlab.ai).
+- Rechargez votre solde depuis la console ; le quota crédité est disponible immédiatement.
+- Pour la facturation d'entreprise ou les recharges importantes, [contactez-nous](mailto:support@bearlab.ai).
 
 ## Alertes de solde
 
-Pour éviter les interruptions, définissez une alerte : Dashboard, Paramètres de profil, Gestion de l'abonnement, définissez un seuil. Quand votre solde descend en dessous, nous vous notifions par email ou message in-app.
+Pour éviter les interruptions, définissez un seuil de solde faible dans la console sous **Profil → Paramètres**. Lorsque votre solde chute en dessous, nous vous notifions par email ou par message in-app.
 
-## Plans pour grand volume
+## Plans de volume élevé
 
-Pour une plus grande concurrence ou une tarification dédiée, [nous contacter](mailto:support@bearlab.ai).
+Pour une concurrence plus élevée ou une tarification dédiée, [contactez-nous](mailto:support@bearlab.ai).
 
 ## Remboursements
 
 Pour demander un remboursement, contactez le support. Remarque :
 
-- Si un remboursement réduit votre niveau de compte, le montant du sur-avantage est déduit.
-- Les recharges pour lesquelles une facture a été émise ne sont pas remboursables.
-- Des frais de traitement de jusqu'à **5%** s'appliquent.
-- Les remboursements retournent à la méthode de paiement d'origine.
+- Si un remboursement fait baisser votre niveau de compte, le montant de la surcharge est déduit.
+- Les recharges pour lesquelles une facture a été établie ne sont pas remboursables.
+- Des frais de traitement jusqu'à **5%** s'appliquent.
+- Les remboursements reviennent à la méthode de paiement d'origine.
 
-Stripe envoie un reçu après chaque recharge réussie. Pour une facture officielle, contactez le support avec le nom de votre entreprise, le numéro d'identification fiscale et le montant.
+Pour une facture formelle, contactez le support avec votre nom d'entreprise, numéro d'identification fiscale et montant.

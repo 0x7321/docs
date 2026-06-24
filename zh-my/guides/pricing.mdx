@@ -1,46 +1,127 @@
 ---
-title: "计费与储值"
-description: "按量付费的计费方式、供应商倍率、储值、余额提醒与退款。"
+title: "定价与账单"
+description: "BearLab AI 如何计费：信用额度、配额类型、模型倍数、完成度比例，及按次调用定价。"
 ---
 
-按实际用量付费，无最低消费门槛，随业务规模弹性扩展。
+按用量付费。无订阅、无最低消费——每次请求都从您的账户余额扣除。
 
-## 计费货币
+## 账单如何运作
 
-平台以 **USD** 计费，与各模型供应商的官方定价对齐。
+您的账户持有以 BearLab AI 配额衡量的**信用额度**。每次请求根据您调用的模型和处理的 token 数量（或对于某些模型，按固定的按次价格）扣除配额。整个控制台显示的美元金额采用固定换算：
 
-## 计费方式
+<Note>
+**500,000 配额 = 1 美元**。本页面上的所有按 token 和按次图表均以美元表示，便于阅读。
+</Note>
 
-对话模型按 **Per Token（按 token）** 计费：输入与输出 token 分别计价，命中[提示词缓存](/zh-my/guides/prompt-caching)的输入 token 可享更低单价。
+您任何请求的最终成本也受到请求路由所经过之[供应商群组](/zh-my/guides/providers)的**群组倍数**影响，[用户等级](/zh-my/guides/user-levels)可能会应用额外折扣。
 
-每次请求的 token 用量以响应 `usage` 中的 `prompt_tokens` 与 `completion_tokens` 为准。
+## 两种账单方式
 
-## 供应商倍率与折扣
+每个模型以两种方式之一计费，由其 `quota_type` 决定：
 
-每个[供应商](/zh-my/guides/providers)有各自的**价格倍率**。你实际支付的价格 = 模型基础价 × 供应商倍率。
+<CardGroup cols={2}>
+  <Card title="按 token 付费" icon="coins">
+    `quota_type = 0`。输入和输出 token 分别定价。涵盖对话/聊天模型——Claude、GPT-5.x、Gemini、Grok 和国内模型。
+  </Card>
+  <Card title="按次付费" icon="receipt">
+    `quota_type = 1`。无论 token 数量如何，每次成功请求均收取固定价格。用于图像生成、CLI/按次套件和计量端点。
+  </Card>
+</CardGroup>
 
-更高[用户等级](/zh-my/guides/user-levels)可能享受额外折扣。
+## 按 token 定价
 
-## 储值
+对于按 token 计费的模型，BearLab AI 使用三个数字：
 
-* 通过 **Stripe** 在线储值（信用卡 / 借记卡），余额即时到账
-* 企业结算或大额储值，请[联系我们](mailto:support@bearlab.ai)
+| 字段 | 含义 |
+| --- | --- |
+| `model_ratio` | 输入价格倍数。**每 100 万 token 的输入美元 = `model_ratio` × 2。** |
+| `completion_ratio` | 相对于输入的输出倍数。**每 100 万 token 的输出美元 = 输入价格 × `completion_ratio`。** |
+| `cache_ratio` | 缓存命中的输入 token 按 `cache_ratio` 的输入价格计费（大多数聊天模型：`0.1`，即 90% 折扣）。见[提示词缓存](/zh-my/guides/prompt-caching)。 |
 
-## 余额提醒
+Token 计数来自回应 `usage` 对象中的 `prompt_tokens` 和 `completion_tokens`。
 
-建议开启余额提醒，避免服务中断：进入 **控制台 → 个人设置 → 订阅管理**，设置提醒阈值。余额低于阈值时，平台会通过邮件 / 站内信通知你。
+<Note>
+**成本公式（按 token 计费）：**
+`cost = (input_tokens × input_price + output_tokens × input_price × completion_ratio) × group_ratio`
+其中 `input_price = model_ratio × $2 / 100 万 token`。缓存输入 token 替代 `model_ratio × cache_ratio`。
+</Note>
 
-## 高用量方案
+### 代表性聊天模型
 
-如需更高并发或专属定价，请[联系我们](mailto:support@bearlab.ai)商定定制方案。
+下列价格采用群组倍数 `1.0`，单位为美元/100 万 token。
 
-## 退款政策
+| 模型 | `model_ratio` | `completion_ratio` | 输入 / 100 万 | 输出 / 100 万 |
+| --- | --- | --- | --- | --- |
+| `claude-opus-4-8` | 2.5 | 5 | $5.00 | $25.00 |
+| `claude-opus-4-6` | 2.5 | 5 | $5.00 | $25.00 |
+| `claude-sonnet-4-5-20250929` | 1.5 | 5 | $3.00 | $15.00 |
+| `claude-sonnet-4-6-thinking` | 1.5 | 5 | $3.00 | $15.00 |
+| `claude-haiku-4-5` | 0.5 | 5 | $1.00 | $5.00 |
+| `gpt-5.5` | 2.5 | 6 | $5.00 | $30.00 |
+| `gpt-5.4` | 1.25 | 6 | $2.50 | $15.00 |
+| `gpt-5.4-mini` | 0.375 | 6 | $0.75 | $4.50 |
+| `gpt-5.2` | 0.875 | 8 | $1.75 | $14.00 |
+| `gpt-5.1` | 0.625 | 8 | $1.25 | $10.00 |
+| `gemini-3-pro` | 1 | 6 | $2.00 | $12.00 |
+| `gemini-3.1-pro-preview` | 1 | 6 | $2.00 | $12.00 |
+| `gemini-3-flash` | 0.25 | 6 | $0.50 | $3.00 |
+| `gemini-2.5-flash` | 0.5 | 2.5 | $1.00 | $2.50 |
+| `grok-4.3` | 1 | 5 | $2.00 | $10.00 |
+| `grok-4.1` | 1.5 | 5 | $3.00 | $15.00 |
 
-如需退款请联系客服。注意：
+<Note>
+这是精选样本。目录包含 60+ 个按 token 计费的模型。始终从控制台的**定价**页面或 `/v1/models` 回应读取最新价格，该回应会传回每个模型和每个群组的当前 `model_ratio` / `completion_ratio` 值。
+</Note>
 
-* 若退款导致账户**等级下降**，超出权益的金额将相应扣除
-* **已开具收据**的储值不予退款
-* 退款收取最高 **5%** 手续费
-* 退款一般原路退回储值账户
+### 分层/上下文长度定价
 
-收据与收据见 [Billing & Receipts](mailto:support@bearlab.ai)：Stripe 在每次储值成功后自动发送邮件收据；如需正式收据，联系客服并附公司名、税号与金额。
+某些模型——主要是通过阿里云路由的国内模型（DeepSeek、Qwen、GLM、Kimi、MiniMax）——使用**分层表达式**：按 token 比率随请求的输入长度而变化。例如，较长上下文的 Qwen 和 GLM 分层在超过 32K / 128K / 256K token 时收取较高的输入倍数。这些模型在控制台定价页面上显示其分层断点；账单比率根据请求的输入长度自动选择。
+
+## 按次定价
+
+对于 `quota_type = 1` 模型，每次成功请求收取固定 `model_price`（美元）。`model_ratio` 和 `completion_ratio` 不适用。群组倍数仍然适用。
+
+| 类别 | 模型示例 | 按次价格 |
+| --- | --- | --- |
+| 图像生成 | `gpt-image-2` | $0.05 |
+| 图像生成 (VIP) | `gpt-image-2-vip` | $0.065 |
+| 图像生成 | `gemini-3-pro-image-preview` | $0.15 |
+| Gemini CLI / 按次 | `gemini-2.5-pro-cli`, `gemini-3.1-pro-preview-cli` | $0.0001 |
+| Gemini 计量分层 | `gemini-3-pro-preview-c1`, `gemini-2.5-pro-c1` | $0.0002 – $0.0003 |
+| Kiro-Claude 按次 | `kiro-claude-opus-4-8`, `kiro-claude-sonnet-4-6` | $0.000305 – $0.00058 |
+
+<Note>
+按次成本就是 `model_price × group_ratio`。失败或遭拒的请求不计费。
+</Note>
+
+## 免费模型
+
+如果您的密钥仅解析到**免费群组**，您看到的模型（例如 `claude-opus-4-7`、`deepseek-v4-pro`、`gpt-5.4-mini`、`claude-opus-4-8`）会以零成本路由到您的余额。控制台可能会显示名义上的 `model_price`，但这些模型的有效群组倍数是 **0**，因此不会扣除配额。见[模型指南](/zh-my/guides/models)了解您的密钥传回的完整免费模型列表。
+
+## 群组倍数和折扣
+
+同一模型根据您的密钥绑定到的[供应商群组](/zh-my/guides/providers)可能有不同的有效价格。您支付的价格等于模型的基本价格（按 token 或按次）乘以群组倍数。更高的[用户等级](/zh-my/guides/user-levels)可能解锁额外折扣。
+
+## 充值
+
+- 从控制台充值您的余额；已充值的配额立即可用。
+- 对于企业账单或大额充值，[联系我们](mailto:support@bearlab.ai)。
+
+## 余额警示
+
+为避免中断，在控制台**个人资料 → 设置**下设定低余额阈值。当您的余额降至以下时，我们会通过电子邮件或应用内消息通知您。
+
+## 高量方案
+
+如需更高并发性或专属定价，[联系我们](mailto:support@bearlab.ai)。
+
+## 退款
+
+若要申请退款，请联系支持部门。注意：
+
+- 如果退款导致您的账户等级下降，超额获利金额将被扣除。
+- 已开立发票的充值不可退款。
+- 收取最高 **5%** 的处理费。
+- 退款将退回到原始付款方式。
+
+如需正式发票，请联系支持部门并提供您的公司名称、税务 ID 和金额。

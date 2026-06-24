@@ -1,71 +1,128 @@
 ---
 title: "クイックスタート"
-description: "キーを作成し、5分で最初のリクエストを行います。"
+description: "5 分以内にキーを作成して最初のリクエストを送信します。"
 ---
 
-モデルを呼び出すための3つのステップ。
+モデルを呼び出すには 3 つのステップがあります。キーを作成し、クライアントを正しいベース URL に指定してから、最初のチャットリクエストを送信します。
 
 <Note>
-  アジア太平洋ユーザー: `https://bearlab.ai` の代わりに専用ドメイン `https://bearlab.in` を使用してください。[サービス提供地域](/ja/guides/availability)を参照してください。
+  地域に応じてベース URL を選択してください。**米国 / EU：** `https://bearlab.ai`。**アジア太平洋：** `https://bearlab.space`。その他すべて（キー、モデル、リクエスト形式）は地域全体で同じです。[サービスの可用性](/ja/guides/availability)を参照してください。
 </Note>
 
 <Steps>
-  <Step title="登録して入金する">
-    [コンソール](https://bearlab.ai)で登録し、ウォレットページから資金を追加します。新規ユーザーはテストするために少額の入金から始めることができます。
+  <Step title="サインアップとトップアップ">
+    [コンソール](https://bearlab.ai)で登録し、ウォレットページで資金を追加してください。新規ユーザーは少量の入金でテストを開始できます。
   </Step>
-  <Step title="APIキーを作成する">
-    ダッシュボード、APIトークンに移動して、トークンを追加をクリックし、`sk-...` キーをコピーします。キーは最初の1回だけ完全に表示されます。
+  <Step title="API キーを作成">
+    ダッシュボード、API トークンに移動し、トークンを追加をクリックして、`sk-...` キーをコピーしてください。キーは最初の 1 回だけ完全に表示されます。毎回のリクエストで `Authorization: Bearer sk-...` として渡します。
   </Step>
-  <Step title="最初のリクエストを行う">
-    `YOUR_API_KEY` をあなたのキーに置き換えます。
+  <Step title="ベース URL を設定">
+    あなたの地域とプロトコルに応じたベース URL を使用してください：
+
+    | プロトコル | 米国 / EU | アジア太平洋 |
+    | --- | --- | --- |
+    | OpenAI 互換 | `https://bearlab.ai/v1` | `https://bearlab.space/v1` |
+    | Anthropic | `https://bearlab.ai/v1/messages` | `https://bearlab.space/v1/messages` |
+  </Step>
+  <Step title="最初のリクエストを実行">
+    下のサンプルを送信してください。`sk-...` を作成したばかりのキーに置き換えてください。
   </Step>
 </Steps>
 
 ## 例
 
-<Tabs>
-  <Tab title="OpenAI互換">
-    ```bash
-    curl https://bearlab.ai/v1/chat/completions \
-      -H "Authorization: Bearer YOUR_API_KEY" \
-      -H "Content-Type: application/json" \
-      -d '{
-        "model": "gpt-4o",
-        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
-      }'
-    ```
-  </Tab>
-  <Tab title="Anthropic互換">
-    ```bash
-    curl https://bearlab.ai/v1/messages \
-      -H "x-api-key: YOUR_API_KEY" \
-      -H "anthropic-version: 2023-06-01" \
-      -H "Content-Type: application/json" \
-      -d '{
-        "model": "claude-sonnet-4-6",
-        "max_tokens": 256,
-        "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
-      }'
-    ```
-  </Tab>
-  <Tab title="Python (OpenAI SDK)">
-    ```python
-    from openai import OpenAI
+OpenAI 互換エンドポイントは `POST /v1/chat/completions`；Anthropic エンドポイントは `POST /v1/messages`。どちらも `Authorization: Bearer sk-...` で認証します。`model` 値は、あなたのキーに対して[モデルリスト](/ja/guides/models)が返すモデルの 1 つである必要があります。以下の例では、このアカウントで利用可能なモデルを使用しています。
 
-    client = OpenAI(
-        api_key="YOUR_API_KEY",
-        base_url="https://bearlab.ai/v1",
-    )
+### OpenAI 互換
 
-    resp = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[{"role": "user", "content": "Introduce yourself in one sentence"}],
-    )
-    print(resp.choices[0].message.content)
-    ```
-  </Tab>
-</Tabs>
+<CodeGroup>
+```bash US / EU (bearlab.ai)
+curl https://bearlab.ai/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+  }'
+```
+
+```bash Asia-Pacific (bearlab.space)
+curl https://bearlab.space/v1/chat/completions \
+  -H "Authorization: Bearer sk-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+  }'
+```
+</CodeGroup>
+
+### Anthropic
+
+Anthropic エンドポイントは `max_tokens` と `anthropic-version` ヘッダーを期待します。`Authorization: Bearer sk-...` で認証できます（ゲートウェイは `x-api-key: sk-...` も受け入れます）。
+
+<CodeGroup>
+```bash US / EU (bearlab.ai)
+curl https://bearlab.ai/v1/messages \
+  -H "Authorization: Bearer sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-sonnet-4-6",
+    "max_tokens": 256,
+    "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+  }'
+```
+
+```bash Asia-Pacific (bearlab.space)
+curl https://bearlab.space/v1/messages \
+  -H "Authorization: Bearer sk-..." \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-sonnet-4-6",
+    "max_tokens": 256,
+    "messages": [{"role": "user", "content": "Introduce yourself in one sentence"}]
+  }'
+```
+</CodeGroup>
+
+### Python（OpenAI SDK）
+
+地域の `/v1` ベース URL にまで SDK をポイントしてください。SDK は `/chat/completions` を自動的に追加します。
+
+<CodeGroup>
+```python US / EU (bearlab.ai)
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-...",
+    base_url="https://bearlab.ai/v1",
+)
+
+resp = client.chat.completions.create(
+    model="gpt-5.4",
+    messages=[{"role": "user", "content": "Introduce yourself in one sentence"}],
+)
+print(resp.choices[0].message.content)
+```
+
+```python Asia-Pacific (bearlab.space)
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-...",
+    base_url="https://bearlab.space/v1",
+)
+
+resp = client.chat.completions.create(
+    model="gpt-5.4",
+    messages=[{"role": "user", "content": "Introduce yourself in one sentence"}],
+)
+print(resp.choices[0].message.content)
+```
+</CodeGroup>
 
 <Tip>
-  モデルリストと価格が必要ですか？[モデル & 価格API](/ja/guides/models)を参照してください。CursorまたはClaude Codeを接続していますか？[統合](/ja/integrations/cursor)を参照してください。
+  完全なモデルリストと価格をお探しですか？[モデルと価格設定 API](/ja/guides/models)を参照してください。Cursor または Claude Code を接続していますか？[統合](/ja/integrations/cursor)を参照してください。
 </Tip>

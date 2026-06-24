@@ -1,24 +1,47 @@
 ---
 title: "Cursor"
-description: "Utilisez les modèles conversationnels de BearLab dans Cursor."
+description: "Utilisez les modèles conversationnels de BearLab AI dans Cursor."
 ---
 
-[Cursor](https://cursor.com) est un éditeur de code IA populaire. Connectez-le via l'interface compatible OpenAI.
+[Cursor](https://cursor.com) est un éditeur de code IA populaire. Connectez-le via l'interface compatible OpenAI de BearLab AI.
+
+Cursor ne supporte que le protocole OpenAI, alors utilisez toujours l'URL de base `/v1` et authentifiez-vous avec votre clé `sk-...`.
 
 <Steps>
   <Step title="Ouvrir les paramètres du modèle">
-    Ouvrez Settings, Models.
+    Ouvrez **Settings → Models**.
   </Step>
   <Step title="Remplacer l'URL de base">
-    Dans la zone Clé API OpenAI, développez Override OpenAI Base URL et définissez :
-    - **Base URL**: `https://bearlab.ai/v1`
-    - **API Key**: votre clé `sk-...`
+    Dans la zone **OpenAI API Key**, développez **Override OpenAI Base URL** et définissez la valeur pour votre région :
+
+    <Tabs>
+      <Tab title="US / EU">
+        - **Base URL**: `https://bearlab.ai/v1`
+        - **API Key**: votre clé `sk-...`
+      </Tab>
+      <Tab title="Asia-Pacific">
+        - **Base URL**: `https://bearlab.space/v1`
+        - **API Key**: votre clé `sk-...`
+      </Tab>
+    </Tabs>
   </Step>
-  <Step title="Ajoutez des modèles et vérifiez">
-    Ajoutez les noms de modèle que vous voulez (par ex. `gpt-4o`, `claude-sonnet-4-6`), enregistrez, puis cliquez sur Verify.
+  <Step title="Ajouter des modèles et vérifier">
+    Cursor ne récupère pas automatiquement la liste des modèles lorsqu'une URL de base personnalisée est définie, vous devez donc ajouter les noms de modèles manuellement. Utilisez les ID exactement comme ils apparaissent dans le [point de terminaison des modèles](/fr/guides/models), par exemple :
+
+    - `gpt-5.5`
+    - `claude-sonnet-4-6`
+    - `claude-opus-4-7`
+    - `gemini-3.1-pro-preview`
+    - `deepseek-v4-pro`
+
+    Enregistrez, puis cliquez sur **Verify**.
   </Step>
 </Steps>
 
 <Note>
-  Cursor utilise uniquement le protocole compatible OpenAI, donc l'URL de base se termine par `/v1`. Les noms de modèles doivent exister dans le [point de terminaison des modèles](/fr/guides/models). Si la vérification échoue, confirmez la clé avec le curl du [Démarrage rapide](/fr/guides/quickstart) d'abord.
+  Les noms de modèles doivent correspondre exactement à un ID renvoyé par le [point de terminaison des modèles](/fr/guides/models), y compris le suffixe. Un nom qui n'existe pas échouera à la vérification. Si la vérification échoue toujours, confirmez d'abord la clé avec le curl du [Démarrage rapide](/fr/guides/quickstart).
 </Note>
+
+<Warning>
+  Choisissez l'URL de base qui correspond à votre région. `https://bearlab.ai` dessert les États-Unis/Europe et `https://bearlab.space` dessert l'Asie-Pacifique ; le chemin reste `/v1` pour les deux. Ne mélangez pas la clé d'une région avec l'URL de base d'une autre région.
+</Warning>

@@ -1,20 +1,38 @@
 ---
-title: "Official SDKs (Python / Node)"
-description: "BearLab के साथ official OpenAI या Anthropic SDKs का उपयोग करें।"
+title: "आधिकारिक SDK (Python / Node)"
+description: "BearLab AI के साथ आधिकारिक OpenAI या Anthropic SDK का उपयोग करें।"
 ---
 
-Official SDKs को केवल एक changed `base_url` और key की आवश्यकता है BearLab को point करने के लिए।
+आधिकारिक OpenAI और Anthropic SDK BearLab AI के साथ बिना किसी बदलाव के काम करते हैं — आपको केवल `base_url` को बदलना है और अपनी BearLab AI API कुंजी प्रदान करनी है। BearLab AI एक ही गेटवे पर दो प्रोटोकॉल उजागर करता है:
+
+- **OpenAI-संगत** — आधार URL `<domain>/v1` है, एंडपॉइंट `/v1/chat/completions` है।
+- **Anthropic** — आधार URL डोमेन रूट है, एंडपॉइंट `/v1/messages` है।
+
+<Note>
+  अपने क्षेत्र के लिए आधार URL चुनें:
+
+  - **अमेरिका / यूरोप** — `https://bearlab.ai`
+  - **एशिया-प्रशांत** — `https://bearlab.space`
+
+  प्रमाणीकरण `Authorization` शीर्षलेख में एक Bearer API कुंजी है। जब आप `api_key` पास करते हैं तो SDK इसे स्वचालित रूप से जोड़ता है। कभी भी स्रोत कोड में वास्तविक कुंजी को हार्डकोड न करें — एक पर्यावरण चर का उपयोग करें।
+</Note>
 
 ## OpenAI SDK
 
+`base_url` को `<domain>/v1` पर सेट करें। मॉडल ID [मॉडल सूची](/hi/guides/models) से आते हैं — उदाहरण के लिए `gpt-5.5`, `claude-sonnet-4-6`, या `deepseek-v4-pro`।
+
 <CodeGroup>
 ```python Python
+import os
 from openai import OpenAI
 
-client = OpenAI(api_key="YOUR_API_KEY", base_url="https://bearlab.ai/v1")
+client = OpenAI(
+    api_key=os.environ["BEARLAB_API_KEY"],   # sk-...
+    base_url="https://bearlab.ai/v1",          # Asia-Pacific: https://bearlab.space/v1
+)
 
 resp = client.chat.completions.create(
-    model="gpt-4o",
+    model="gpt-5.5",
     messages=[{"role": "user", "content": "Hello"}],
 )
 print(resp.choices[0].message.content)
@@ -24,12 +42,12 @@ print(resp.choices[0].message.content)
 import OpenAI from "openai";
 
 const client = new OpenAI({
-  apiKey: "YOUR_API_KEY",
-  baseURL: "https://bearlab.ai/v1",
+  apiKey: process.env.BEARLAB_API_KEY,        // sk-...
+  baseURL: "https://bearlab.ai/v1",            // Asia-Pacific: https://bearlab.space/v1
 });
 
 const resp = await client.chat.completions.create({
-  model: "gpt-4o",
+  model: "gpt-5.5",
   messages: [{ role: "user", content: "Hello" }],
 });
 console.log(resp.choices[0].message.content);
@@ -38,11 +56,17 @@ console.log(resp.choices[0].message.content);
 
 ## Anthropic SDK
 
+`base_url` को **डोमेन रूट** पर सेट करें (कोई `/v1` प्रत्यय नहीं) — Anthropic SDK स्वयं `/v1/messages` को जोड़ता है। [मॉडल सूची](/hi/guides/models) से एक Claude मॉडल ID का उपयोग करें, जैसे `claude-opus-4-7` या `claude-sonnet-4-6`। `max_tokens` Anthropic Messages API द्वारा आवश्यक है।
+
 <CodeGroup>
 ```python Python
+import os
 from anthropic import Anthropic
 
-client = Anthropic(api_key="YOUR_API_KEY", base_url="https://bearlab.ai")
+client = Anthropic(
+    api_key=os.environ["BEARLAB_API_KEY"],   # sk-...
+    base_url="https://bearlab.ai",             # Asia-Pacific: https://bearlab.space
+)
 
 msg = client.messages.create(
     model="claude-sonnet-4-6",
@@ -56,8 +80,8 @@ print(msg.content[0].text)
 import Anthropic from "@anthropic-ai/sdk";
 
 const client = new Anthropic({
-  apiKey: "YOUR_API_KEY",
-  baseURL: "https://bearlab.ai",
+  apiKey: process.env.BEARLAB_API_KEY,        // sk-...
+  baseURL: "https://bearlab.ai",               // Asia-Pacific: https://bearlab.space
 });
 
 const msg = await client.messages.create({
@@ -69,6 +93,10 @@ console.log(msg.content[0].text);
 ```
 </CodeGroup>
 
+<Warning>
+  प्रत्येक BearLab AI मॉडल ID एक विशिष्ट प्रोटोकॉल को लक्षित करता है। Claude मॉडल Anthropic SDK के माध्यम से पहुंचने योग्य हैं; OpenAI-प्रारूप मॉडल OpenAI SDK के माध्यम से पहुंचने योग्य हैं। यदि कोई अनुरोध मॉडल-नहीं-मिला या एंडपॉइंट-असंमति त्रुटि लौटाता है, तो पुष्टि करें कि मॉडल ID जो प्रोटोकॉल आप कॉल कर रहे हैं उसका समर्थन करता है — [मॉडल सूची](/hi/guides/models) देखें।
+</Warning>
+
 <Tip>
-  कोई भी tool जो एक custom OpenAI base URL को support करता है (LobeChat, Chatbox, Continue, Zed, Immersive Translate) same way में काम करता है: base URL को `https://bearlab.ai/v1` पर set करें और अपनी key का उपयोग करें।
+  कोई भी टूल जो कस्टम OpenAI आधार URL स्वीकार करता है (LobeChat, Chatbox, Continue, Zed, Immersive Translate) उसी तरह काम करता है: आधार URL को `https://bearlab.ai/v1` (अमेरिका / यूरोप) या `https://bearlab.space/v1` (एशिया-प्रशांत) पर सेट करें और अपनी कुंजी को पेस्ट करें।
 </Tip>
