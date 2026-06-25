@@ -1,0 +1,77 @@
+---
+title: "トークンリスト"
+description: "GET /api/token/"
+---
+
+## リクエストヘッダ
+
+| リクエストヘッダ | 必須 | 説明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`、アカウントアクセストークン（コンソールログイン状態、`sk-` API Key ではない） |
+
+エンドポイント：`GET /api/token/`
+
+現在のアカウントのすべての API キーをページ分割してリストアップします。名前 / プレフィックス検索は `GET /api/token/search` を使用してください。
+
+## クエリパラメータ
+
+| クエリパラメータ | 必須 | 型 | 説明 |
+| --- | --- | --- | --- |
+| `p` |  | integer | ページ番号（1 から開始） |
+| `page_size` |  | integer | 1 ページあたりの件数 |
+
+```bash
+curl "https://bearlab.ai/api/token/?p=1&page_size=10" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json 回応
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "items": [
+      {
+        "id": 10623,
+        "user_id": 42,
+        "key": "ntEH**********7nAh",
+        "status": 1,
+        "name": "my-token",
+        "created_time": 1781977779,
+        "accessed_time": 1781977779,
+        "expired_time": -1,
+        "remain_quota": 0,
+        "unlimited_quota": true,
+        "used_quota": 0,
+        "model_limits_enabled": false,
+        "model_limits": "",
+        "allow_ips": "",
+        "group": "",
+        "cross_group_retry": false
+      }
+    ],
+    "page": 1,
+    "page_size": 10,
+    "total": 7
+  }
+}
+```
+
+| フィールド | 型 | 説明 |
+| --- | --- | --- |
+| `key` | string | マスク済み（最初の 4 文字 + `**********` + 最後の 4 文字）；完全なキーは作成時に一度だけ表示されます |
+| `status` | integer | `1` 有効 / `2` 無効 / `3` 期限切れ / `4` 枯渇 |
+| `expired_time` | integer | 有効期限（Unix 秒）、`-1` は無期限 |
+| `remain_quota` | integer | 残りクォータ（quota、500000 = 1 ドル） |
+| `unlimited_quota` | boolean | 無制限クォータかどうか |
+| `used_quota` | integer | 使用されたクォータ |
+| `model_limits_enabled` | boolean | モデルホワイトリストが有効かどうか |
+| `model_limits` | string | モデルホワイトリスト（カンマ区切り、空文字列は制限なし） |
+| `allow_ips` | string \| null | IP ホワイトリスト（空文字列 / `null` は制限なし） |
+| `group` | string | トークングループ |
+| `cross_group_retry` | boolean | グループ間リトライを行うかどうか（`auto` グループのみ有効） |
+| `data.page` / `page_size` / `total` | integer | ページネーション情報 |
+
+<Note>
+ソース：new-api ソースコード `controller/token.go` `GetAllTokens` + `model/token.go` `Token`。`GET /api/token/` はページネーションパラメータのみを受け入れます；`key` は `MaskTokenKey` でマスクされます。旧ドキュメントの `remain_count` / `unlimited_count` / `exclude_ips` / `rate_limits` などのフィールドは new-api では **存在しません**。
+</Note>

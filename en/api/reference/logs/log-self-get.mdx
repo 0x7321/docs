@@ -1,0 +1,88 @@
+---
+title: "Get Personal Logs"
+description: "GET /api/log/self"
+---
+
+## Request Headers
+
+| Header | Required | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, account access token (console login state, not `sk-` API Key) |
+
+Endpoint: `GET /api/log/self`
+
+Paginate through the call logs of the current account.
+
+## Query Parameters
+
+| Query Parameter | Required | Type | Description |
+| --- | --- | --- | --- |
+| `p` |  | integer | Page number, starting from 1 |
+| `page_size` |  | integer | Number of records per page |
+| `type` |  | integer | Log type (`2` consumption / `1` topup / `3` admin / `4` system / `5` error; omit or `0` for all) |
+| `token_name` |  | string | Filter by token name |
+| `model_name` |  | string | Filter by model name |
+| `group` |  | string | Filter by group |
+| `start_timestamp` |  | integer | Start time, Unix seconds |
+| `end_timestamp` |  | integer | End time, Unix seconds |
+| `request_id` |  | string | Exact query by request ID |
+| `upstream_request_id` |  | string | Query by upstream request ID |
+
+```bash
+curl "https://bearlab.ai/api/log/self?p=1&page_size=10&type=2" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json Response
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "items": [
+      {
+        "id": 123,
+        "user_id": 42,
+        "created_at": 1718000000,
+        "type": 2,
+        "content": "Model gpt-5.4, rate multiplier ...",
+        "username": "alice",
+        "token_name": "default",
+        "model_name": "gpt-5.4",
+        "quota": 240,
+        "prompt_tokens": 100,
+        "completion_tokens": 50,
+        "use_time": 3,
+        "is_stream": false,
+        "channel": 12,
+        "token_id": 7,
+        "group": "default",
+        "request_id": "2026062500000000",
+        "upstream_request_id": ""
+      }
+    ],
+    "page": 1,
+    "page_size": 10,
+    "total": 5
+  }
+}
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `data.items` | array | Array of log records |
+| `type` | integer | Log type (as above) |
+| `content` | string | Log description (billing rate, etc.) |
+| `token_name` | string | Token name |
+| `model_name` | string | Model name |
+| `quota` | integer | Quota consumed for this request |
+| `prompt_tokens` / `completion_tokens` | integer | Input / output token count |
+| `use_time` | integer | Request duration (seconds) |
+| `is_stream` | boolean | Whether streaming |
+| `channel` | integer | Channel ID (note: JSON field is `channel`, not `channel_id`) |
+| `group` | string | Group used |
+| `request_id` | string | Request ID |
+| `data.page` / `page_size` / `total` | integer | Pagination info |
+
+<Note>
+Source: new-api source code `controller/log.go` `GetUserLogs` + `model/log.go` `Log`. Personal log queries do **not** support `keyword` or `channel` query parameters (`/api/log/self/search` is deprecated); `channel` is returned only as a response field.
+</Note>

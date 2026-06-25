@@ -1,0 +1,51 @@
+---
+title: "वास्तविक भुगतान राशि की गणना करें"
+description: "POST /api/user/amount"
+---
+
+## अनुरोध हेडर
+
+| अनुरोध हेडर | आवश्यक | विवरण |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, खाता एक्सेस टोकन |
+| `Content-Type` | ✓ | `application/json` |
+
+इंटरफ़ेस: `POST /api/user/amount`
+
+वर्तमान उपयोगकर्ता समूह के अनुसार छूट के साथ, `amount` क्रेडिट रीचार्ज के लिए वास्तविक भुगतान राशि की पूर्वगणना करें। यह रीचार्ज पृष्ठ पर "क्रेडिट दर्ज करें → देय राशि प्रदर्शित करें" के लिए रीयल-टाइम गणना के लिए उपयोग किया जाता है, यह कोई ऑर्डर नहीं बनाता है।
+
+## अनुरोध निकाय
+
+| फ़ील्ड | प्रकार | आवश्यक | विवरण |
+| --- | --- | --- | --- |
+| `amount` | integer | ✓ | रीचार्ज क्रेडिट राशि, `topup/info` से लौटाई गई `min_topup` से ≥ होनी चाहिए |
+
+```bash
+curl "https://bearlab.ai/api/user/amount" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{ "amount": 100 }'
+```
+
+```json सफल
+{
+  "message": "success",
+  "data": "95.00"
+}
+```
+
+```json विफल
+{
+  "message": "error",
+  "data": "रीचार्ज राशि 1 से कम नहीं हो सकती"
+}
+```
+
+| फ़ील्ड | प्रकार | विवरण |
+| --- | --- | --- |
+| `message` | string | `success` सफलता को इंगित करता है, `error` विफलता को इंगित करता है |
+| `data` | string | सफलता के समय वास्तविक भुगतान राशि स्ट्रिंग (दो दशमलव स्थानें, समूह छूट शामिल); विफलता के समय त्रुटि विवरण |
+
+<Note>
+यह इंटरफ़ेस बेयर `c.JSON` रिटर्न का उपयोग करता है, **प्रतिक्रिया में `success` फ़ील्ड नहीं है**, केवल `message` + `data`, जो `topup/info` की `{ success, message, data }` रैपिंग से अलग है। स्रोत: `controller/topup.go` `RequestAmount`।
+</Note>

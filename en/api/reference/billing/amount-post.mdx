@@ -1,0 +1,51 @@
+---
+title: "Calculate Actual Payment Amount"
+description: "POST /api/user/amount"
+---
+
+## Request Headers
+
+| Header | Required | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, account access token |
+| `Content-Type` | ✓ | `application/json` |
+
+Endpoint: `POST /api/user/amount`
+
+Calculates the actual payment amount required to top up `amount` quota units based on the current user's group discount. Used for real-time calculation on the top-up page ("enter quota → display amount due"), does not create an order.
+
+## Request Body
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `amount` | integer | ✓ | Number of quota units to top up, must be ≥ the `min_topup` returned by `topup/info` |
+
+```bash
+curl "https://bearlab.ai/api/user/amount" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{ "amount": 100 }'
+```
+
+```json Success
+{
+  "message": "success",
+  "data": "95.00"
+}
+```
+
+```json Failure
+{
+  "message": "error",
+  "data": "Top-up amount cannot be less than 1"
+}
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `message` | string | `success` indicates success, `error` indicates failure |
+| `data` | string | On success: the actual payment amount as a string (two decimal places, group discount included); on failure: error description |
+
+<Note>
+This endpoint returns using plain `c.JSON`, **the response does not contain a `success` field**, only `message` + `data`, which differs from the `{ success, message, data }` wrapper used by `topup/info`. Source: `controller/topup.go` `RequestAmount`.
+</Note>

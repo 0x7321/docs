@@ -1,0 +1,40 @@
+---
+title: "टोकन हटाएं"
+description: "DELETE /api/token/{id}"
+---
+
+## अनुरोध हेडर
+
+| अनुरोध हेडर | आवश्यक | विवरण |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`—खाता एक्सेस टोकन (कंसोल लॉगिन स्थिति, `sk-` API कुंजी नहीं) |
+
+इंटरफ़ेस: `DELETE /api/token/{id}`
+
+निर्दिष्ट API कुंजी को हटाएं।
+
+## पथ पैरामीटर
+
+| पैरामीटर | आवश्यक | प्रकार | विवरण |
+| --- | --- | --- | --- |
+| `id` | ✓ | integer | हटाए जाने वाली टोकन ID, `GET /api/token/` से `data.items[].id` |
+
+<Warning>
+**ट्रेलिंग स्लैश के बिना** पथ `DELETE /api/token/{id}` का उपयोग करें। ट्रेलिंग स्लैश के साथ `DELETE /api/token/{id}/` को gin द्वारा ट्रेलिंग स्लैश के बिना पथ पर 307 पुनः निर्देशित किया जाएगा; यदि क्लाइंट 307 का पालन नहीं करता है तो हटाया नहीं जाएगा।
+</Warning>
+
+```bash
+curl -X DELETE https://bearlab.ai/api/token/10623 \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json 
+{
+  "success": true,
+  "message": ""
+}
+```
+
+<Note>
+स्रोत: new-api स्रोत कोड `controller/token.go` `DeleteToken`। सफल प्रतिक्रिया केवल `{ success, message }`, कोई `data` फील्ड नहीं।
+</Note>

@@ -1,0 +1,61 @@
+---
+title: "トークン検索"
+description: "GET /api/token/search"
+---
+
+## リクエストヘッダ
+
+| リクエストヘッダ | 必須 | 説明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`、アカウントアクセストークン（コンソールログイン状態、`sk-` API Key ではない） |
+
+インターフェース：`GET /api/token/search`
+
+現在のアカウントのトークンを名前またはキープレフィックスで検索し、結果をページネーション形式で返します。
+
+## クエリパラメータ
+
+| クエリパラメータ | 必須 | タイプ | 説明 |
+| --- | --- | --- | --- |
+| `keyword` |  | string | トークン名であいまい検索 |
+| `token` |  | string | キープレフィックスでフィルタリング |
+| `p` |  | integer | ページ番号、1 から開始 |
+| `page_size` |  | integer | 1 ページあたりのアイテム数 |
+
+```bash
+curl "https://bearlab.ai/api/token/search?keyword=my-token" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json 応答
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "items": [
+      {
+        "id": 10623,
+        "user_id": 42,
+        "key": "ntEH**********7nAh",
+        "status": 1,
+        "name": "my-token",
+        "created_time": 1781977779,
+        "expired_time": -1,
+        "remain_quota": 0,
+        "unlimited_quota": true,
+        "used_quota": 0,
+        "group": ""
+      }
+    ],
+    "page": 1,
+    "page_size": 10,
+    "total": 1
+  }
+}
+```
+
+レスポンス構造は `GET /api/token/` と同じです（`key` は既に難読化されており、フィールド説明は [トークン一覧](/ja/api/reference/token-management/token-get) を参照してください）。
+
+<Note>
+ソース：new-api ソースコード `controller/token.go` の `SearchTokens`。`keyword`（名前）と `token`（キープレフィックス）の 2 つの検索パラメータとページネーションを受け入れます。注意：`GET /api/token/` リストインターフェースは `keyword` を受け入れ**ません**。あいまい検索はこのインターフェースを使用する必要があります。
+</Note>

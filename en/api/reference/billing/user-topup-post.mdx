@@ -1,0 +1,44 @@
+---
+title: "Redeem Topup Code"
+description: "POST /api/user/topup"
+---
+
+## Request Headers
+
+| Header | Required | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, account access token |
+| `Content-Type` | ✓ | `application/json` |
+
+Endpoint: `POST /api/user/topup`
+
+Use a redemption code to top up the current account. This endpoint is for "redemption code topup", not for creating online payment orders.
+
+## Request Body
+
+| Field | Required | Type | Description |
+| --- | --- | --- | --- |
+| `key` | ✓ | string | Redemption code |
+
+```bash
+curl "https://bearlab.ai/api/user/topup" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"key":"REDEMPTION_CODE"}'
+```
+
+```json Response
+{
+  "success": true,
+  "message": "",
+  "data": 10
+}
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `data` | integer | Quota amount added by this redemption (`model.Redeem` returns `int`, unit is quota, not currency string) |
+
+<Note>
+Source: new-api `controller.TopUp` (redemption code → `model.Redeem`). After success, it is recommended to refresh the account balance from `GET /api/user/self`.
+</Note>

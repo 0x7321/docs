@@ -1,0 +1,64 @@
+---
+title: "Initier un paiement en ligne"
+description: "POST /api/user/pay"
+---
+
+## En-têtes de requête
+
+| En-tête | Requis | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, jeton d'accès au compte |
+| `Content-Type` | ✓ | `application/json` |
+
+Interface : `POST /api/user/pay`
+
+Crée une commande de recharge en attente de paiement et lance le paiement via la passerelle YiPay, en renvoyant l'adresse de soumission de la passerelle `url` et les paramètres du formulaire `data`. Le front-end doit envoyer `data` via POST à `url` pour accéder à la caisse. Une fois le paiement effectué, la passerelle appelle `/api/user/epay/notify` pour créditer le compte.
+
+## Corps de requête
+
+| Champ | Type | Requis | Description |
+| --- | --- | --- | --- |
+| `amount` | integer | ✓ | Montant de recharge, doit être ≥ `min_topup` |
+| `payment_method` | string | ✓ | Identifiant de la méthode de paiement, obtenu à partir de `pay_methods[].type` dans `topup/info`, par exemple `alipay`, `wxpay` |
+
+```bash
+curl "https://bearlab.ai/api/user/pay" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{ "amount": 100, "payment_method": "alipay" }'
+```
+
+```json Succès
+{
+  "message": "success",
+  "url": "https://pay.example.com/submit.php",
+  "data": {
+    "pid": "1000",
+    "out_trade_no": "USR42NOa1b2c31718000000",
+    "name": "TUC100",
+    "money": "95.00",
+    "type": "alipay",
+    "sign": "e10adc3949ba59abbe56e057f20f883e",
+    "sign_type": "MD5"
+  }
+}
+```
+
+```json Erreur
+{
+  "message": "error",
+  "data": "La méthode de paiement n'existe pas"
+}
+```
+
+| Champ | Type | Description |
+| --- | --- | --- |
+| `message` | string | `success` / `error` |
+| `url` | string | Adresse de soumission de la passerelle YiPay, renvoyée en cas de succès |
+| `data` | object | Paramètres du formulaire à soumettre à la passerelle (contient `out_trade_no` (numéro de commande marchand), `money` (montant payé), `sign` (signature), etc.), varie selon la passerelle |
+
+Les messages d'erreur possibles sont : `Paramètres invalides`, `La quantité de recharge ne peut pas être inférieure à N`, `Impossible de récupérer le groupe utilisateur`, `Montant de recharge trop faible`, `La méthode de paiement n'existe pas`, `L'administrateur actuel n'a pas configuré les informations de paiement`, `Impossible d'initier le paiement`, `Impossible de créer la commande`.
+
+<Note>
+La réponse ne contient **pas non plus de champ `success`**. La commande est identifiée par `out_trade_no` (c'est-à-dire `trade_no` du serveur, au format `USR{user_id}NO{random}{timestamp}`), vous pouvez vérifier l'état via `GET /api/user/topup/self`. Source : `controller/topup.go` `RequestEpay`.
+</Note>

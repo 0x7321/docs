@@ -1,0 +1,41 @@
+---
+title: "बैच में हटाएँ"
+description: "POST /api/token/batch"
+---
+
+## अनुरोध शीर्षलेख
+
+| अनुरोध शीर्षलेख | आवश्यक | विवरण |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, खाता एक्सेस टोकन (कंसोल लॉगिन स्थिति, `sk-` API कुंजी नहीं) |
+| `Content-Type` | ✓ | `application/json` |
+
+इंटरफेस: `POST /api/token/batch`
+
+एक साथ कई API कुंजियों को हटाएँ (`DeleteTokenBatch`, बैच में हटाएँ, बनाना नहीं)।
+
+## अनुरोध निकाय
+
+| फ़ील्ड | आवश्यक | प्रकार | विवरण |
+| --- | --- | --- | --- |
+| `ids` | ✓ | integer[] | हटाने के लिए टोकन आईडी की सूची, आईडी `GET /api/token/` के `data.items[].id` से आती है |
+
+```bash
+curl -X POST https://bearlab.ai/api/token/batch \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"ids": [10623, 10624]}'
+```
+
+<Note>
+फ्रंटएंड फॉलबैक कौशल: जब बैच में हटाना विफल हो, तो `DELETE /api/token/{id}` को अलग-अलग कॉल किया जाता है।
+</Note>
+
+```json जवाब
+{ "success": true, "message": "", "data": 2 }
+```
+
+
+<Note>
+स्रोत: new-api स्रोत कोड `controller/token.go` `DeleteTokenBatch`। अनुरोध निकाय `{ ids: [...] }` (कम से कम 1), प्रतिक्रिया `data` सफलतापूर्वक हटाई गई संख्या है।
+</Note>

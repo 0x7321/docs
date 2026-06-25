@@ -1,0 +1,53 @@
+---
+title: "Get Personal Log Statistics"
+description: "GET /api/log/self/stat"
+---
+
+## Request Headers
+
+| Header | Required | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, account access token (console login state, not `sk-` API Key) |
+
+Endpoint: `GET /api/log/self/stat`
+
+Get the call statistics for the current account (quota consumption, RPM, TPM).
+
+## Query Parameters
+
+| Query Parameter | Required | Type | Description |
+| --- | --- | --- | --- |
+| `start_timestamp` |  | integer | Start time, Unix seconds |
+| `end_timestamp` |  | integer | End time, Unix seconds |
+| `type` |  | integer | Log type |
+| `token_name` |  | string | Filter by token name |
+| `model_name` |  | string | Filter by model name |
+| `channel` |  | integer | Filter by channel ID |
+| `group` |  | string | Filter by group |
+
+```bash
+curl "https://bearlab.ai/api/log/self/stat" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json Response
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "quota": 0,
+    "rpm": 0,
+    "tpm": 0
+  }
+}
+```
+
+| Field | Description |
+| --- | --- |
+| `quota` | Quota consumed (quota, 500000 = $1 USD) |
+| `rpm` | Requests per minute |
+| `tpm` | Tokens per minute |
+
+<Note>
+Source: new-api source code `controller/log.go` `GetLogsSelfStat` + `model/log.go` `Stat`. The `data` field contains only three fields: `quota` / `rpm` / `tpm` (the `mpm` / `unfinished_count` / `unfinished_by_vendor` fields from the old documentation do not exist in new-api).
+</Note>

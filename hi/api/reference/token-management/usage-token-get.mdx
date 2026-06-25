@@ -1,0 +1,58 @@
+---
+title: "टोकन उपयोग"
+description: "GET /api/usage/token/"
+---
+
+इंटरफेस: `GET /api/usage/token/`
+
+## अनुरोध हेडर
+
+| अनुरोध हेडर | आवश्यक | विवरण |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_MODEL_API_KEY`, टोकन प्रबंधन द्वारा बनाई गई मॉडल API कुंजी; खाता एक्सेस टोकन `YOUR_ACCESS_TOKEN` का उपयोग न करें |
+
+इस API कुंजी के अपने कोटा और उपयोग की गई राशि की क्वेरी करें। यह एंडपॉइंट API कुंजी द्वारा प्रमाणित है, खाता `access_token` द्वारा नहीं।
+
+<Warning>
+टोकन प्रबंधन में बनाई गई मॉडल API कुंजी का उपयोग करना अनिवार्य है (इस दस्तावेज़ में `YOUR_MODEL_API_KEY` के रूप में लिखा गया है, आमतौर पर मॉडल कॉल के लिए `sk-...` रूप में उपयोग किया जाता है)। यहां खाता एक्सेस टोकन `YOUR_ACCESS_TOKEN` का उपयोग नहीं किया जा सकता; गलत उपयोग करने से `401 Invalid Token` लौटाया जाएगा। पथ में अंतिम स्लैश होना चाहिए।
+</Warning>
+
+```bash
+curl https://bearlab.ai/api/usage/token/ \
+  -H "Authorization: Bearer YOUR_MODEL_API_KEY"
+```
+
+```json
+{
+  "code": true,
+  "message": "ok",
+  "data": {
+    "object": "token_usage",
+    "name": "default",
+    "total_granted": 500000,
+    "total_used": 444364,
+    "total_available": 55636,
+    "unlimited_quota": false,
+    "model_limits": {},
+    "model_limits_enabled": false,
+    "expires_at": 0
+  }
+}
+```
+
+| फील्ड | प्रकार | विवरण |
+| --- | --- | --- |
+| `code` | boolean | सफल होने पर `true` (ध्यान दें कि यह इंटरफेस बाहरी स्तर पर `code` का उपयोग करता है, `success` **नहीं**) |
+| `data.object` | string | निश्चित मान `token_usage` |
+| `data.name` | string | टोकन नाम |
+| `data.total_granted` | integer | कुल कोटा (शेष + उपयोग किया गया, quota) |
+| `data.total_used` | integer | उपयोग किया गया कोटा |
+| `data.total_available` | integer | शेष कोटा |
+| `data.unlimited_quota` | boolean | क्या यह असीमित कोटा टोकन है |
+| `data.model_limits` | object | मॉडल व्हाइटलिस्ट मैपिंग (अक्षम होने पर खाली) |
+| `data.model_limits_enabled` | boolean | क्या मॉडल व्हाइटलिस्ट सक्षम है |
+| `data.expires_at` | integer | समाप्ति समय (Unix सेकंड, `0` का अर्थ कभी समाप्त नहीं होगा) |
+
+<Note>
+स्रोत: new-api स्रोत कोड `controller/token.go` `GetTokenUsage`। सफल प्रतिक्रिया बाहरी स्तर पर `{ code: true, message: "ok", data }` का उपयोग करती है (अन्य इंटरफेस के `success` रैपर से भिन्न)। प्रमाणीकरण विफल होने पर `401 Invalid Token` लौटाया जाता है।
+</Note>

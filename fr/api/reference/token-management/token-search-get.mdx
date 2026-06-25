@@ -1,0 +1,61 @@
+---
+title: "Rechercher un Token"
+description: "GET /api/token/search"
+---
+
+## En-têtes de la requête
+
+| En-tête | Requis | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, jeton d'accès du compte (session de la console, non une clé API `sk-`) |
+
+Endpoint : `GET /api/token/search`
+
+Recherchez les tokens du compte actuel par nom ou préfixe de clé. Les résultats sont retournés avec pagination.
+
+## Paramètres de requête
+
+| Paramètre | Requis | Type | Description |
+| --- | --- | --- | --- |
+| `keyword` |  | string | Recherche floue par nom de Token |
+| `token` |  | string | Filtrer par préfixe de clé |
+| `p` |  | integer | Numéro de page, commence à 1 |
+| `page_size` |  | integer | Nombre d'éléments par page |
+
+```bash
+curl "https://bearlab.ai/api/token/search?keyword=my-token" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json Réponse
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "items": [
+      {
+        "id": 10623,
+        "user_id": 42,
+        "key": "ntEH**********7nAh",
+        "status": 1,
+        "name": "my-token",
+        "created_time": 1781977779,
+        "expired_time": -1,
+        "remain_quota": 0,
+        "unlimited_quota": true,
+        "used_quota": 0,
+        "group": ""
+      }
+    ],
+    "page": 1,
+    "page_size": 10,
+    "total": 1
+  }
+}
+```
+
+La structure de la réponse est identique à `GET /api/token/` (la clé `key` est masquée, voir les descriptions des champs dans [Liste des Tokens](/fr/api/reference/token-management/token-get)).
+
+<Note>
+Source : code source new-api `controller/token.go` `SearchTokens`. Accepte deux paramètres de recherche `keyword` (nom) et `token` (préfixe de clé) avec pagination. Remarque : l'endpoint de liste `GET /api/token/` **n'accepte pas** `keyword`, la recherche floue doit utiliser cet endpoint.
+</Note>

@@ -1,0 +1,79 @@
+---
+title: "Current Account Information"
+description: "GET /api/user/self"
+---
+
+## Request Headers
+
+| Header | Required | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, account access token (console login session, not `sk-` API Key) |
+
+Endpoint: `GET /api/user/self`
+
+Retrieve the current logged-in account's profile, quota (balance), and referral information. Account available quota is in `data.quota`, used quota is in `data.used_quota` (both in quota integers, 500000 quota = 1 USD).
+
+```bash
+curl "https://bearlab.ai/api/user/self" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json Response
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "id": 42,
+    "username": "alice",
+    "display_name": "Alice",
+    "role": 1,
+    "status": 1,
+    "email": "alice@example.com",
+    "github_id": "",
+    "discord_id": "",
+    "oidc_id": "",
+    "wechat_id": "",
+    "telegram_id": "",
+    "linux_do_id": "",
+    "group": "default",
+    "quota": 55636,
+    "used_quota": 444364,
+    "request_count": 128,
+    "aff_code": "ABCDEF",
+    "aff_count": 3,
+    "aff_quota": 0,
+    "aff_history_quota": 1500000,
+    "inviter_id": 0,
+    "setting": "{}",
+    "stripe_customer": "",
+    "sidebar_modules": "",
+    "permissions": {}
+  }
+}
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | integer | User ID |
+| `username` | string | Login username |
+| `display_name` | string | Display name |
+| `role` | integer | Role: `1` regular user / `10` administrator / `100` super administrator |
+| `status` | integer | Status: `1` enabled / `2` banned |
+| `email` | string | Bound email |
+| `github_id` / `discord_id` / `oidc_id` / `wechat_id` / `telegram_id` / `linux_do_id` | string | Third-party login binding identifiers |
+| `group` | string | User group (determines available models and multipliers) |
+| `quota` | integer | Current remaining quota (500000 = 1 USD) |
+| `used_quota` | integer | Historical used quota |
+| `request_count` | integer | Total request count |
+| `aff_code` | string | Personal referral code |
+| `aff_count` | integer | Number of referrals |
+| `aff_quota` | integer | Available referral quota |
+| `aff_history_quota` | integer | Historical total referral quota |
+| `inviter_id` | integer | Referrer user ID (`0` means none) |
+| `setting` | string | User personalization settings (JSON string) |
+| `stripe_customer` | string | Stripe customer ID |
+| `permissions` | object | Role permission information |
+
+<Note>
+Source: new-api source code `controller/user.go` `GetSelf`. The response does **not** contain `access_token` (excluded via `json:"-"` in `model/user.go`), and lacks fields like `balance` / `level` / `topup_*` — use the integer `quota` for remaining quota. Access tokens must be obtained separately via `GET /api/user/token` (note that this endpoint will **reset** the token).
+</Note>

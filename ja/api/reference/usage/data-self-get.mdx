@@ -1,0 +1,65 @@
+---
+title: "利用統計"
+description: "GET /api/data/self"
+---
+
+## リクエストヘッダー
+
+| リクエストヘッダー | 必須 | 説明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`、アカウントアクセストークン（コンソールログイン状態、トークン管理で生成した `sk-` API Key ではありません） |
+
+インターフェース：`GET /api/data/self`
+
+指定された時間範囲内における現在のユーザーの利用明細を「日付 × モデル」で集計して返します。各レコードは1日における特定モデルのAPI呼び出し回数、消費トークン数、および消費額度に対応します。
+
+## クエリパラメーター
+
+| パラメーター | 必須 | 型 | 説明 |
+| --- | --- | --- | --- |
+| `start_timestamp` |  | integer | 開始時刻（Unix秒） |
+| `end_timestamp` |  | integer | 終了時刻（Unix秒） |
+
+```bash
+curl "https://bearlab.ai/api/data/self?start_timestamp=1717200000&end_timestamp=1718000000" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json レスポンス
+{
+  "success": true,
+  "message": "",
+  "data": [
+    {
+      "id": 1,
+      "user_id": 42,
+      "username": "alice",
+      "model_name": "gpt-5.4",
+      "created_at": 1717200000,
+      "use_group": "default",
+      "token_id": 7,
+      "channel_id": 12,
+      "node_name": "",
+      "token_used": 1024,
+      "count": 8,
+      "quota": 240
+    }
+  ]
+}
+```
+
+| フィールド | 型 | 説明 |
+| --- | --- | --- |
+| `data` | array | 利用記録の配列（`data` は直接配列で、ページング構造はありません） |
+| `model_name` | string | モデル名 |
+| `created_at` | integer | 集計日付（Unix秒） |
+| `use_group` | string | 使用されたグループ |
+| `token_id` | integer | トークン ID |
+| `channel_id` | integer | チャネル ID |
+| `token_used` | integer | 消費トークン数 |
+| `count` | integer | API呼び出し回数 |
+| `quota` | integer | 消費額度（quota、500000 = 1ドル） |
+
+<Note>
+出典：new-api ソースコード `controller/usedata.go` の `GetUserQuotaDates` + `model/usedata.go` の `QuotaData`。サーバー側は `start_timestamp` / `end_timestamp` のみを読み取り、`granularity` / `dimension` パラメーターはありません。レスポンス形式は `{ success, message, data: [...] }` で、`data` はフラット配列です。
+</Note>

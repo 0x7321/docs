@@ -1,0 +1,72 @@
+---
+title: "Get Topup Information"
+description: "GET /api/user/topup/info"
+---
+
+## Request Headers
+
+| Header | Required | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, account access token (console login session, not `sk-` API Key) |
+
+Endpoint: `GET /api/user/topup/info`
+
+Returns the current site's topup configuration: available payment methods, minimum topup amount, quick amount buttons, discounts, and various online payment/redemption code toggles. The frontend topup page renders based on this data; call this endpoint before initiating online payment (`POST /api/user/pay`) to obtain the `pay_methods[].type` value.
+
+```bash
+curl "https://bearlab.ai/api/user/topup/info" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json Response
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "enable_online_topup": true,
+    "enable_stripe_topup": false,
+    "enable_creem_topup": false,
+    "enable_waffo_topup": false,
+    "enable_waffo_pancake_topup": false,
+    "enable_redemption": true,
+    "payment_compliance_confirmed": true,
+    "payment_compliance_terms_version": 1,
+    "pay_methods": [
+      { "name": "Alipay", "type": "alipay", "color": "rgba(var(--semi-blue-5), 1)", "min_topup": "1" },
+      { "name": "WeChat Pay", "type": "wxpay", "color": "rgba(var(--semi-green-5), 1)", "min_topup": "1" }
+    ],
+    "waffo_pay_methods": null,
+    "creem_products": null,
+    "min_topup": 1,
+    "stripe_min_topup": 1,
+    "waffo_min_topup": 1,
+    "waffo_pancake_min_topup": 1,
+    "amount_options": [10, 30, 50, 100, 300],
+    "discount": { "100": 0.95, "300": 0.9 },
+    "topup_link": ""
+  }
+}
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `enable_online_topup` | boolean | Whether to enable online payment (QR code scan) topup |
+| `enable_stripe_topup` / `enable_creem_topup` | boolean | Whether to enable Stripe / Creem topup |
+| `enable_waffo_topup` / `enable_waffo_pancake_topup` | boolean | Whether to enable Waffo / Waffo Pancake global payment |
+| `enable_redemption` | boolean | Whether to allow redemption codes (`POST /api/user/topup`) |
+| `payment_compliance_confirmed` | boolean | Whether the admin has confirmed payment compliance terms (when unconfirmed, `pay_methods` is empty) |
+| `payment_compliance_terms_version` | number | Current compliance terms version |
+| `pay_methods` | array | List of available payment methods for online payment, each item `{ name, type, color, min_topup }` |
+| `pay_methods[].type` | string | Payment method identifier, passed as `payment_method` when initiating payment, e.g. `alipay`, `wxpay` |
+| `pay_methods[].min_topup` | string | Minimum topup amount for this payment method (**string**, differs from top-level `min_topup` integer) |
+| `waffo_pay_methods` | array \| null | Waffo payment sub-methods; `null` when Waffo is disabled |
+| `creem_products` | array \| null | Creem product list; `null` when not configured |
+| `min_topup` | integer | Minimum topup amount for online payment (values below this cause `POST /api/user/amount` to error) |
+| `stripe_min_topup` / `waffo_min_topup` / `waffo_pancake_min_topup` | integer | Minimum topup amount for corresponding channel |
+| `amount_options` | number[] | Quick amount buttons on topup page |
+| `discount` | object | Tiered discount table `{ amount: discount_factor }`, multiplied with actual payment amount |
+| `topup_link` | string | External topup redirect link (empty string means use in-site topup) |
+
+<Note>
+Endpoint contract sourced from new-api source code `controller/topup.go` `GetTopUpInfo` + official API documentation `GET /api/user/topup/info`. Example values vary by site configuration.
+</Note>

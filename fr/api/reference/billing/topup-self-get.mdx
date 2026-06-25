@@ -1,0 +1,70 @@
+---
+title: "Historique des recharges"
+description: "GET /api/user/topup/self"
+---
+
+## En-têtes de requête
+
+| En-tête | Obligatoire | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, jeton d'accès au compte |
+
+Interface : `GET /api/user/topup/self`
+
+Récupère par pagination les enregistrements de commandes de recharge de l'utilisateur actuel (y compris les statuts en attente, terminé, etc.).
+
+## Paramètres de requête
+
+| Paramètre | Type | Obligatoire | Description |
+| --- | --- | --- | --- |
+| `page` | integer | | Numéro de page, à partir de 1 |
+| `page_size` | integer | | Nombre d'articles par page |
+| `keyword` | string | | Recherche floue par numéro de commande (`trade_no`) |
+
+```bash
+curl "https://bearlab.ai/api/user/topup/self?page=1&page_size=10" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json 回应
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "items": [
+      {
+        "id": 1024,
+        "user_id": 42,
+        "amount": 100,
+        "money": 95.00,
+        "trade_no": "USR42NOa1b2c31718000000",
+        "payment_method": "alipay",
+        "payment_provider": "epay",
+        "status": "success",
+        "create_time": 1718000000,
+        "complete_time": 1718000060
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "page_size": 10
+  }
+}
+```
+
+| Champ | Type | Description |
+| --- | --- | --- |
+| `data.items` | array | Liste des commandes de recharge |
+| `amount` | integer | Montant de la recharge |
+| `money` | number | Montant réellement payé |
+| `trade_no` | string | Numéro de commande du commerçant |
+| `payment_method` | string | Identifiant de la méthode de paiement (`alipay` / `wxpay` / `stripe` …) |
+| `payment_provider` | string | Canal de paiement (`epay` / `stripe` / `creem` …) |
+| `status` | string | Statut de la commande : `pending` en attente de paiement / `success` terminé |
+| `create_time` | integer | Heure de création (secondes Unix) |
+| `complete_time` | integer | Heure d'achèvement (secondes Unix), `0` si non terminé |
+| `data.total` / `page` / `page_size` | integer | Informations de pagination |
+
+<Note>
+Source : `controller/topup.go` `GetUserTopUps`, pagination enrobée dans la structure `PageInfo` standard new-api (`items` + `total` + `page` + `page_size`).
+</Note>

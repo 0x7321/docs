@@ -1,0 +1,84 @@
+---
+title: "Update Token"
+description: "PUT /api/token/"
+---
+
+## Request Headers
+
+| Header | Required | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, account access token (console login state, not `sk-` API Key) |
+| `Content-Type` | ✓ | `application/json` |
+
+Endpoint: `PUT /api/token/`
+
+Update an existing API Key. The token `id` is placed in the **request body** (not in the URL).
+
+## Query Parameters
+
+| Parameter | Required | Type | Description |
+| --- | --- | --- | --- |
+| `status_only` |  | string | When non-empty, only update the `status` field (enable / disable), ignore other fields |
+
+## Request Body
+
+| Field | Required | Type | Description |
+| --- | --- | --- | --- |
+| `id` | ✓ | integer | Token ID to update (placed in body) |
+| `name` | ✓ | string | Token name |
+| `expired_time` | ✓ | integer | Expiration time as Unix seconds; `-1` for never expires |
+| `remain_quota` | ✓ | integer | Remaining quota |
+| `unlimited_quota` | ✓ | boolean | Whether quota is unlimited |
+| `status` |  | integer | Status: `1` enabled / `2` disabled (used with `status_only`) |
+| `model_limits_enabled` |  | boolean | Whether model whitelist is enabled |
+| `model_limits` |  | string | Model whitelist |
+| `allow_ips` |  | string \| null | IP whitelist |
+| `group` |  | string | Group, derived from the key in `GET /api/user/self/groups` |
+| `cross_group_retry` |  | boolean | Whether to retry across groups |
+
+```bash
+curl -X PUT https://bearlab.ai/api/token/ \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"id":10633,"name":"renamed","expired_time":-1,"remain_quota":-1,"unlimited_quota":true,"model_limits_enabled":false,"group":""}'
+```
+
+```json Response
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "id": 10633,
+    "user_id": 42,
+    "key": "op0O**********nBYM",
+    "status": 1,
+    "name": "renamed",
+    "created_time": 1781995744,
+    "accessed_time": 1781995744,
+    "expired_time": -1,
+    "remain_quota": 0,
+    "unlimited_quota": true,
+    "used_quota": 0,
+    "model_limits_enabled": false,
+    "model_limits": "",
+    "allow_ips": "",
+    "group": "",
+    "cross_group_retry": false
+  }
+}
+```
+
+The `data` field in a successful response is the updated masked token object (fields same as [Token List](/en/api/reference/token-management/token-get), `key` is masked).
+
+When only toggling enabled / disabled status, append `?status_only=1` and only pass `id` and `status`:
+
+```bash
+curl -X PUT "https://bearlab.ai/api/token/?status_only=1" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"id":10633,"status":2}'
+```
+
+<Note>
+Source: new-api source code `controller/token.go` `UpdateToken`. Successful response is `{ success, message, data }`, `data` is the updated masked token object (`buildMaskedTokenResponse`). The Token struct has no `exclude_ips` field (the `exclude_ips` in old documentation is a leftover from RixAPI and has been corrected).
+</Note>

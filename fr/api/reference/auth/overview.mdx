@@ -1,0 +1,78 @@
+---
+title: "Explication du système d'authentification (Auth)"
+description: "Explique la différence entre le jeton d'accès du compte et la clé API du modèle, et quelle clé utiliser pour chaque type d'interface."
+---
+
+BearLab AI a deux valeurs Bearer complètement différentes qui ne doivent pas être mélangées :
+
+| Nom | Placeholder dans ce document | Format | Usage | Origine |
+| --- | --- | --- | --- | --- |
+| Jeton d'accès du compte | `YOUR_ACCESS_TOKEN` | Jeton d'état de connexion console | Appeler les interfaces de gestion : `GET /api/token/`, `GET /api/data/self`, `GET /api/user/self`, etc. | Obtenu à partir de la page « Compte » de la console, ou régénéré via `GET /api/user/token` |
+| Clé API du modèle | `YOUR_MODEL_API_KEY` | Valeur de clé complète `sk-...` ; seule la version masquée s'affiche dans la liste, par ex. `sk-VrqY**********tE4I` | Appeler les interfaces de modèle, et interroger l'utilisation de cette clé via `GET /api/usage/token/` | Copié et sauvegardé à partir de la console ; la liste API retourne uniquement la version masquée |
+
+
+<Note>
+`group` n'est pas une clé, c'est simplement le groupe de routage sélectionné lors de la création/mise à jour d'un jeton, par exemple `free-play`, `claude-aws`. Ne mettez pas la valeur `group` dans `Authorization`. `Authorization` ne peut contenir que `YOUR_ACCESS_TOKEN` ou la clé complète `YOUR_MODEL_API_KEY`.
+</Note>
+
+<Warning>
+Toutes les interfaces de gestion des jetons dans ce document (par exemple `GET /api/token/`, `POST /api/token/`) utilisent `YOUR_ACCESS_TOKEN`. Seul `GET /api/usage/token/` utilise `YOUR_MODEL_API_KEY`.
+</Warning>
+
+## En-têtes de requête des interfaces de gestion
+
+```http
+Authorization: Bearer YOUR_ACCESS_TOKEN
+```
+
+Interfaces applicables :
+
+Gestion des jetons
+- `GET /api/token/`
+- `GET /api/token/{id}`
+- `POST /api/token/`
+- `PUT /api/token/`
+- `DELETE /api/token/{id}`
+- `POST /api/token/batch`
+- `GET /api/token/search`
+
+Compte et groupes
+- `GET /api/user/self`
+- `GET /api/user/self/groups`
+
+Recharge/Top-up
+- `GET /api/user/topup/info`
+- `POST /api/user/amount`
+- `POST /api/user/pay`
+- `GET /api/user/topup/self`
+- `POST /api/user/topup`
+
+Utilisation et journaux
+- `GET /api/data/self`
+- `GET /api/log/self`
+- `GET /api/log/self/stat`
+
+## En-têtes de requête de l'interface d'utilisation du Token
+
+```http
+Authorization: Bearer YOUR_MODEL_API_KEY
+```
+
+S'applique uniquement à :
+
+- `GET /api/usage/token/`
+
+<Note>
+Test réel : appeler `/api/usage/token/` avec `YOUR_ACCESS_TOKEN` retourne `401 Invalid Token` ; appeler `/api/token/` et `/api/data/self` sans authentification retourne `401 No permission` ; appeler `/api/token/` et `/api/data/self` avec `YOUR_ACCESS_TOKEN` retourne 200.
+</Note>
+
+## Ne mélangez pas
+
+- Pour "gérer/créer/supprimer des jetons" : utilisez `YOUR_ACCESS_TOKEN`.
+- Pour "utiliser une clé générée pour appeler des modèles" : utilisez `YOUR_MODEL_API_KEY`.
+- Pour "vérifier le solde restant d'une clé générée" : utilisez `YOUR_MODEL_API_KEY` avec `/api/usage/token/`.
+- Pour "vérifier l'utilisation globale du compte" : utilisez `YOUR_ACCESS_TOKEN` avec `/api/data/self`.
+
+<Warning>
+Ne pas exposer les vrais jetons d'accès de compte ou les clés API complètes dans la documentation, les captures d'écran ou les tickets de support. Notez que la réponse de `GET /api/user/self` n'inclut **pas** `access_token` (exclu par new-api avec `json:"-"`) ; le jeton d'accès ne peut être obtenu que via la console ou `GET /api/user/token`.
+</Warning>

@@ -1,0 +1,77 @@
+---
+title: "Token List"
+description: "GET /api/token/"
+---
+
+## Request Headers
+
+| Header | Required | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, account access token (console login session, not `sk-` API Key) |
+
+Endpoint: `GET /api/token/`
+
+List all API Keys for the current account with pagination. For name/prefix search, use `GET /api/token/search`.
+
+## Query Parameters
+
+| Parameter | Required | Type | Description |
+| --- | --- | --- | --- |
+| `p` |  | integer | Page number, starting from 1 |
+| `page_size` |  | integer | Number of items per page |
+
+```bash
+curl "https://bearlab.ai/api/token/?p=1&page_size=10" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json Response
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "items": [
+      {
+        "id": 10623,
+        "user_id": 42,
+        "key": "ntEH**********7nAh",
+        "status": 1,
+        "name": "my-token",
+        "created_time": 1781977779,
+        "accessed_time": 1781977779,
+        "expired_time": -1,
+        "remain_quota": 0,
+        "unlimited_quota": true,
+        "used_quota": 0,
+        "model_limits_enabled": false,
+        "model_limits": "",
+        "allow_ips": "",
+        "group": "",
+        "cross_group_retry": false
+      }
+    ],
+    "page": 1,
+    "page_size": 10,
+    "total": 7
+  }
+}
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `key` | string | Masked (first 4 + `**********` + last 4 characters); full key is visible only once at creation |
+| `status` | integer | `1` enabled / `2` disabled / `3` expired / `4` exhausted |
+| `expired_time` | integer | Expiration time (Unix seconds), `-1` never expires |
+| `remain_quota` | integer | Remaining quota (500000 = 1 USD) |
+| `unlimited_quota` | boolean | Whether quota is unlimited |
+| `used_quota` | integer | Used quota |
+| `model_limits_enabled` | boolean | Whether model whitelist is enabled |
+| `model_limits` | string | Model whitelist (comma-separated, empty string means no restriction) |
+| `allow_ips` | string \| null | IP whitelist (empty string / `null` means no restriction) |
+| `group` | string | Token group |
+| `cross_group_retry` | boolean | Whether to retry across groups (only valid for `auto` group) |
+| `data.page` / `page_size` / `total` | integer | Pagination information |
+
+<Note>
+Source: new-api source code `controller/token.go` `GetAllTokens` + `model/token.go` `Token`. `GET /api/token/` accepts only pagination parameters; `key` is masked via `MaskTokenKey`. Legacy documentation fields such as `remain_count` / `unlimited_count` / `exclude_ips` / `rate_limits` **do not exist** in new-api.
+</Note>

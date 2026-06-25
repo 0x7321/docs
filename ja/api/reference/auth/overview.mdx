@@ -1,0 +1,78 @@
+---
+title: "認証システムの説明 (Auth)"
+description: "アカウントアクセストークンとモデル API キーの違い、および各インターフェースで使用するキーについて説明します。"
+---
+
+BearLab AI には、2 つの完全に異なる Bearer 値があり、混在させることはできません。
+
+| 名称 | このドキュメント内の記号 | 形式 | 用途 | 取得元 |
+| --- | --- | --- | --- | --- |
+| アカウントアクセストークン | `YOUR_ACCESS_TOKEN` | コンソールログイン状態トークン | 管理インターフェースを呼び出す: `GET /api/token/`、`/api/data/self`、`/api/user/self` など | コンソールの「アカウント」ページから取得、またはGET /api/user/token で再生成 |
+| モデル API キー | `YOUR_MODEL_API_KEY` | `sk-...` 完全キー値。リストでは、`sk-VrqY**********tE4I` のようにマスク表示のみ | モデルインターフェースを呼び出す、および `GET /api/usage/token/` でキー自身の使用量を照会 | コンソールからコピーして保存。API リストではマスク値のみ返す |
+
+
+<Note>
+`group` はキーではなく、Token の作成/更新時に選択したルーティンググループです。例: `free-play`、`claude-aws`。`group` の値を `Authorization` に含めないでください。`Authorization` には `YOUR_ACCESS_TOKEN` または完全な `YOUR_MODEL_API_KEY` のみを含めることができます。
+</Note>
+
+<Warning>
+このドキュメントのすべてのトークン管理インターフェース (例: `GET /api/token/`、`POST /api/token/`) は `YOUR_ACCESS_TOKEN` を使用します。`GET /api/usage/token/` のみが `YOUR_MODEL_API_KEY` を使用します。
+</Warning>
+
+## 管理インターフェースのリクエストヘッダー
+
+```http
+Authorization: Bearer YOUR_ACCESS_TOKEN
+```
+
+適用対象インターフェース:
+
+トークン管理
+- `GET /api/token/`
+- `GET /api/token/{id}`
+- `POST /api/token/`
+- `PUT /api/token/`
+- `DELETE /api/token/{id}`
+- `POST /api/token/batch`
+- `GET /api/token/search`
+
+アカウントとグループ
+- `GET /api/user/self`
+- `GET /api/user/self/groups`
+
+チャージ
+- `GET /api/user/topup/info`
+- `POST /api/user/amount`
+- `POST /api/user/pay`
+- `GET /api/user/topup/self`
+- `POST /api/user/topup`
+
+使用量とログ
+- `GET /api/data/self`
+- `GET /api/log/self`
+- `GET /api/log/self/stat`
+
+## Token 使用量インターフェースのリクエストヘッダー
+
+```http
+Authorization: Bearer YOUR_MODEL_API_KEY
+```
+
+以下のインターフェースにのみ適用:
+
+- `GET /api/usage/token/`
+
+<Note>
+実際のテスト結果: `YOUR_ACCESS_TOKEN` で `/api/usage/token/` を呼び出すと `401 Invalid Token` が返ります。認証なしで `/api/token/` と `/api/data/self` を呼び出すと `401 No permission` が返ります。`YOUR_ACCESS_TOKEN` で `/api/token/` と `/api/data/self` を呼び出すと 200 が返ります。
+</Note>
+
+## 混在させないこと
+
+- トークンを「管理/作成/削除」する場合: `YOUR_ACCESS_TOKEN` を使用します。
+- 生成されたキーでモデルを「呼び出す」場合: `YOUR_MODEL_API_KEY` を使用します。
+- 生成されたキーの「残りのクォータを確認」する場合: `GET /api/usage/token/` で `YOUR_MODEL_API_KEY` を使用します。
+- アカウント全体の「使用量統計を確認」する場合: `GET /api/data/self` で `YOUR_ACCESS_TOKEN` を使用します。
+
+<Warning>
+ドキュメント、スクリーンショット、またはチケットで実際のアカウントアクセストークンまたは完全な API キーを公開しないでください。注意: `GET /api/user/self` の応答には `access_token` は含まれていません (new-api によって `json:"-"` で除外されています)。アクセストークンはコンソールまたは `GET /api/user/token` でのみ取得できます。
+</Warning>

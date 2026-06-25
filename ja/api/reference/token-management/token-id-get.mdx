@@ -1,0 +1,56 @@
+---
+title: "Token 詳細情報の取得"
+description: "GET /api/token/{id}"
+---
+
+## リクエストヘッダー
+
+| ヘッダー | 必須 | 説明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`、アカウントアクセストークン（コンソールログイン状態、`sk-` API Key ではない） |
+
+インターフェース：`GET /api/token/{id}`
+
+Token ID に基づいて、単一のトークンの設定詳細情報を取得します。レスポンス内の `key` はマスク済みです。**完全な平文キー**を取得するには `POST /api/token/{id}/key` を使用してください。
+
+## パスパラメーター
+
+| パラメーター | 必須 | 説明 |
+| --- | --- | --- |
+| `id` | ✓ | Token ID、`GET /api/token/` の `data.items[].id` から取得 |
+
+```bash
+curl https://bearlab.ai/api/token/10665 \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json 回応
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "id": 10665,
+    "user_id": 42,
+    "key": "VrqY**********tE4I",
+    "status": 1,
+    "name": "my-token",
+    "created_time": 1781977779,
+    "accessed_time": 1781977779,
+    "expired_time": -1,
+    "remain_quota": 0,
+    "unlimited_quota": true,
+    "used_quota": 0,
+    "model_limits_enabled": false,
+    "model_limits": "",
+    "allow_ips": "",
+    "group": "free-play",
+    "cross_group_retry": false
+  }
+}
+```
+
+レスポンスはマスク済みの完全な Token オブジェクトです。フィールドの意味については [Token リスト](/ja/api/reference/token-management/token-get) を参照してください。
+
+<Note>
+出典：new-api ソースコード `controller/token.go` の `GetToken`、レスポンス `data` は `buildMaskedTokenResponse(token)`（`key` はマスク済み）です。完全な平文キーを取得するのは独立したインターフェース `POST /api/token/{id}/key`（`GetTokenKey`）です。
+</Note>

@@ -1,0 +1,84 @@
+---
+title: "Token को अपडेट करें"
+description: "PUT /api/token/"
+---
+
+## अनुरोध शीर्षलेख
+
+| अनुरोध शीर्षलेख | आवश्यक | विवरण |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, खाता एक्सेस टोकन (कंसोल लॉगिन स्थिति, `sk-` API Key नहीं) |
+| `Content-Type` | ✓ | `application/json` |
+
+इंटरफ़ेस: `PUT /api/token/`
+
+मौजूदा API Key को अपडेट करें। Token `id` को **अनुरोध बॉडी** में रखें (URL में नहीं)।
+
+## क्वेरी पैरामीटर
+
+| क्वेरी पैरामीटर | आवश्यक | प्रकार | विवरण |
+| --- | --- | --- | --- |
+| `status_only` |  | string | खाली न होने पर केवल `status` फ़ील्ड अपडेट करें (सक्षम / अक्षम), अन्य फ़ील्ड को अनदेखा करें |
+
+## अनुरोध बॉडी
+
+| फ़ील्ड | आवश्यक | प्रकार | विवरण |
+| --- | --- | --- | --- |
+| `id` | ✓ | integer | अपडेट करने के लिए Token ID (बॉडी में रखें) |
+| `name` | ✓ | string | Token का नाम |
+| `expired_time` | ✓ | integer | समाप्ति समय Unix सेकंड; `-1` कभी समाप्त नहीं होगा |
+| `remain_quota` | ✓ | integer | शेष कोटा (quota) |
+| `unlimited_quota` | ✓ | boolean | क्या कोटा असीमित है |
+| `status` |  | integer | स्थिति: `1` सक्षम / `2` अक्षम (`status_only` के साथ उपयोग करें) |
+| `model_limits_enabled` |  | boolean | क्या मॉडल व्हाइटलिस्ट सक्षम है |
+| `model_limits` |  | string | मॉडल व्हाइटलिस्ट |
+| `allow_ips` |  | string \| null | IP व्हाइटलिस्ट |
+| `group` |  | string | समूह, `GET /api/user/self/groups` की कुंजी से लिया गया |
+| `cross_group_retry` |  | boolean | क्या समूहों के बीच पुनः प्रयास करें |
+
+```bash
+curl -X PUT https://bearlab.ai/api/token/ \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"id":10633,"name":"renamed","expired_time":-1,"remain_quota":-1,"unlimited_quota":true,"model_limits_enabled":false,"group":""}'
+```
+
+```json 
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "id": 10633,
+    "user_id": 42,
+    "key": "op0O**********nBYM",
+    "status": 1,
+    "name": "renamed",
+    "created_time": 1781995744,
+    "accessed_time": 1781995744,
+    "expired_time": -1,
+    "remain_quota": 0,
+    "unlimited_quota": true,
+    "used_quota": 0,
+    "model_limits_enabled": false,
+    "model_limits": "",
+    "allow_ips": "",
+    "group": "",
+    "cross_group_retry": false
+  }
+}
+```
+
+सफल प्रतिक्रिया का `data` अपडेट किया गया मास्क किया गया Token ऑब्जेक्ट है (फ़ील्ड [Token सूची](/hi/api/reference/token-management/token-get) के समान, `key` मास्क किया गया है)।
+
+केवल सक्षम / अक्षम स्थिति को स्विच करते समय, `?status_only=1` जोड़ें, केवल `id` और `status` पास करें:
+
+```bash
+curl -X PUT "https://bearlab.ai/api/token/?status_only=1" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"id":10633,"status":2}'
+```
+
+<Note>
+स्रोत: new-api स्रोत कोड `controller/token.go` `UpdateToken`। सफल प्रतिक्रिया `{ success, message, data }` है, `data` अपडेट किया गया मास्क किया गया Token ऑब्जेक्ट है (`buildMaskedTokenResponse`)। Token struct में `exclude_ips` फ़ील्ड नहीं है (पुराने दस्तावेज़ का `exclude_ips` RixAPI अवशेष है, सुधारा जा चुका है)।
+</Note>

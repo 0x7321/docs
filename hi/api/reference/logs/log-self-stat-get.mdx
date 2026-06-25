@@ -1,0 +1,53 @@
+---
+title: "व्यक्तिगत लॉग आँकड़े प्राप्त करें"
+description: "GET /api/log/self/stat"
+---
+
+## अनुरोध हेडर
+
+| अनुरोध हेडर | आवश्यक | विवरण |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, खाता एक्सेस टोकन (कंसोल लॉगिन स्थिति, `sk-` API कुंजी नहीं) |
+
+एपीआई: `GET /api/log/self/stat`
+
+वर्तमान खाते के लिए कॉल आँकड़े (खर्च किया गया क्वोटा, आरपीएम, टीपीएम) प्राप्त करें।
+
+## क्वेरी पैरामीटर
+
+| क्वेरी पैरामीटर | आवश्यक | प्रकार | विवरण |
+| --- | --- | --- | --- |
+| `start_timestamp` |  | integer | शुरुआत समय, Unix सेकंड |
+| `end_timestamp` |  | integer | समाप्ति समय, Unix सेकंड |
+| `type` |  | integer | लॉग प्रकार |
+| `token_name` |  | string | टोकन नाम द्वारा फ़िल्टर करें |
+| `model_name` |  | string | मॉडल नाम द्वारा फ़िल्टर करें |
+| `channel` |  | integer | चैनल ID द्वारा फ़िल्टर करें |
+| `group` |  | string | समूह द्वारा फ़िल्टर करें |
+
+```bash
+curl "https://bearlab.ai/api/log/self/stat" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "quota": 0,
+    "rpm": 0,
+    "tpm": 0
+  }
+}
+```
+
+| क्षेत्र | विवरण |
+| --- | --- |
+| `quota` | खर्च किया गया क्वोटा (quota, 500000 = 1 अमेरिकी डॉलर) |
+| `rpm` | प्रति मिनट अनुरोध |
+| `tpm` | प्रति मिनट टोकन |
+
+<Note>
+स्रोत: new-api स्रोत कोड `controller/log.go` `GetLogsSelfStat` + `model/log.go` `Stat`। `data` में केवल `quota` / `rpm` / `tpm` तीन क्षेत्र शामिल हैं (पुरानी दस्तावेज़ की `mpm` / `unfinished_count` / `unfinished_by_vendor` new-api में मौजूद नहीं हैं)।
+</Note>

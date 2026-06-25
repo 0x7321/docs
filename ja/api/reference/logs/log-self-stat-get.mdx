@@ -1,0 +1,53 @@
+---
+title: "個人ログ統計の取得"
+description: "GET /api/log/self/stat"
+---
+
+## リクエストヘッダ
+
+| リクエストヘッダ | 必須 | 説明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`、アカウントアクセストークン（コンソールログイン状態、`sk-` API キーではありません） |
+
+エンドポイント：`GET /api/log/self/stat`
+
+現在のアカウントの呼び出し統計（消費クォータ、RPM、TPM）を取得します。
+
+## クエリパラメータ
+
+| クエリパラメータ | 必須 | 型 | 説明 |
+| --- | --- | --- | --- |
+| `start_timestamp` |  | integer | 開始時刻、Unix秒 |
+| `end_timestamp` |  | integer | 終了時刻、Unix秒 |
+| `type` |  | integer | ログタイプ |
+| `token_name` |  | string | トークン名でフィルタリング |
+| `model_name` |  | string | モデル名でフィルタリング |
+| `channel` |  | integer | チャネルIDでフィルタリング |
+| `group` |  | string | グループでフィルタリング |
+
+```bash
+curl "https://bearlab.ai/api/log/self/stat" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json レスポンス
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "quota": 0,
+    "rpm": 0,
+    "tpm": 0
+  }
+}
+```
+
+| フィールド | 説明 |
+| --- | --- |
+| `quota` | 消費クォータ（quota、500000 = 1ドル） |
+| `rpm` | 1分あたりのリクエスト数 |
+| `tpm` | 1分あたりのトークン数 |
+
+<Note>
+出典：new-api ソースコード `controller/log.go` `GetLogsSelfStat` + `model/log.go` `Stat`。`data` には `quota` / `rpm` / `tpm` の3つのフィールドのみが含まれます（古いドキュメントの `mpm` / `unfinished_count` / `unfinished_by_vendor` は new-api には存在しません）。
+</Note>

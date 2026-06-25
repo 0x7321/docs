@@ -1,0 +1,41 @@
+---
+title: "उपलब्ध समूह"
+description: "GET /api/user/self/groups"
+---
+
+## अनुरोध शीर्षलेख
+
+| अनुरोध शीर्षलेख | आवश्यक | विवरण |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, खाता पहुंच टोकन (कंसोल लॉगिन स्थिति, `sk-` API कुंजी नहीं) |
+
+एपीआई: `GET /api/user/self/groups`
+
+वर्तमान उपयोगकर्ता के लिए उपलब्ध समूहों और उनकी बिलिंग दरों को सूचीबद्ध करता है। प्रतिक्रिया ऑब्जेक्ट की **कुंजियाँ** समूह का नाम हैं, जो टोकन बनाते/अपडेट करते समय `group` फील्ड के रूप में पास किया जाता है।
+
+```bash
+curl "https://bearlab.ai/api/user/self/groups" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json प्रतिक्रिया
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "default": { "ratio": 1, "desc": "डिफ़ॉल्ट समूह" },
+    "vip": { "ratio": 0.8, "desc": "VIP समूह" },
+    "auto": { "ratio": "स्वचालित", "desc": "उपलब्ध समूह स्वचालित रूप से चुनें" }
+  }
+}
+```
+
+| फील्ड | प्रकार | विवरण |
+| --- | --- | --- |
+| `data` | ऑब्जेक्ट | कुंजी समूह का नाम है, मान समूह जानकारी `{ ratio, desc }` है |
+| `data.<group>.ratio` | संख्या \| स्ट्रिंग | उस समूह की बिलिंग दर; `auto` समूह के लिए स्ट्रिंग `"स्वचालित"` |
+| `data.<group>.desc` | स्ट्रिंग | समूह विवरण |
+
+<Note>
+स्रोत: new-api स्रोत कोड `controller/group.go` `GetUserGroups` (राउटर `GET /api/user/self/groups`, लॉगिन प्रमाणीकरण की आवश्यकता)। प्रतिक्रिया `data` एक `{ समूह का नाम: { ratio, desc } }` मैप है, सरणी नहीं। पुराने दस्तावेज़ का `GET /api/token/group` पथ new-api में **मौजूद नहीं है**।
+</Note>

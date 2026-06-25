@@ -1,0 +1,41 @@
+---
+title: "Batch Delete"
+description: "POST /api/token/batch"
+---
+
+## Request Headers
+
+| Header | Required | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, account access token (console login state, not `sk-` API Key) |
+| `Content-Type` | ✓ | `application/json` |
+
+Endpoint: `POST /api/token/batch`
+
+Delete multiple API Keys in one request (`DeleteTokenBatch`, batch delete, not create).
+
+## Request Body
+
+| Field | Required | Type | Description |
+| --- | --- | --- | --- |
+| `ids` | ✓ | integer[] | List of Token IDs to delete, IDs come from `GET /api/token/` response `data.items[].id` |
+
+```bash
+curl -X POST https://bearlab.ai/api/token/batch \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"ids": [10623, 10624]}'
+```
+
+<Note>
+Frontend fallback strategy: if batch delete fails, it will call `DELETE /api/token/{id}` individually for each token.
+</Note>
+
+```json Response
+{ "success": true, "message": "", "data": 2 }
+```
+
+
+<Note>
+Source: new-api source code `controller/token.go` `DeleteTokenBatch`. Request body `{ ids: [...] }` (at least 1 item), response `data` is the count of successfully deleted tokens.
+</Note>

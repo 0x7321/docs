@@ -1,0 +1,41 @@
+---
+title: "Groupes disponibles"
+description: "GET /api/user/self/groups"
+---
+
+## En-têtes de la requête
+
+| En-tête | Obligatoire | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, jeton d'accès du compte (état de connexion à la console, pas une clé API `sk-`) |
+
+Point de terminaison : `GET /api/user/self/groups`
+
+Liste les groupes disponibles pour l'utilisateur actuel et leurs taux de facturation. Les **clés** de l'objet retourné sont les noms de groupe, à passer en tant que champ `group` lors de la création ou la mise à jour d'un jeton.
+
+```bash
+curl "https://bearlab.ai/api/user/self/groups" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json Réponse
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "default": { "ratio": 1, "desc": "默认分组" },
+    "vip": { "ratio": 0.8, "desc": "VIP 分组" },
+    "auto": { "ratio": "自动", "desc": "自动选择可用分组" }
+  }
+}
+```
+
+| Champ | Type | Description |
+| --- | --- | --- |
+| `data` | object | Les clés sont les noms de groupe, les valeurs sont les informations du groupe `{ ratio, desc }` |
+| `data.<group>.ratio` | number \| string | Taux de facturation du groupe ; le groupe `auto` est une chaîne de caractères `"自动"` |
+| `data.<group>.desc` | string | Description du groupe |
+
+<Note>
+Source : code source new-api `controller/group.go` `GetUserGroups` (route `GET /api/user/self/groups`, authentification requise). La réponse `data` est un mappage `{ nom du groupe: { ratio, desc } }`, pas un tableau. L'ancien chemin d'accès documenté `GET /api/token/group` n'**existe pas** dans new-api.
+</Note>

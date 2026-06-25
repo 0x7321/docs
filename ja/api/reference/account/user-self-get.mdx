@@ -1,0 +1,79 @@
+---
+title: "現在のアカウント情報"
+description: "GET /api/user/self"
+---
+
+## リクエストヘッダー
+
+| リクエストヘッダー | 必須 | 説明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`、アカウントアクセストークン（コンソールログイン状態、`sk-` API キーではない） |
+
+インターフェース：`GET /api/user/self`
+
+現在ログインしているアカウントのプロフィール、クォータ（残高）、およびリファーラル情報を取得します。アカウントの利用可能なクォータは `data.quota` にあり、使用済みクォータは `data.used_quota` にあります（どちらもクォータ整数、500000 クォータ = 1 ドル）。
+
+```bash
+curl "https://bearlab.ai/api/user/self" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json レスポンス
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "id": 42,
+    "username": "alice",
+    "display_name": "Alice",
+    "role": 1,
+    "status": 1,
+    "email": "alice@example.com",
+    "github_id": "",
+    "discord_id": "",
+    "oidc_id": "",
+    "wechat_id": "",
+    "telegram_id": "",
+    "linux_do_id": "",
+    "group": "default",
+    "quota": 55636,
+    "used_quota": 444364,
+    "request_count": 128,
+    "aff_code": "ABCDEF",
+    "aff_count": 3,
+    "aff_quota": 0,
+    "aff_history_quota": 1500000,
+    "inviter_id": 0,
+    "setting": "{}",
+    "stripe_customer": "",
+    "sidebar_modules": "",
+    "permissions": {}
+  }
+}
+```
+
+| フィールド | 型 | 説明 |
+| --- | --- | --- |
+| `id` | integer | ユーザー ID |
+| `username` | string | ログインユーザー名 |
+| `display_name` | string | 表示名 |
+| `role` | integer | ロール：`1` 通常ユーザー / `10` 管理者 / `100` スーパー管理者 |
+| `status` | integer | ステータス：`1` 有効 / `2` ブロック中 |
+| `email` | string | バインドされたメールアドレス |
+| `github_id` / `discord_id` / `oidc_id` / `wechat_id` / `telegram_id` / `linux_do_id` | string | 各サードパーティログインのバインド識別子 |
+| `group` | string | ユーザーグループ（利用可能なモデルと倍率を決定） |
+| `quota` | integer | 現在の残りクォータ（500000 = 1 ドル） |
+| `used_quota` | integer | 過去に使用したクォータ |
+| `request_count` | integer | 累積リクエスト数 |
+| `aff_code` | string | 本人の招待コード |
+| `aff_count` | integer | 招待した人数 |
+| `aff_quota` | integer | 利用可能なリファーラルクォータ |
+| `aff_history_quota` | integer | 過去の累計リファーラルクォータ |
+| `inviter_id` | integer | 招待者のユーザー ID（`0` は不在を示す） |
+| `setting` | string | ユーザーのカスタマイズ設定（JSON 文字列） |
+| `stripe_customer` | string | Stripe カスタマー ID |
+| `permissions` | object | ロール権限情報 |
+
+<Note>
+出典：new-api ソースコード `controller/user.go` `GetSelf`。レスポンスは `access_token` を**含まない**（`model/user.go` で `json:"-"` で除外）、また `balance` / `level` / `topup_*` などのフィールドもありません。残高は整数型 `quota` を読んでください。アクセストークンは `GET /api/user/token` を通じて個別に取得する必要があります（注意：このエンドポイントは**トークンをリセット**します）。
+</Note>

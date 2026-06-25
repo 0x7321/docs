@@ -1,0 +1,70 @@
+---
+title: "Top-up History"
+description: "GET /api/user/topup/self"
+---
+
+## Request Headers
+
+| Header | Required | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, your account access token |
+
+Endpoint: `GET /api/user/topup/self`
+
+Query top-up order records for the current user with pagination (including pending, completed, and other statuses).
+
+## Query Parameters
+
+| Parameter | Type | Required | Description |
+| --- | --- | --- | --- |
+| `page` | integer | | Page number, starting from 1 |
+| `page_size` | integer | | Number of records per page |
+| `keyword` | string | | Fuzzy search by order number (`trade_no`) |
+
+```bash
+curl "https://bearlab.ai/api/user/topup/self?page=1&page_size=10" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json Response
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "items": [
+      {
+        "id": 1024,
+        "user_id": 42,
+        "amount": 100,
+        "money": 95.00,
+        "trade_no": "USR42NOa1b2c31718000000",
+        "payment_method": "alipay",
+        "payment_provider": "epay",
+        "status": "success",
+        "create_time": 1718000000,
+        "complete_time": 1718000060
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "page_size": 10
+  }
+}
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `data.items` | array | List of top-up orders |
+| `amount` | integer | Top-up amount quantity |
+| `money` | number | Actual payment amount |
+| `trade_no` | string | Merchant order number |
+| `payment_method` | string | Payment method identifier (`alipay` / `wxpay` / `stripe` …) |
+| `payment_provider` | string | Payment provider (`epay` / `stripe` / `creem` …) |
+| `status` | string | Order status: `pending` awaiting payment / `success` completed |
+| `create_time` | integer | Creation time (Unix seconds) |
+| `complete_time` | integer | Completion time (Unix seconds), `0` if not completed |
+| `data.total` / `page` / `page_size` | integer | Pagination information |
+
+<Note>
+Source: `controller/topup.go` `GetUserTopUps`, pagination wrapped in new-api standard `PageInfo` (`items` + `total` + `page` + `page_size`).
+</Note>

@@ -1,0 +1,78 @@
+---
+title: "प्रमाणीकरण प्रणाली विवरण (Auth)"
+description: "खाता एक्सेस टोकन और मॉडल API कुंजी के बीच के अंतर को समझाता है, और प्रत्येक प्रकार का इंटरफेस किस कुंजी का उपयोग करता है।"
+---
+
+BearLab AI में दो पूरी तरह से अलग Bearer मान हैं, जिन्हें मिलाया नहीं जा सकता:
+
+| नाम | इस दस्तावेज़ में प्लेसहोल्डर | रूप | उद्देश्य | स्रोत |
+| --- | --- | --- | --- | --- |
+| खाता एक्सेस टोकन | `YOUR_ACCESS_TOKEN` | कंसोल लॉगिन स्टेट टोकन | प्रबंधन इंटरफेस को कॉल करें: `GET /api/token/`、`GET /api/data/self`、`GET /api/user/self` आदि | कंसोल में "खाता" पृष्ठ से प्राप्त करें, या `GET /api/user/token` से पुन: जेनरेट करें |
+| मॉडल API कुंजी | `YOUR_MODEL_API_KEY` | `sk-...` पूर्ण कुंजी मान; सूची में केवल छिपी हुई प्रदर्शित होगी, जैसे `sk-VrqY**********tE4I` | मॉडल इंटरफेस को कॉल करें, और `GET /api/usage/token/` के साथ इस कुंजी के अपने उपयोग को क्वेरी करें | कंसोल से कॉपी करके सहेजें; API सूची केवल छिपे हुए मान लौटाती है |
+
+
+<Note>
+`group` कोई कुंजी नहीं है, यह केवल Token बनाते/अपडेट करते समय चुना गया रूटिंग समूह है, उदाहरण के लिए `free-play`, `claude-aws`। `group` मान को `Authorization` में न डालें। `Authorization` में केवल `YOUR_ACCESS_TOKEN` या पूर्ण `YOUR_MODEL_API_KEY` ही जा सकता है।
+</Note>
+
+<Warning>
+इस दस्तावेज़ के सभी टोकन प्रबंधन इंटरफेस (उदाहरण के लिए `GET /api/token/`, `POST /api/token/`) `YOUR_ACCESS_TOKEN` का उपयोग करते हैं। केवल `GET /api/usage/token/` `YOUR_MODEL_API_KEY` का उपयोग करता है।
+</Warning>
+
+## प्रबंधन इंटरफेस अनुरोध शीर्ष
+
+```http
+Authorization: Bearer YOUR_ACCESS_TOKEN
+```
+
+लागू इंटरफेस:
+
+टोकन प्रबंधन
+- `GET /api/token/`
+- `GET /api/token/{id}`
+- `POST /api/token/`
+- `PUT /api/token/`
+- `DELETE /api/token/{id}`
+- `POST /api/token/batch`
+- `GET /api/token/search`
+
+खाता और समूह
+- `GET /api/user/self`
+- `GET /api/user/self/groups`
+
+टॉप-अप
+- `GET /api/user/topup/info`
+- `POST /api/user/amount`
+- `POST /api/user/pay`
+- `GET /api/user/topup/self`
+- `POST /api/user/topup`
+
+उपयोग और लॉग
+- `GET /api/data/self`
+- `GET /api/log/self`
+- `GET /api/log/self/stat`
+
+## Token उपयोग इंटरफेस अनुरोध शीर्ष
+
+```http
+Authorization: Bearer YOUR_MODEL_API_KEY
+```
+
+केवल के लिए लागू:
+
+- `GET /api/usage/token/`
+
+<Note>
+व्यावहारिक परीक्षण: `YOUR_ACCESS_TOKEN` को `/api/usage/token/` को कॉल करने से `401 Invalid Token` लौटता है; बिना प्रमाणीकरण के `/api/token/` और `/api/data/self` को कॉल करने से `401 No permission` लौटता है; `YOUR_ACCESS_TOKEN` को `/api/token/` और `/api/data/self` को कॉल करने से 200 लौटता है।
+</Note>
+
+## मिश्रण न करें
+
+- "टोकन प्रबंधित/बनाएं/हटाएं" करना चाहते हैं: `YOUR_ACCESS_TOKEN` का उपयोग करें।
+- "किसी जेनरेट की गई कुंजी के साथ मॉडल को कॉल" करना चाहते हैं: `YOUR_MODEL_API_KEY` का उपयोग करें।
+- "किसी जेनरेट की गई कुंजी के पास कितना कोटा बचा है यह जानना" चाहते हैं: `GET /api/usage/token/` को कॉल करने के लिए `YOUR_MODEL_API_KEY` का उपयोग करें।
+- "खाते के कुल उपयोग सांख्यिकी जानना" चाहते हैं: `GET /api/data/self` को कॉल करने के लिए `YOUR_ACCESS_TOKEN` का उपयोग करें।
+
+<Warning>
+दस्तावेज़, स्क्रीनशॉट या टिकट में वास्तविक खाता एक्सेस टोकन या पूर्ण API कुंजी को उजागर न करें। नोट: `GET /api/user/self` की प्रतिक्रिया में `access_token` **नहीं** है (new-api द्वारा `json:"-"` के साथ बाहर रखा गया है); एक्सेस टोकन केवल कंसोल के माध्यम से या `GET /api/user/token` के माध्यम से प्राप्त किया जा सकता है।
+</Warning>

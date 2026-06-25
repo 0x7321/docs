@@ -1,0 +1,84 @@
+---
+title: "トークンを更新"
+description: "PUT /api/token/"
+---
+
+## リクエストヘッダー
+
+| リクエストヘッダー | 必須 | 説明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`、アカウントアクセストークン（コンソールログイン状態、`sk-` API キーではなく） |
+| `Content-Type` | ✓ | `application/json` |
+
+エンドポイント：`PUT /api/token/`
+
+既存の API キーを更新します。トークン `id` は**リクエストボディ**（URL ではなく）に配置します。
+
+## クエリパラメータ
+
+| クエリパラメータ | 必須 | 型 | 説明 |
+| --- | --- | --- | --- |
+| `status_only` |  | string | 空でない場合、`status` フィールドのみを更新（有効 / 無効）、他のフィールドは無視 |
+
+## リクエストボディ
+
+| フィールド | 必須 | 型 | 説明 |
+| --- | --- | --- | --- |
+| `id` | ✓ | integer | 更新するトークン ID（body 内に配置） |
+| `name` | ✓ | string | トークン名 |
+| `expired_time` | ✓ | integer | 有効期限 Unix 秒；`-1` は期限なし |
+| `remain_quota` | ✓ | integer | 残り額度（quota） |
+| `unlimited_quota` | ✓ | boolean | 額度に制限があるかどうか |
+| `status` |  | integer | ステータス：`1` 有効 / `2` 無効（`status_only` と一緒に使用） |
+| `model_limits_enabled` |  | boolean | モデルホワイトリストを有効にするかどうか |
+| `model_limits` |  | string | モデルホワイトリスト |
+| `allow_ips` |  | string \| null | IP ホワイトリスト |
+| `group` |  | string | グループ、`GET /api/user/self/groups` のキーから取得 |
+| `cross_group_retry` |  | boolean | グループ間で再試行するかどうか |
+
+```bash
+curl -X PUT https://bearlab.ai/api/token/ \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"id":10633,"name":"renamed","expired_time":-1,"remain_quota":-1,"unlimited_quota":true,"model_limits_enabled":false,"group":""}'
+```
+
+```json レスポンス
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "id": 10633,
+    "user_id": 42,
+    "key": "op0O**********nBYM",
+    "status": 1,
+    "name": "renamed",
+    "created_time": 1781995744,
+    "accessed_time": 1781995744,
+    "expired_time": -1,
+    "remain_quota": 0,
+    "unlimited_quota": true,
+    "used_quota": 0,
+    "model_limits_enabled": false,
+    "model_limits": "",
+    "allow_ips": "",
+    "group": "",
+    "cross_group_retry": false
+  }
+}
+```
+
+成功レスポンスの `data` は更新後のマスクされたトークンオブジェクトです（フィールドは[トークンリスト](/ja/api/reference/token-management/token-get)と同じ、`key` はマスク済み）。
+
+有効 / 無効のステータスのみを切り替える場合は、`?status_only=1` を追加し、`id` と `status` のみを指定します：
+
+```bash
+curl -X PUT "https://bearlab.ai/api/token/?status_only=1" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"id":10633,"status":2}'
+```
+
+<Note>
+ソース：new-api ソースコード `controller/token.go` `UpdateToken`。成功レスポンスは `{ success, message, data }`、`data` は更新後のマスクされたトークンオブジェクト（`buildMaskedTokenResponse`）です。Token struct に `exclude_ips` フィールドはありません（古いドキュメントの `exclude_ips` は RixAPI の残留で、既に修正済み）。
+</Note>

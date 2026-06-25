@@ -1,0 +1,41 @@
+---
+title: "一括削除"
+description: "POST /api/token/batch"
+---
+
+## リクエストヘッダー
+
+| リクエストヘッダー | 必須 | 説明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`、アカウントアクセストークン（コンソールログイン状態、`sk-` API Key ではない） |
+| `Content-Type` | ✓ | `application/json` |
+
+エンドポイント：`POST /api/token/batch`
+
+複数の API Key を一度に削除します（`DeleteTokenBatch`、一括削除、作成ではない）。
+
+## リクエストボディー
+
+| フィールド | 必須 | タイプ | 説明 |
+| --- | --- | --- | --- |
+| `ids` | ✓ | integer[] | 削除する Token ID のリスト。ID は `GET /api/token/` の `data.items[].id` から取得します |
+
+```bash
+curl -X POST https://bearlab.ai/api/token/batch \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"ids": [10623, 10624]}'
+```
+
+<Note>
+フロントエンドのフォールバック戦略：一括削除に失敗した場合、`DELETE /api/token/{id}` を個別に呼び出します。
+</Note>
+
+```json 回答
+{ "success": true, "message": "", "data": 2 }
+```
+
+
+<Note>
+出典：new-api ソースコード `controller/token.go` の `DeleteTokenBatch`。リクエストボディーは `{ ids: [...] }`（最低 1 個）で、レスポンスの `data` は正常に削除された数です。
+</Note>

@@ -1,0 +1,40 @@
+---
+title: "Delete Token"
+description: "DELETE /api/token/{id}"
+---
+
+## Request Headers
+
+| Header | Required | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, account access token (console login state, not an `sk-` API Key) |
+
+Endpoint: `DELETE /api/token/{id}`
+
+Delete a specified API Key.
+
+## Path Parameters
+
+| Parameter | Required | Type | Description |
+| --- | --- | --- | --- |
+| `id` | ✓ | integer | Token ID to delete, from `data.items[].id` of `GET /api/token/` |
+
+<Warning>
+Use the path **without trailing slash** `DELETE /api/token/{id}`. With a trailing slash `DELETE /api/token/{id}/`, Gin will redirect with 307 to the path without a slash; if the client does not follow the 307, the deletion will not occur.
+</Warning>
+
+```bash
+curl -X DELETE https://bearlab.ai/api/token/10623 \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json Response
+{
+  "success": true,
+  "message": ""
+}
+```
+
+<Note>
+Source: new-api source code `controller/token.go` `DeleteToken`. Successful response contains only `{ success, message }`, no `data` field.
+</Note>

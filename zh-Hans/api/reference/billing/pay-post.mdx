@@ -1,0 +1,64 @@
+---
+title: "发起在线支付"
+description: "POST /api/user/pay"
+---
+
+## 请求头
+
+| 请求头 | 必填 | 说明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`，账号访问令牌 |
+| `Content-Type` | ✓ | `application/json` |
+
+接口：`POST /api/user/pay`
+
+创建一笔待支付充值订单，并向易支付网关拉起支付，返回网关提交地址 `url` 与表单参数 `data`。前端将 `data` 以表单 POST 到 `url` 即可跳转收银台。支付完成后网关回调 `/api/user/epay/notify` 入账。
+
+## 请求体
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `amount` | integer | ✓ | 充值额度数量，须 ≥ `min_topup` |
+| `payment_method` | string | ✓ | 支付方式标识，取自 `topup/info` 的 `pay_methods[].type`，例如 `alipay`、`wxpay` |
+
+```bash
+curl "https://bearlab.ai/api/user/pay" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{ "amount": 100, "payment_method": "alipay" }'
+```
+
+```json 成功
+{
+  "message": "success",
+  "url": "https://pay.example.com/submit.php",
+  "data": {
+    "pid": "1000",
+    "out_trade_no": "USR42NOa1b2c31718000000",
+    "name": "TUC100",
+    "money": "95.00",
+    "type": "alipay",
+    "sign": "e10adc3949ba59abbe56e057f20f883e",
+    "sign_type": "MD5"
+  }
+}
+```
+
+```json 失败
+{
+  "message": "error",
+  "data": "支付方式不存在"
+}
+```
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `message` | string | `success` / `error` |
+| `url` | string | 易支付网关提交地址，成功时返回 |
+| `data` | object | 提交给网关的表单参数（含 `out_trade_no` 商户订单号、`money` 实付金额、`sign` 签名等），随网关而异 |
+
+可能的 `error` 文案：`参数错误`、`充值数量不能小于 N`、`获取用户分组失败`、`充值金额过低`、`支付方式不存在`、`当前管理员未配置支付信息`、`拉起支付失败`、`创建订单失败`。
+
+<Note>
+响应同样**不含 `success` 字段**。订单以 `out_trade_no`（即服务端 `trade_no`，形如 `USR{用户ID}NO{随机}{时间戳}`）标识，可在 `GET /api/user/topup/self` 查询状态。来源：`controller/topup.go` `RequestEpay`。
+</Note>

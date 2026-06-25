@@ -1,0 +1,70 @@
+---
+title: "チャージ履歴"
+description: "GET /api/user/topup/self"
+---
+
+## リクエストヘッダー
+
+| リクエストヘッダー | 必須 | 説明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`、アカウントアクセストークン |
+
+エンドポイント：`GET /api/user/topup/self`
+
+現在のユーザーのチャージ注文履歴を改ページネーションで照会します（待機中、完了などのステータスを含む）。
+
+## クエリパラメーター
+
+| パラメーター | タイプ | 必須 | 説明 |
+| --- | --- | --- | --- |
+| `page` | integer | | ページ番号（1 から始まる） |
+| `page_size` | integer | | 1ページあたりのアイテム数 |
+| `keyword` | string | | 注文番号（`trade_no`）で部分検索 |
+
+```bash
+curl "https://bearlab.ai/api/user/topup/self?page=1&page_size=10" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json 応答
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "items": [
+      {
+        "id": 1024,
+        "user_id": 42,
+        "amount": 100,
+        "money": 95.00,
+        "trade_no": "USR42NOa1b2c31718000000",
+        "payment_method": "alipay",
+        "payment_provider": "epay",
+        "status": "success",
+        "create_time": 1718000000,
+        "complete_time": 1718000060
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "page_size": 10
+  }
+}
+```
+
+| フィールド | タイプ | 説明 |
+| --- | --- | --- |
+| `data.items` | array | チャージ注文リスト |
+| `amount` | integer | チャージ額の数量 |
+| `money` | number | 実際の支払い金額 |
+| `trade_no` | string | マーチャント注文番号 |
+| `payment_method` | string | 支払い方法識別子（`alipay` / `wxpay` / `stripe` …） |
+| `payment_provider` | string | 支払いプロバイダー（`epay` / `stripe` / `creem` …） |
+| `status` | string | 注文ステータス：`pending` 待機中 / `success` 完了 |
+| `create_time` | integer | 作成時刻（Unix秒） |
+| `complete_time` | integer | 完了時刻（Unix秒）、未完了の場合は `0` |
+| `data.total` / `page` / `page_size` | integer | ページネーション情報 |
+
+<Note>
+ソース：`controller/topup.go` `GetUserTopUps`、ページネーションは new-api 標準 `PageInfo`（`items` + `total` + `page` + `page_size`）でラップされます。
+</Note>

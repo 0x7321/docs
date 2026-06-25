@@ -1,0 +1,51 @@
+---
+title: "実払額の計算"
+description: "POST /api/user/amount"
+---
+
+## リクエストヘッダ
+
+| リクエストヘッダ | 必須 | 説明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`、アカウントアクセストークン |
+| `Content-Type` | ✓ | `application/json` |
+
+インターフェース：`POST /api/user/amount`
+
+現在のユーザーの分類に基づく割引を適用して、充値`amount`クレジットの実際の支払額を事前計算します。充値ページの「クレジット数入力 → 応払額表示」のリアルタイム計算に使用され、注文は作成されません。
+
+## リクエストボディ
+
+| フィールド | タイプ | 必須 | 説明 |
+| --- | --- | --- | --- |
+| `amount` | integer | ✓ | 充値クレジット数。`topup/info`が返す`min_topup`以上である必要があります |
+
+```bash
+curl "https://bearlab.ai/api/user/amount" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{ "amount": 100 }'
+```
+
+```json 成功
+{
+  "message": "success",
+  "data": "95.00"
+}
+```
+
+```json 失敗
+{
+  "message": "error",
+  "data": "充値数量は1より大きくする必要があります"
+}
+```
+
+| フィールド | タイプ | 説明 |
+| --- | --- | --- |
+| `message` | string | `success`は成功を、`error`は失敗を表します |
+| `data` | string | 成功時は実払額文字列（小数点以下2桁、分類割引を含む）。失敗時はエラー説明 |
+
+<Note>
+このインターフェースは`c.JSON`を直接返すため、**レスポンスに`success`フィールドは含まれません**。`message` + `data`のみ。これは`topup/info`の`{ success, message, data }`ラッピングと異なります。出典：`controller/topup.go`の`RequestAmount`。
+</Note>

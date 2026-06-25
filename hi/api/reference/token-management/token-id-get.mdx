@@ -1,0 +1,56 @@
+---
+title: "Token विवरण प्राप्त करें"
+description: "GET /api/token/{id}"
+---
+
+## अनुरोध शीर्षलेख
+
+| अनुरोध शीर्षलेख | आवश्यक | विवरण |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, खाता एक्सेस टोकन (कंसोल लॉगिन स्थिति, `sk-` API Key नहीं) |
+
+इंटरफ़ेस: `GET /api/token/{id}`
+
+Token ID के आधार पर एक एकल टोकन के कॉन्फ़िगरेशन विवरण प्राप्त करें। प्रतिक्रिया में `key` को छिपाया गया है; **पूर्ण सादा पाठ Key** प्राप्त करने के लिए `POST /api/token/{id}/key` का उपयोग करें।
+
+## पथ पैरामीटर
+
+| पैरामीटर | आवश्यक | विवरण |
+| --- | --- | --- |
+| `id` | ✓ | Token ID, `GET /api/token/` के `data.items[].id` से |
+
+```bash
+curl https://bearlab.ai/api/token/10665 \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json 回应
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "id": 10665,
+    "user_id": 42,
+    "key": "VrqY**********tE4I",
+    "status": 1,
+    "name": "my-token",
+    "created_time": 1781977779,
+    "accessed_time": 1781977779,
+    "expired_time": -1,
+    "remain_quota": 0,
+    "unlimited_quota": true,
+    "used_quota": 0,
+    "model_limits_enabled": false,
+    "model_limits": "",
+    "allow_ips": "",
+    "group": "free-play",
+    "cross_group_retry": false
+  }
+}
+```
+
+प्रतिक्रिया छिपाए गए पूर्ण Token ऑब्जेक्ट है, फील्ड के अर्थ के लिए [Token सूची](/hi/api/reference/token-management/token-get) देखें।
+
+<Note>
+स्रोत: new-api स्रोत कोड `controller/token.go` `GetToken`, प्रतिक्रिया `data` `buildMaskedTokenResponse(token)` है (`key` छिपाया गया है)। पूर्ण सादा पाठ Key प्राप्त करना एक अलग इंटरफ़ेस `POST /api/token/{id}/key` है (`GetTokenKey`)।
+</Note>

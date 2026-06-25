@@ -1,0 +1,56 @@
+---
+title: "Obtenir les détails du Token"
+description: "GET /api/token/{id}"
+---
+
+## En-têtes de la requête
+
+| En-tête | Obligatoire | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, jeton d'accès du compte (état de connexion à la console, pas une clé API `sk-`) |
+
+Interface : `GET /api/token/{id}`
+
+Récupérez la configuration détaillée d'un seul jeton en fonction de son Token ID. La clé `key` dans la réponse est masquée ; pour obtenir la **clé en texte brut complet**, utilisez `POST /api/token/{id}/key`.
+
+## Paramètres de chemin
+
+| Paramètre | Obligatoire | Description |
+| --- | --- | --- |
+| `id` | ✓ | Token ID, provenant de `data.items[].id` de `GET /api/token/` |
+
+```bash
+curl https://bearlab.ai/api/token/10665 \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json Réponse
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "id": 10665,
+    "user_id": 42,
+    "key": "VrqY**********tE4I",
+    "status": 1,
+    "name": "my-token",
+    "created_time": 1781977779,
+    "accessed_time": 1781977779,
+    "expired_time": -1,
+    "remain_quota": 0,
+    "unlimited_quota": true,
+    "used_quota": 0,
+    "model_limits_enabled": false,
+    "model_limits": "",
+    "allow_ips": "",
+    "group": "free-play",
+    "cross_group_retry": false
+  }
+}
+```
+
+La réponse est l'objet Token complet après masquage. Pour la signification des champs, consultez [Liste des Tokens](/fr/api/reference/token-management/token-get).
+
+<Note>
+Source : code source new-api `controller/token.go` `GetToken`, la réponse `data` est `buildMaskedTokenResponse(token)` (la `key` est masquée). L'obtention de la clé en texte brut complet est une interface distincte `POST /api/token/{id}/key` (`GetTokenKey`).
+</Note>

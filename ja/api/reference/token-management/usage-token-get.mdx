@@ -1,0 +1,58 @@
+---
+title: "トークン使用量"
+description: "GET /api/usage/token/"
+---
+
+インターフェース：`GET /api/usage/token/`
+
+## リクエストヘッダ
+
+| リクエストヘッダ | 必須 | 説明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_MODEL_API_KEY`。トークン管理で作成されたモデル API キー。アカウント アクセス トークン `YOUR_ACCESS_TOKEN` は使用しないでください |
+
+このAPI キー自体のクォータと使用量を照会します。このエンドポイントはAPI キー自体で認証され、アカウント `access_token` ではありません。
+
+<Warning>
+トークン管理で作成されたモデルAPI キー（本文では統一して `YOUR_MODEL_API_KEY` と表記され、通常はモデル呼び出しに `sk-...` 形式で使用されます）を使用する必要があります。ここではアカウント アクセス トークン `YOUR_ACCESS_TOKEN` は使用できません。誤って使用すると `401 Invalid Token` が返されます。パスは末尾のスラッシュを含める必要があります。
+</Warning>
+
+```bash
+curl https://bearlab.ai/api/usage/token/ \
+  -H "Authorization: Bearer YOUR_MODEL_API_KEY"
+```
+
+```json 応答
+{
+  "code": true,
+  "message": "ok",
+  "data": {
+    "object": "token_usage",
+    "name": "default",
+    "total_granted": 500000,
+    "total_used": 444364,
+    "total_available": 55636,
+    "unlimited_quota": false,
+    "model_limits": {},
+    "model_limits_enabled": false,
+    "expires_at": 0
+  }
+}
+```
+
+| フィールド | 型 | 説明 |
+| --- | --- | --- |
+| `code` | boolean | 成功時は `true`（このインターフェースは外側に `code` を使用することに注意してください。**`success` ではありません**） |
+| `data.object` | string | 固定値 `token_usage` |
+| `data.name` | string | トークン名 |
+| `data.total_granted` | integer | 総クォータ（残額 + 使用済み、quota） |
+| `data.total_used` | integer | 使用済みクォータ |
+| `data.total_available` | integer | 残りクォータ |
+| `data.unlimited_quota` | boolean | 無制限クォータ トークンであるかどうか |
+| `data.model_limits` | object | モデルホワイトリスト マッピング（有効化されていない場合は空） |
+| `data.model_limits_enabled` | boolean | モデルホワイトリストが有効化されているかどうか |
+| `data.expires_at` | integer | 有効期限（Unix秒。`0` は期限なしを示します） |
+
+<Note>
+出典：new-api ソースコード `controller/token.go` の `GetTokenUsage`。成功応答の外側は `{ code: true, message: "ok", data }` です（他のインターフェースの `success` ラッピングとは異なります）。認証失敗時は `401 Invalid Token` が返されます。
+</Note>

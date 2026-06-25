@@ -1,0 +1,41 @@
+---
+title: "Suppression en masse"
+description: "POST /api/token/batch"
+---
+
+## En-têtes de requête
+
+| En-tête | Obligatoire | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, jeton d'accès du compte (état de connexion à la console, pas une clé API `sk-`) |
+| `Content-Type` | ✓ | `application/json` |
+
+Point de terminaison : `POST /api/token/batch`
+
+Supprimer plusieurs clés API en une seule fois (`DeleteTokenBatch`, suppression en masse, pas création).
+
+## Corps de la requête
+
+| Champ | Obligatoire | Type | Description |
+| --- | --- | --- | --- |
+| `ids` | ✓ | integer[] | Liste des ID de Token à supprimer ; les ID proviennent de `data.items[].id` dans la réponse de `GET /api/token/` |
+
+```bash
+curl -X POST https://bearlab.ai/api/token/batch \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"ids": [10623, 10624]}'
+```
+
+<Note>
+Stratégie de secours côté client : en cas d'échec de la suppression en masse, les appels à `DELETE /api/token/{id}` seront effectués un par un.
+</Note>
+
+```json Réponse
+{ "success": true, "message": "", "data": 2 }
+```
+
+
+<Note>
+Source : code source new-api `controller/token.go` `DeleteTokenBatch`. Le corps de la requête est `{ ids: [...] }` (au moins 1), et la réponse `data` correspond au nombre de suppressions réussies.
+</Note>

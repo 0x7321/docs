@@ -1,0 +1,88 @@
+---
+title: "व्यक्तिगत लॉग प्राप्त करें"
+description: "GET /api/log/self"
+---
+
+## अनुरोध हेडर्स
+
+| अनुरोध हेडर | आवश्यक | विवरण |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, खाता एक्सेस टोकन (कंसोल लॉगिन स्थिति, `sk-` API कुंजी नहीं) |
+
+इंटरफेस: `GET /api/log/self`
+
+वर्तमान खाते के कॉल लॉग के लिए पृष्ठित क्वेरी करें।
+
+## क्वेरी पैरामीटर
+
+| क्वेरी पैरामीटर | आवश्यक | प्रकार | विवरण |
+| --- | --- | --- | --- |
+| `p` |  | integer | पृष्ठ संख्या, 1 से शुरू |
+| `page_size` |  | integer | प्रति पृष्ठ मात्रा |
+| `type` |  | integer | लॉग प्रकार (`2` खपत / `1` रीचार्ज / `3` प्रबंधन / `4` प्रणाली / `5` त्रुटि; छोड़ी गई या `0` सभी के लिए) |
+| `token_name` |  | string | टोकन नाम के अनुसार फ़िल्टर करें |
+| `model_name` |  | string | मॉडल नाम के अनुसार फ़िल्टर करें |
+| `group` |  | string | समूह के अनुसार फ़िल्टर करें |
+| `start_timestamp` |  | integer | प्रारंभ समय, Unix सेकंड |
+| `end_timestamp` |  | integer | समाप्ति समय, Unix सेकंड |
+| `request_id` |  | string | अनुरोध ID द्वारा सटीक क्वेरी |
+| `upstream_request_id` |  | string | अपस्ट्रीम अनुरोध ID द्वारा क्वेरी |
+
+```bash
+curl "https://bearlab.ai/api/log/self?p=1&page_size=10&type=2" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json 
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "items": [
+      {
+        "id": 123,
+        "user_id": 42,
+        "created_at": 1718000000,
+        "type": 2,
+        "content": "मॉडल gpt-5.4, दर ...",
+        "username": "alice",
+        "token_name": "default",
+        "model_name": "gpt-5.4",
+        "quota": 240,
+        "prompt_tokens": 100,
+        "completion_tokens": 50,
+        "use_time": 3,
+        "is_stream": false,
+        "channel": 12,
+        "token_id": 7,
+        "group": "default",
+        "request_id": "2026062500000000",
+        "upstream_request_id": ""
+      }
+    ],
+    "page": 1,
+    "page_size": 10,
+    "total": 5
+  }
+}
+```
+
+| क्षेत्र | प्रकार | विवरण |
+| --- | --- | --- |
+| `data.items` | array | लॉग रिकॉर्ड सरणी |
+| `type` | integer | लॉग प्रकार (ऊपर के अनुसार) |
+| `content` | string | लॉग विवरण (बिलिंग दर आदि) |
+| `token_name` | string | टोकन नाम |
+| `model_name` | string | मॉडल नाम |
+| `quota` | integer | इस बार की खपत राशि |
+| `prompt_tokens` / `completion_tokens` | integer | इनपुट / आउटपुट टोकन गणना |
+| `use_time` | integer | अनुरोध समय (सेकंड) |
+| `is_stream` | boolean | क्या स्ट्रीमिंग है |
+| `channel` | integer | चैनल ID (ध्यान दें कि json फील्ड नाम `channel` है, `channel_id` नहीं) |
+| `group` | string | उपयोग किया गया समूह |
+| `request_id` | string | अनुरोध ID |
+| `data.page` / `page_size` / `total` | integer | पेजिंग जानकारी |
+
+<Note>
+स्रोत: new-api स्रोत कोड `controller/log.go` `GetUserLogs` + `model/log.go` `Log`। व्यक्तिगत लॉग क्वेरी `keyword` या `channel` क्वेरी पैरामीटर को **समर्थित नहीं करता है** (`/api/log/self/search`弃用 हो गया है); `channel` केवल प्रतिक्रिया फील्ड के रूप में लौटाया जाता है।
+</Note>

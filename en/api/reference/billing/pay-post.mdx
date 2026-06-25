@@ -1,0 +1,64 @@
+---
+title: "Initiate Online Payment"
+description: "POST /api/user/pay"
+---
+
+## Request Headers
+
+| Header | Required | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, account access token |
+| `Content-Type` | ✓ | `application/json` |
+
+Endpoint: `POST /api/user/pay`
+
+Creates a pending payment recharge order and triggers the payment gateway, returning the gateway submission address `url` and form parameters `data`. The frontend should POST `data` as form data to `url` to redirect to the payment checkout. After payment is completed, the gateway calls back `/api/user/epay/notify` to credit the account.
+
+## Request Body
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `amount` | integer | ✓ | Recharge amount, must be ≥ `min_topup` |
+| `payment_method` | string | ✓ | Payment method identifier, from `topup/info` response `pay_methods[].type`, e.g., `alipay`, `wxpay` |
+
+```bash
+curl "https://bearlab.ai/api/user/pay" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{ "amount": 100, "payment_method": "alipay" }'
+```
+
+```json Success
+{
+  "message": "success",
+  "url": "https://pay.example.com/submit.php",
+  "data": {
+    "pid": "1000",
+    "out_trade_no": "USR42NOa1b2c31718000000",
+    "name": "TUC100",
+    "money": "95.00",
+    "type": "alipay",
+    "sign": "e10adc3949ba59abbe56e057f20f883e",
+    "sign_type": "MD5"
+  }
+}
+```
+
+```json Error
+{
+  "message": "error",
+  "data": "Payment method does not exist"
+}
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `message` | string | `success` / `error` |
+| `url` | string | Payment gateway submission address, returned on success |
+| `data` | object | Form parameters to submit to the gateway (includes `out_trade_no` merchant order number, `money` actual payment amount, `sign` signature, etc.), varies by gateway |
+
+Possible error messages: `Invalid parameters`, `Recharge amount cannot be less than N`, `Failed to retrieve user group`, `Recharge amount too low`, `Payment method does not exist`, `Current admin has not configured payment information`, `Failed to initiate payment`, `Failed to create order`.
+
+<Note>
+The response similarly **does not contain a `success` field**. Orders are identified by `out_trade_no` (the server-side `trade_no`, formatted as `USR{user_id}NO{random}{timestamp}`), which can be queried via `GET /api/user/topup/self` for status. Source: `controller/topup.go` `RequestEpay`.
+</Note>

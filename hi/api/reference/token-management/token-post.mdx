@@ -1,0 +1,47 @@
+---
+title: "टोकन बनाएं"
+description: "POST /api/token/"
+---
+
+## अनुरोध हेडर
+
+| अनुरोध हेडर | आवश्यक | विवरण |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, खाता पहुंच टोकन (कंसोल लॉगिन स्थिति, `sk-` API Key नहीं) |
+| `Content-Type` | ✓ | `application/json` |
+
+एपीआई: `POST /api/token/`
+
+एक नया API Key बनाएं। Key सर्वर द्वारा उत्पन्न होता है, **प्रतिक्रिया में वापस नहीं किया जाता है** — कंसोल से एक बार में कॉपी और सहेजना होगा।
+
+## अनुरोध निकाय
+
+| फ़ील्ड | आवश्यक | प्रकार | विवरण |
+| --- | --- | --- | --- |
+| `name` | ✓ | string | टोकन का नाम (≤ 50 वर्ण) |
+| `expired_time` | ✓ | integer | समाप्ति समय Unix सेकंड; `-1` का मतलब कभी नहीं समाप्त होना |
+| `remain_quota` | ✓ | integer | प्रारंभिक कोटा (quota); असीमित कोटा के लिए `unlimited_quota: true` के साथ |
+| `unlimited_quota` | ✓ | boolean | क्या असीमित कोटा है |
+| `model_limits_enabled` |  | boolean | क्या मॉडल श्वेतसूची सक्षम करें |
+| `model_limits` |  | string | मॉडल श्वेतसूची (अल्पविराम से अलग, खाली स्ट्रिंग कोई प्रतिबंध नहीं) |
+| `allow_ips` |  | string \| null | IP श्वेतसूची (खाली स्ट्रिंग / `null` कोई प्रतिबंध नहीं) |
+| `group` |  | string | समूह, `GET /api/user/self/groups` की कुंजी से लिया गया; खाली स्ट्रिंग का मतलब निर्दिष्ट नहीं है |
+| `cross_group_retry` |  | boolean | क्या समूहों के बीच पुनः प्रयास करें (केवल `auto` समूह के लिए मान्य) |
+
+```bash
+curl -X POST https://bearlab.ai/api/token/ \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"my-token","expired_time":-1,"remain_quota":-1,"unlimited_quota":true,"model_limits_enabled":false,"group":""}'
+```
+
+```json
+{
+  "success": true,
+  "message": ""
+}
+```
+
+<Note>
+स्रोत: new-api स्रोत कोड `controller/token.go` `AddToken`। सफल प्रतिक्रिया केवल `{ success, message }` है, **`data` नहीं**, और न ही पूर्ण Key लौटाता है। Token struct में `exclude_ips` फ़ील्ड नहीं है। बनाने के बाद `GET /api/token/` का उपयोग करके देखें (`key` मुखौटा लगा है)।
+</Note>

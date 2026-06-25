@@ -1,0 +1,64 @@
+---
+title: "ऑनलाइन भुगतान शुरू करें"
+description: "POST /api/user/pay"
+---
+
+## अनुरोध शीर्षलेख
+
+| अनुरोध शीर्षलेख | आवश्यक | विवरण |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, खाता एक्सेस टोकन |
+| `Content-Type` | ✓ | `application/json` |
+
+इंटरफ़ेस: `POST /api/user/pay`
+
+एक लंबित भुगतान टॉप-अप ऑर्डर बनाएं और यीपे गेटवे को सक्रिय करें, गेटवे सबमिट पता `url` और फॉर्म पैरामीटर `data` लौटाएं। फ्रंटएंड `data` को फॉर्म POST के माध्यम से `url` पर भेजता है और चेकआउट काउंटर तक पहुंच जाता है। भुगतान पूरा होने के बाद गेटवे `/api/user/epay/notify` को कॉल करके खाते में जमा करता है।
+
+## अनुरोध निकाय
+
+| फील्ड | प्रकार | आवश्यक | विवरण |
+| --- | --- | --- | --- |
+| `amount` | integer | ✓ | टॉप-अप राशि की मात्रा, >= `min_topup` होनी चाहिए |
+| `payment_method` | string | ✓ | भुगतान विधि पहचानकर्ता, `topup/info` के `pay_methods[].type` से लिया गया, उदाहरण के लिए `alipay`, `wxpay` |
+
+```bash
+curl "https://bearlab.ai/api/user/pay" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{ "amount": 100, "payment_method": "alipay" }'
+```
+
+```json सफल
+{
+  "message": "success",
+  "url": "https://pay.example.com/submit.php",
+  "data": {
+    "pid": "1000",
+    "out_trade_no": "USR42NOa1b2c31718000000",
+    "name": "TUC100",
+    "money": "95.00",
+    "type": "alipay",
+    "sign": "e10adc3949ba59abbe56e057f20f883e",
+    "sign_type": "MD5"
+  }
+}
+```
+
+```json विफल
+{
+  "message": "error",
+  "data": "भुगतान विधि मौजूद नहीं है"
+}
+```
+
+| फील्ड | प्रकार | विवरण |
+| --- | --- | --- |
+| `message` | string | `success` / `error` |
+| `url` | string | यीपे गेटवे सबमिट पता, सफलता पर लौटाया गया |
+| `data` | object | गेटवे को सबमिट किए जाने वाले फॉर्म पैरामीटर (`out_trade_no` व्यापारी ऑर्डर नंबर, `money` वास्तविक भुगतान राशि, `sign` हस्ताक्षर आदि सहित), गेटवे के अनुसार भिन्न |
+
+संभावित `error` पाठ: `पैरामीटर त्रुटि`, `टॉप-अप मात्रा N से कम नहीं हो सकती`, `उपयोगकर्ता समूह प्राप्त करना विफल`, `टॉप-अप राशि बहुत कम`, `भुगतान विधि मौजूद नहीं है`, `वर्तमान व्यवस्थापक ने भुगतान जानकारी कॉन्फ़िगर नहीं की है`, `भुगतान शुरू करना विफल`, `ऑर्डर बनाना विफल`।
+
+<Note>
+प्रतिक्रिया में **`success` फील्ड नहीं है**। ऑर्डर को `out_trade_no` (यानी सर्वर-साइड `trade_no`, जैसे `USR{उपयोगकर्ता ID}NO{यादृच्छिक}{टाइमस्टैम्प}`) द्वारा पहचाना जाता है, आप `GET /api/user/topup/self` में स्थिति की जांच कर सकते हैं। स्रोत: `controller/topup.go` `RequestEpay`।
+</Note>

@@ -1,0 +1,64 @@
+---
+title: "オンライン支払いを開始"
+description: "POST /api/user/pay"
+---
+
+## リクエストヘッダ
+
+| ヘッダ | 必須 | 説明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`、アカウントアクセストークン |
+| `Content-Type` | ✓ | `application/json` |
+
+エンドポイント：`POST /api/user/pay`
+
+チャージ待ちの支払いオーダーを作成し、YPay ゲートウェイから支払いを立ち上げます。返却値はゲートウェイ送信アドレス `url` とフォームパラメータ `data` です。フロントエンドは `data` をフォーム POST で `url` に送信することで、レジスターへ遷移します。支払い完了後、ゲートウェイは `/api/user/epay/notify` にコールバックして入金処理を行います。
+
+## リクエストボディ
+
+| フィールド | 型 | 必須 | 説明 |
+| --- | --- | --- | --- |
+| `amount` | integer | ✓ | チャージ額度数、`min_topup` 以上である必要があります |
+| `payment_method` | string | ✓ | 支払い方法の識別子。`topup/info` の `pay_methods[].type` から取得します（例：`alipay`、`wxpay`） |
+
+```bash
+curl "https://bearlab.ai/api/user/pay" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{ "amount": 100, "payment_method": "alipay" }'
+```
+
+```json 成功
+{
+  "message": "success",
+  "url": "https://pay.example.com/submit.php",
+  "data": {
+    "pid": "1000",
+    "out_trade_no": "USR42NOa1b2c31718000000",
+    "name": "TUC100",
+    "money": "95.00",
+    "type": "alipay",
+    "sign": "e10adc3949ba59abbe56e057f20f883e",
+    "sign_type": "MD5"
+  }
+}
+```
+
+```json 失敗
+{
+  "message": "error",
+  "data": "支払い方法が存在しません"
+}
+```
+
+| フィールド | 型 | 説明 |
+| --- | --- | --- |
+| `message` | string | `success` / `error` |
+| `url` | string | YPay ゲートウェイ送信アドレス。成功時に返却されます |
+| `data` | object | ゲートウェイに送信するフォームパラメータ（`out_trade_no` マーチャントオーダー番号、`money` 実払額、`sign` 署名など）。ゲートウェイによって異なります |
+
+可能性のあるエラーメッセージ：`パラメータエラー`、`チャージ数量が N 以上である必要があります`、`ユーザーグループ情報取得失敗`、`チャージ額が低すぎます`、`支払い方法が存在しません`、`現在の管理者は支払い情報が設定されていません`、`支払い起動失敗`、`オーダー作成失敗`。
+
+<Note>
+レスポンスも同様に **`success` フィールドを含みません**。オーダーは `out_trade_no`（サーバー側の `trade_no`、形式：`USR{ユーザーID}NO{ランダム}{タイムスタンプ}`）で識別され、`GET /api/user/topup/self` で状態を確認できます。出典：`controller/topup.go` `RequestEpay`。
+</Note>

@@ -1,0 +1,79 @@
+---
+title: "Informations du compte actuel"
+description: "GET /api/user/self"
+---
+
+## En-têtes de requête
+
+| En-tête | Obligatoire | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, jeton d'accès du compte (session de console, pas la clé API `sk-`) |
+
+Endpoint : `GET /api/user/self`
+
+Récupère les informations du compte actuellement connecté, les quotas (solde) et les informations de parrainage. Le quota disponible du compte se trouve dans `data.quota`, et le quota utilisé se trouve dans `data.used_quota` (tous deux en entiers quota, 500000 quota = 1 dollar).
+
+```bash
+curl "https://bearlab.ai/api/user/self" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json Réponse
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "id": 42,
+    "username": "alice",
+    "display_name": "Alice",
+    "role": 1,
+    "status": 1,
+    "email": "alice@example.com",
+    "github_id": "",
+    "discord_id": "",
+    "oidc_id": "",
+    "wechat_id": "",
+    "telegram_id": "",
+    "linux_do_id": "",
+    "group": "default",
+    "quota": 55636,
+    "used_quota": 444364,
+    "request_count": 128,
+    "aff_code": "ABCDEF",
+    "aff_count": 3,
+    "aff_quota": 0,
+    "aff_history_quota": 1500000,
+    "inviter_id": 0,
+    "setting": "{}",
+    "stripe_customer": "",
+    "sidebar_modules": "",
+    "permissions": {}
+  }
+}
+```
+
+| Champ | Type | Description |
+| --- | --- | --- |
+| `id` | integer | ID utilisateur |
+| `username` | string | Nom d'utilisateur pour la connexion |
+| `display_name` | string | Nom affiché |
+| `role` | integer | Rôle : `1` utilisateur normal / `10` administrateur / `100` super-administrateur |
+| `status` | integer | Statut : `1` activé / `2` banni |
+| `email` | string | Email associé |
+| `github_id` / `discord_id` / `oidc_id` / `wechat_id` / `telegram_id` / `linux_do_id` | string | Identifiants de liaison des connexions tierces |
+| `group` | string | Groupe d'utilisateur (détermine les modèles disponibles et les multiplicateurs) |
+| `quota` | integer | Quota restant actuel (500000 = 1 dollar) |
+| `used_quota` | integer | Quota utilisé historiquement |
+| `request_count` | integer | Nombre total de requêtes |
+| `aff_code` | string | Code de parrainage personnel |
+| `aff_count` | integer | Nombre de personnes parrainées |
+| `aff_quota` | integer | Quota de parrainage disponible |
+| `aff_history_quota` | integer | Quota de parrainage cumulé historiquement |
+| `inviter_id` | integer | ID utilisateur du parrain (`0` signifie aucun) |
+| `setting` | string | Paramètres de personnalisation de l'utilisateur (chaîne JSON) |
+| `stripe_customer` | string | ID client Stripe |
+| `permissions` | object | Informations des permissions de rôle |
+
+<Note>
+Source : code source new-api `controller/user.go` `GetSelf`. La réponse ne contient **pas** `access_token` (exclu par `json:"-"` dans `model/user.go`), et ne contient pas non plus les champs `balance` / `level` / `topup_*` — pour le solde, lisez l'entier `quota`. Le jeton d'accès doit être récupéré séparément via `GET /api/user/token` (notez que cet endpoint **réinitialise** le jeton).
+</Note>

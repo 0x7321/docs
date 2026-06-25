@@ -1,0 +1,51 @@
+---
+title: "计算实付金额"
+description: "POST /api/user/amount"
+---
+
+## 请求头
+
+| 请求头 | 必填 | 说明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`，账号访问令牌 |
+| `Content-Type` | ✓ | `application/json` |
+
+接口：`POST /api/user/amount`
+
+按当前用户分组的折扣，预计算充值 `amount` 个额度需要实际支付的金额。用于充值页"输入额度 → 显示应付"的实时计算，不创建订单。
+
+## 请求体
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `amount` | integer | ✓ | 充值额度数量，须 ≥ `topup/info` 返回的 `min_topup` |
+
+```bash
+curl "https://bearlab.ai/api/user/amount" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{ "amount": 100 }'
+```
+
+```json 成功
+{
+  "message": "success",
+  "data": "95.00"
+}
+```
+
+```json 失败
+{
+  "message": "error",
+  "data": "充值数量不能小于 1"
+}
+```
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `message` | string | `success` 表示成功，`error` 表示失败 |
+| `data` | string | 成功时为实付金额字符串（两位小数，已含分组折扣）；失败时为错误描述 |
+
+<Note>
+此接口用裸 `c.JSON` 返回，**响应不含 `success` 字段**，仅 `message` + `data`，与 `topup/info` 的 `{ success, message, data }` 包装不同。来源：`controller/topup.go` `RequestAmount`。
+</Note>

@@ -1,0 +1,77 @@
+---
+title: "Liste des jetons"
+description: "GET /api/token/"
+---
+
+## En-têtes de requête
+
+| En-tête | Obligatoire | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, jeton d'accès du compte (statut de connexion à la console, pas une clé API `sk-`) |
+
+Interface : `GET /api/token/`
+
+Liste paginée de toutes les clés API du compte actuel. Pour une recherche par nom / préfixe, veuillez utiliser `GET /api/token/search`.
+
+## Paramètres de requête
+
+| Paramètre de requête | Obligatoire | Type | Description |
+| --- | --- | --- | --- |
+| `p` |  | integer | Numéro de page, commençant à 1 |
+| `page_size` |  | integer | Nombre d'éléments par page |
+
+```bash
+curl "https://bearlab.ai/api/token/?p=1&page_size=10" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json 回应
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "items": [
+      {
+        "id": 10623,
+        "user_id": 42,
+        "key": "ntEH**********7nAh",
+        "status": 1,
+        "name": "my-token",
+        "created_time": 1781977779,
+        "accessed_time": 1781977779,
+        "expired_time": -1,
+        "remain_quota": 0,
+        "unlimited_quota": true,
+        "used_quota": 0,
+        "model_limits_enabled": false,
+        "model_limits": "",
+        "allow_ips": "",
+        "group": "",
+        "cross_group_retry": false
+      }
+    ],
+    "page": 1,
+    "page_size": 10,
+    "total": 7
+  }
+}
+```
+
+| Champ | Type | Description |
+| --- | --- | --- |
+| `key` | string | Masqué (premiers 4 + `**********` + derniers 4 caractères) ; la clé complète n'est visible qu'une seule fois lors de la création |
+| `status` | integer | `1` activé / `2` désactivé / `3` expiré / `4` épuisé |
+| `expired_time` | integer | Heure d'expiration (secondes Unix), `-1` n'expire jamais |
+| `remain_quota` | integer | Quota restant (quota, 500000 = 1 dollar américain) |
+| `unlimited_quota` | boolean | Quota illimité ou non |
+| `used_quota` | integer | Quota utilisé |
+| `model_limits_enabled` | boolean | Liste blanche de modèles activée ou non |
+| `model_limits` | string | Liste blanche de modèles (séparés par des virgules, chaîne vide = pas de restriction) |
+| `allow_ips` | string \| null | Liste blanche IP (chaîne vide / `null` = pas de restriction) |
+| `group` | string | Groupe de jetons |
+| `cross_group_retry` | boolean | Réessai inter-groupes ou non (valable uniquement pour le groupe `auto`) |
+| `data.page` / `page_size` / `total` | integer | Informations de pagination |
+
+<Note>
+Source : code source new-api `controller/token.go` `GetAllTokens` + `model/token.go` `Token`. `GET /api/token/` accepte uniquement les paramètres de pagination ; `key` est masqué via `MaskTokenKey`. Les anciens champs documentés tels que `remain_count` / `unlimited_count` / `exclude_ips` / `rate_limits` **n'existent pas** dans new-api.
+</Note>

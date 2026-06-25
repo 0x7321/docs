@@ -1,0 +1,61 @@
+---
+title: "Search Token"
+description: "GET /api/token/search"
+---
+
+## Request Headers
+
+| Header | Required | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, account access token (console login session, not `sk-` API Key) |
+
+Endpoint: `GET /api/token/search`
+
+Search the current account's tokens by name or Key prefix, with paginated results.
+
+## Query Parameters
+
+| Parameter | Required | Type | Description |
+| --- | --- | --- | --- |
+| `keyword` |  | string | Fuzzy search by token name |
+| `token` |  | string | Filter by Key prefix |
+| `p` |  | integer | Page number, starting from 1 |
+| `page_size` |  | integer | Number of items per page |
+
+```bash
+curl "https://bearlab.ai/api/token/search?keyword=my-token" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "items": [
+      {
+        "id": 10623,
+        "user_id": 42,
+        "key": "ntEH**********7nAh",
+        "status": 1,
+        "name": "my-token",
+        "created_time": 1781977779,
+        "expired_time": -1,
+        "remain_quota": 0,
+        "unlimited_quota": true,
+        "used_quota": 0,
+        "group": ""
+      }
+    ],
+    "page": 1,
+    "page_size": 10,
+    "total": 1
+  }
+}
+```
+
+The response structure is the same as `GET /api/token/` (the `key` is desensitized; for field descriptions, see [Token List](/en/api/reference/token-management/token-get)).
+
+<Note>
+Source: new-api source code `controller/token.go` `SearchTokens`. Accepts two search parameters: `keyword` (name) and `token` (Key prefix), with pagination. Note: the `GET /api/token/` list endpoint does **not** accept `keyword`; fuzzy search must use this endpoint.
+</Note>

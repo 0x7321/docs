@@ -1,0 +1,65 @@
+---
+title: "Usage Statistics"
+description: "GET /api/data/self"
+---
+
+## Request Headers
+
+| Header | Required | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, account access token (console login session, not an `sk-` API Key generated from token management) |
+
+Endpoint: `GET /api/data/self`
+
+Returns aggregated usage details for the current user within a specified time range, broken down by "date × model". Each record corresponds to one day of a particular model, including call count, tokens consumed, and quota used.
+
+## Query Parameters
+
+| Parameter | Required | Type | Description |
+| --- | --- | --- | --- |
+| `start_timestamp` |  | integer | Start time in Unix seconds |
+| `end_timestamp` |  | integer | End time in Unix seconds |
+
+```bash
+curl "https://bearlab.ai/api/data/self?start_timestamp=1717200000&end_timestamp=1718000000" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json Response
+{
+  "success": true,
+  "message": "",
+  "data": [
+    {
+      "id": 1,
+      "user_id": 42,
+      "username": "alice",
+      "model_name": "gpt-5.4",
+      "created_at": 1717200000,
+      "use_group": "default",
+      "token_id": 7,
+      "channel_id": 12,
+      "node_name": "",
+      "token_used": 1024,
+      "count": 8,
+      "quota": 240
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `data` | array | Array of usage records (`data` is a direct array without pagination wrapper) |
+| `model_name` | string | Model name |
+| `created_at` | integer | Aggregation date (Unix seconds) |
+| `use_group` | string | Group used |
+| `token_id` | integer | Token ID |
+| `channel_id` | integer | Channel ID |
+| `token_used` | integer | Number of tokens consumed |
+| `count` | integer | Number of calls |
+| `quota` | integer | Quota consumed (quota, 500000 = 1 USD) |
+
+<Note>
+Source: new-api source code `controller/usedata.go` `GetUserQuotaDates` + `model/usedata.go` `QuotaData`. The server only reads `start_timestamp` / `end_timestamp`, with no `granularity` / `dimension` parameters; response format is `{ success, message, data: [...] }`, where `data` is a flat array.
+</Note>

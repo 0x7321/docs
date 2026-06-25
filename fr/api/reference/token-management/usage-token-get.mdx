@@ -1,0 +1,58 @@
+---
+title: "Utilisation des jetons"
+description: "GET /api/usage/token/"
+---
+
+Interface : `GET /api/usage/token/`
+
+## En-têtes de demande
+
+| En-tête | Obligatoire | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_MODEL_API_KEY`, clé API de modèle créée via la gestion des jetons ; n'utilisez pas le jeton d'accès du compte `YOUR_ACCESS_TOKEN` |
+
+Interrogez le quota et la consommation de cette clé API elle-même. Ce point de terminaison s'authentifie avec la clé API elle-même, et non avec le `access_token` du compte.
+
+<Warning>
+Vous devez utiliser la clé API de modèle créée via la gestion des jetons (dans ce document, unifié sous la notation `YOUR_MODEL_API_KEY`, généralement sous la forme `sk-...` pour les appels de modèle). Vous ne pouvez pas utiliser ici le jeton d'accès du compte `YOUR_ACCESS_TOKEN` ; une utilisation incorrecte retournera `401 Invalid Token`. Le chemin doit inclure une barre oblique finale.
+</Warning>
+
+```bash
+curl https://bearlab.ai/api/usage/token/ \
+  -H "Authorization: Bearer YOUR_MODEL_API_KEY"
+```
+
+```json 回应
+{
+  "code": true,
+  "message": "ok",
+  "data": {
+    "object": "token_usage",
+    "name": "default",
+    "total_granted": 500000,
+    "total_used": 444364,
+    "total_available": 55636,
+    "unlimited_quota": false,
+    "model_limits": {},
+    "model_limits_enabled": false,
+    "expires_at": 0
+  }
+}
+```
+
+| Champ | Type | Description |
+| --- | --- | --- |
+| `code` | boolean | `true` en cas de succès (notez que cette interface utilise `code` au niveau racine, **pas** `success`) |
+| `data.object` | string | Toujours `token_usage` |
+| `data.name` | string | Nom du jeton |
+| `data.total_granted` | integer | Quota total (restant + utilisé) |
+| `data.total_used` | integer | Quota utilisé |
+| `data.total_available` | integer | Quota restant |
+| `data.unlimited_quota` | boolean | Si le jeton a un quota illimité |
+| `data.model_limits` | object | Mappage de la liste blanche des modèles (vide si non activée) |
+| `data.model_limits_enabled` | boolean | Si la liste blanche des modèles est activée |
+| `data.expires_at` | integer | Heure d'expiration (secondes Unix, `0` signifie jamais expiration) |
+
+<Note>
+Source : code source new-api `controller/token.go` `GetTokenUsage`. La réponse réussie utilise le wrapper au niveau racine `{ code: true, message: "ok", data }` (différent du wrapper `success` utilisé par les autres interfaces). L'authentification échouée retourne `401 Invalid Token`.
+</Note>

@@ -1,0 +1,40 @@
+---
+title: "Supprimer un Token"
+description: "DELETE /api/token/{id}"
+---
+
+## En-têtes de la requête
+
+| En-tête | Obligatoire | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, le jeton d'accès du compte (état de connexion de la console, non une clé API `sk-`) |
+
+Interface : `DELETE /api/token/{id}`
+
+Supprime une clé API spécifiée.
+
+## Paramètres de chemin
+
+| Paramètre | Obligatoire | Type | Description |
+| --- | --- | --- | --- |
+| `id` | ✓ | integer | L'ID du Token à supprimer, provenant de `data.items[].id` de `GET /api/token/` |
+
+<Warning>
+Utilisez le chemin **sans barre oblique finale** `DELETE /api/token/{id}`. Avec une barre oblique finale `DELETE /api/token/{id}/`, gin redirigera avec un code 307 vers le chemin sans barre oblique finale ; si le client ne suit pas le code 307, la suppression ne se produira pas.
+</Warning>
+
+```bash
+curl -X DELETE https://bearlab.ai/api/token/10623 \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json Response
+{
+  "success": true,
+  "message": ""
+}
+```
+
+<Note>
+Source : code source de new-api `controller/token.go` `DeleteToken`. La réponse réussie contient uniquement `{ success, message }`, sans champ `data`.
+</Note>

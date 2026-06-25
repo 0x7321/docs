@@ -1,0 +1,44 @@
+---
+title: "Échanger un code de recharge"
+description: "POST /api/user/topup"
+---
+
+## En-têtes de requête
+
+| En-tête | Requis | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, jeton d'accès du compte |
+| `Content-Type` | ✓ | `application/json` |
+
+Point de terminaison : `POST /api/user/topup`
+
+Utilise un code d'échange pour recharger le compte actuel. Cette interface est pour « l'échange de codes de recharge », et non pour créer une commande via paiement en ligne.
+
+## Corps de la requête
+
+| Champ | Requis | Type | Description |
+| --- | --- | --- | --- |
+| `key` | ✓ | string | Code d'échange |
+
+```bash
+curl "https://bearlab.ai/api/user/topup" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"key":"REDEMPTION_CODE"}'
+```
+
+```json 回应
+{
+  "success": true,
+  "message": "",
+  "data": 10
+}
+```
+
+| Champ | Type | Description |
+| --- | --- | --- |
+| `data` | integer | Montant de quota augmenté par cet échange (`model.Redeem` retourne `int`, l'unité est le quota, pas une chaîne de montant) |
+
+<Note>
+Source : `controller.TopUp` de new-api (code d'échange → `model.Redeem`). Après succès, il est recommandé de rafraîchir le solde du compte via `GET /api/user/self`.
+</Note>

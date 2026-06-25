@@ -1,0 +1,79 @@
+---
+title: "वर्तमान खाता जानकारी"
+description: "GET /api/user/self"
+---
+
+## अनुरोध हेडर्स
+
+| अनुरोध हेडर | आवश्यक | विवरण |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, खाता एक्सेस टोकन (कंसोल लॉगिन स्थिति, `sk-` API की नहीं) |
+
+इंटरफ़ेस: `GET /api/user/self`
+
+वर्तमान लॉगिन खाते की जानकारी, कोटा (शेष राशि) और प्रचार जानकारी प्राप्त करें। खाते का उपयोग करने योग्य कोटा `data.quota` में है, पहले से उपयोग किया गया कोटा `data.used_quota` में है (दोनों कोटा पूर्णांक हैं, 500000 कोटा = 1 डॉलर)।
+
+```bash
+curl "https://bearlab.ai/api/user/self" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json 回應
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "id": 42,
+    "username": "alice",
+    "display_name": "Alice",
+    "role": 1,
+    "status": 1,
+    "email": "alice@example.com",
+    "github_id": "",
+    "discord_id": "",
+    "oidc_id": "",
+    "wechat_id": "",
+    "telegram_id": "",
+    "linux_do_id": "",
+    "group": "default",
+    "quota": 55636,
+    "used_quota": 444364,
+    "request_count": 128,
+    "aff_code": "ABCDEF",
+    "aff_count": 3,
+    "aff_quota": 0,
+    "aff_history_quota": 1500000,
+    "inviter_id": 0,
+    "setting": "{}",
+    "stripe_customer": "",
+    "sidebar_modules": "",
+    "permissions": {}
+  }
+}
+```
+
+| क्षेत्र | प्रकार | विवरण |
+| --- | --- | --- |
+| `id` | पूर्णांक | उपयोगकर्ता ID |
+| `username` | स्ट्रिंग | लॉगिन उपयोगकर्ता नाम |
+| `display_name` | स्ट्रिंग | प्रदर्शन नाम |
+| `role` | पूर्णांक | भूमिका: `1` सामान्य उपयोगकर्ता / `10` व्यवस्थापक / `100` सुपर व्यवस्थापक |
+| `status` | पूर्णांक | स्थिति: `1` सक्षम / `2` प्रतिबंधित |
+| `email` | स्ट्रिंग | बंधा हुआ ईमेल |
+| `github_id` / `discord_id` / `oidc_id` / `wechat_id` / `telegram_id` / `linux_do_id` | स्ट्रिंग | विभिन्न तीसरे पक्ष की लॉगिन बाइंडिंग पहचान |
+| `group` | स्ट्रिंग | उपयोगकर्ता समूह (उपलब्ध मॉडल और गुणकों को निर्धारित करता है) |
+| `quota` | पूर्णांक | वर्तमान शेष कोटा (500000 = 1 डॉलर) |
+| `used_quota` | पूर्णांक | ऐतिहासिक रूप से उपयोग किया गया कोटा |
+| `request_count` | पूर्णांक | संचयी अनुरोध संख्या |
+| `aff_code` | स्ट्रिंग | मेरा आमंत्रण कोड |
+| `aff_count` | पूर्णांक | आमंत्रित लोगों की संख्या |
+| `aff_quota` | पूर्णांक | उपलब्ध प्रचार कोटा |
+| `aff_history_quota` | पूर्णांक | ऐतिहासिक संचयी प्रचार कोटा |
+| `inviter_id` | पूर्णांक | आमंत्रणकर्ता उपयोगकर्ता ID (`0` का अर्थ कोई नहीं है) |
+| `setting` | स्ट्रिंग | उपयोगकर्ता व्यक्तिगत सेटिंग्स (JSON स्ट्रिंग) |
+| `stripe_customer` | स्ट्रिंग | Stripe ग्राहक ID |
+| `permissions` | object | भूमिका अनुमति जानकारी |
+
+<Note>
+स्रोत: new-api स्रोत कोड `controller/user.go` `GetSelf`। प्रतिक्रिया में `access_token` **नहीं है** (`model/user.go` `json:"-"` द्वारा बाहर रखा गया है), और न ही `balance` / `level` / `topup_*` आदि जैसे क्षेत्र हैं — शेष राशि के लिए पूर्णांक `quota` पढ़ें। एक्सेस टोकन को `GET /api/user/token` के माध्यम से अलग से प्राप्त करने की आवश्यकता है (ध्यान दें कि यह इंटरफ़ेस टोकन को **रीसेट** करेगा)।
+</Note>

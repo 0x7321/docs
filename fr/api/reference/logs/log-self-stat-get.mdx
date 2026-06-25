@@ -1,0 +1,53 @@
+---
+title: "Obtenir les statistiques de journalisation personnelles"
+description: "GET /api/log/self/stat"
+---
+
+## En-têtes de requête
+
+| En-tête | Requis | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, jeton d'accès du compte (session de connexion à la console, pas la clé API `sk-`) |
+
+Interface : `GET /api/log/self/stat`
+
+Obtenez les statistiques d'appel du compte actuel (quota consommé, RPM, TPM).
+
+## Paramètres de requête
+
+| Paramètre | Requis | Type | Description |
+| --- | --- | --- | --- |
+| `start_timestamp` |  | integer | Heure de début, en secondes Unix |
+| `end_timestamp` |  | integer | Heure de fin, en secondes Unix |
+| `type` |  | integer | Type de journal |
+| `token_name` |  | string | Filtrer par nom du jeton |
+| `model_name` |  | string | Filtrer par nom du modèle |
+| `channel` |  | integer | Filtrer par ID de canal |
+| `group` |  | string | Filtrer par groupe |
+
+```bash
+curl "https://bearlab.ai/api/log/self/stat" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json Réponse
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "quota": 0,
+    "rpm": 0,
+    "tpm": 0
+  }
+}
+```
+
+| Champ | Description |
+| --- | --- |
+| `quota` | Quota consommé (quota, 500000 = 1 USD) |
+| `rpm` | Requêtes par minute |
+| `tpm` | Jetons par minute |
+
+<Note>
+Source : code source new-api `controller/log.go` `GetLogsSelfStat` + `model/log.go` `Stat`. `data` contient seulement trois champs : `quota` / `rpm` / `tpm` (les champs `mpm` / `unfinished_count` / `unfinished_by_vendor` de l'ancienne documentation n'existent pas dans new-api).
+</Note>

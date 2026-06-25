@@ -1,0 +1,84 @@
+---
+title: "Mettre à jour un Token"
+description: "PUT /api/token/"
+---
+
+## En-têtes de requête
+
+| En-tête | Obligatoire | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, jeton d'accès du compte (état de connexion de la console, non pas une clé API `sk-`) |
+| `Content-Type` | ✓ | `application/json` |
+
+Endpoint : `PUT /api/token/`
+
+Mettre à jour une clé API existante. L'`id` du Token se trouve dans le **corps de la requête** (pas dans l'URL).
+
+## Paramètres de requête
+
+| Paramètre de requête | Obligatoire | Type | Description |
+| --- | --- | --- | --- |
+| `status_only` |  | string | Lorsque non vide, met à jour uniquement le champ `status` (activer / désactiver), en ignorant les autres champs |
+
+## Corps de la requête
+
+| Champ | Obligatoire | Type | Description |
+| --- | --- | --- | --- |
+| `id` | ✓ | integer | ID du Token à mettre à jour (à placer dans le body) |
+| `name` | ✓ | string | Nom du Token |
+| `expired_time` | ✓ | integer | Heure d'expiration en secondes Unix ; `-1` pour ne jamais expirer |
+| `remain_quota` | ✓ | integer | Quota restant |
+| `unlimited_quota` | ✓ | boolean | Indique si le quota est illimité |
+| `status` |  | integer | Statut : `1` activé / `2` désactivé (à utiliser avec `status_only`) |
+| `model_limits_enabled` |  | boolean | Indique si la liste blanche des modèles est activée |
+| `model_limits` |  | string | Liste blanche des modèles |
+| `allow_ips` |  | string \| null | Liste blanche des IP |
+| `group` |  | string | Groupe, obtenu à partir de la clé de `GET /api/user/self/groups` |
+| `cross_group_retry` |  | boolean | Indique si une nouvelle tentative entre groupes est autorisée |
+
+```bash
+curl -X PUT https://bearlab.ai/api/token/ \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"id":10633,"name":"renamed","expired_time":-1,"remain_quota":-1,"unlimited_quota":true,"model_limits_enabled":false,"group":""}'
+```
+
+```json Réponse
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "id": 10633,
+    "user_id": 42,
+    "key": "op0O**********nBYM",
+    "status": 1,
+    "name": "renamed",
+    "created_time": 1781995744,
+    "accessed_time": 1781995744,
+    "expired_time": -1,
+    "remain_quota": 0,
+    "unlimited_quota": true,
+    "used_quota": 0,
+    "model_limits_enabled": false,
+    "model_limits": "",
+    "allow_ips": "",
+    "group": "",
+    "cross_group_retry": false
+  }
+}
+```
+
+Le champ `data` de la réponse réussie est l'objet Token masqué après mise à jour (les champs sont identiques à ceux de la [liste des Tokens](/fr/api/reference/token-management/token-get), la clé `key` est masquée).
+
+Lors du simple basculement du statut activé / désactivé, ajoutez `?status_only=1` et transmettez uniquement l'`id` et le `status` :
+
+```bash
+curl -X PUT "https://bearlab.ai/api/token/?status_only=1" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"id":10633,"status":2}'
+```
+
+<Note>
+Source : code source de new-api `controller/token.go` `UpdateToken`. La réponse réussie est `{ success, message, data }`, où `data` est l'objet Token masqué après mise à jour (`buildMaskedTokenResponse`). La structure Token n'a pas de champ `exclude_ips` (l'ancien document `exclude_ips` est un résidu de RixAPI, maintenant corrigé).
+</Note>

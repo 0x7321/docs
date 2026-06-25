@@ -1,0 +1,72 @@
+---
+title: "Obtenir les informations de recharge"
+description: "GET /api/user/topup/info"
+---
+
+## En-têtes de requête
+
+| En-tête | Obligatoire | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, jeton d'accès du compte (session de connexion à la console, non clé API `sk-`) |
+
+Interface : `GET /api/user/topup/info`
+
+Retourne la configuration de recharge du site actuel : méthodes de paiement disponibles, montant minimum de recharge, montants rapides, remises, ainsi que les commutateurs pour divers paiements en ligne et échanges de codes. La page de recharge frontale est rendue en fonction de cette interface ; appelez cette interface pour obtenir `pay_methods[].type` avant de lancer un paiement en ligne (`POST /api/user/pay`).
+
+```bash
+curl "https://bearlab.ai/api/user/topup/info" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json Réponse
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "enable_online_topup": true,
+    "enable_stripe_topup": false,
+    "enable_creem_topup": false,
+    "enable_waffo_topup": false,
+    "enable_waffo_pancake_topup": false,
+    "enable_redemption": true,
+    "payment_compliance_confirmed": true,
+    "payment_compliance_terms_version": 1,
+    "pay_methods": [
+      { "name": "支付宝", "type": "alipay", "color": "rgba(var(--semi-blue-5), 1)", "min_topup": "1" },
+      { "name": "微信", "type": "wxpay", "color": "rgba(var(--semi-green-5), 1)", "min_topup": "1" }
+    ],
+    "waffo_pay_methods": null,
+    "creem_products": null,
+    "min_topup": 1,
+    "stripe_min_topup": 1,
+    "waffo_min_topup": 1,
+    "waffo_pancake_min_topup": 1,
+    "amount_options": [10, 30, 50, 100, 300],
+    "discount": { "100": 0.95, "300": 0.9 },
+    "topup_link": ""
+  }
+}
+```
+
+| Champ | Type | Description |
+| --- | --- | --- |
+| `enable_online_topup` | boolean | Si la recharge par paiement facile (scan QR en ligne) est activée |
+| `enable_stripe_topup` / `enable_creem_topup` | boolean | Si la recharge par Stripe / Creem est activée |
+| `enable_waffo_topup` / `enable_waffo_pancake_topup` | boolean | Si le paiement mondial Waffo / Waffo Pancake est activé |
+| `enable_redemption` | boolean | Si l'utilisation de codes de rédemption est autorisée (`POST /api/user/topup`) |
+| `payment_compliance_confirmed` | boolean | Si l'administrateur a confirmé les conditions de conformité des paiements (lorsque non confirmé, `pay_methods` est vide) |
+| `payment_compliance_terms_version` | number | Numéro de version actuel des conditions de conformité |
+| `pay_methods` | array | Liste des méthodes de paiement disponibles pour le paiement facile, chaque élément `{ name, type, color, min_topup }` |
+| `pay_methods[].type` | string | Identifiant de la méthode de paiement, transmis comme `payment_method` lors du lancement du paiement, par exemple `alipay`, `wxpay` |
+| `pay_methods[].min_topup` | string | Montant minimum de recharge pour cette méthode de paiement (**chaîne de caractères**, différente de l'entier `min_topup` au niveau supérieur) |
+| `waffo_pay_methods` | array \| null | Sous-méthodes de paiement Waffo ; `null` lorsque Waffo n'est pas activé |
+| `creem_products` | array \| null | Liste des produits Creem ; `null` lorsque non configuré |
+| `min_topup` | integer | Montant minimum de recharge pour le paiement facile (moins que cette valeur, `POST /api/user/amount` retourne une erreur) |
+| `stripe_min_topup` / `waffo_min_topup` / `waffo_pancake_min_topup` | integer | Montant minimum de recharge du canal correspondant |
+| `amount_options` | number[] | Boutons de montant rapide sur la page de recharge |
+| `discount` | object | Tableau de remise progressive `{ montant: coefficient_remise }`, multiplié au montant payé réel |
+| `topup_link` | string | Lien de redirection de recharge externe (vide indique l'utilisation de la recharge sur le site) |
+
+<Note>
+Contrat d'interface source : code source new-api `controller/topup.go` `GetTopUpInfo` + documentation API officielle `GET /api/user/topup/info`. Les valeurs d'exemple varient selon la configuration du site.
+</Note>

@@ -1,0 +1,41 @@
+---
+title: "利用可能なグループ"
+description: "GET /api/user/self/groups"
+---
+
+## リクエストヘッダ
+
+| リクエストヘッダ | 必須 | 説明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`、アカウントアクセストークン（コンソールログイン状態、`sk-` API Key ではない） |
+
+エンドポイント：`GET /api/user/self/groups`
+
+現在のユーザーが利用可能なグループおよびその請求倍率をリストアップします。返されたオブジェクトの**キー**がグループ名で、トークンを作成・更新する際に `group` フィールドとして渡されます。
+
+```bash
+curl "https://bearlab.ai/api/user/self/groups" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json 回应
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "default": { "ratio": 1, "desc": "默认分组" },
+    "vip": { "ratio": 0.8, "desc": "VIP 分组" },
+    "auto": { "ratio": "自动", "desc": "自动选择可用分组" }
+  }
+}
+```
+
+| フィールド | 型 | 説明 |
+| --- | --- | --- |
+| `data` | object | キーはグループ名、値はグループ情報 `{ ratio, desc }` |
+| `data.<group>.ratio` | number \| string | 該当グループの請求倍率。`auto` グループは文字列 `"自動"` |
+| `data.<group>.desc` | string | グループの説明 |
+
+<Note>
+ソース：new-api ソースコード `controller/group.go` `GetUserGroups`（ルート `GET /api/user/self/groups`、ログイン認証が必要）。レスポンスの `data` は `{ グループ名: { ratio, desc } }` マッピングであり、配列ではありません。古いドキュメントの `GET /api/token/group` パスは new-api に**存在しません**。
+</Note>

@@ -1,0 +1,72 @@
+---
+title: "获取充值信息"
+description: "GET /api/user/topup/info"
+---
+
+## 请求头
+
+| 请求头 | 必填 | 说明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`，账号访问令牌（控制台登录态，非 `sk-` API Key） |
+
+接口：`GET /api/user/topup/info`
+
+返回当前站点的充值配置：可用支付方式、最低充值额、快捷金额、折扣，以及各类在线支付/兑换码开关。前端充值页据此渲染；发起在线支付（`POST /api/user/pay`）前先调用此接口拿到 `pay_methods[].type`。
+
+```bash
+curl "https://bearlab.ai/api/user/topup/info" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json 回应
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "enable_online_topup": true,
+    "enable_stripe_topup": false,
+    "enable_creem_topup": false,
+    "enable_waffo_topup": false,
+    "enable_waffo_pancake_topup": false,
+    "enable_redemption": true,
+    "payment_compliance_confirmed": true,
+    "payment_compliance_terms_version": 1,
+    "pay_methods": [
+      { "name": "支付宝", "type": "alipay", "color": "rgba(var(--semi-blue-5), 1)", "min_topup": "1" },
+      { "name": "微信", "type": "wxpay", "color": "rgba(var(--semi-green-5), 1)", "min_topup": "1" }
+    ],
+    "waffo_pay_methods": null,
+    "creem_products": null,
+    "min_topup": 1,
+    "stripe_min_topup": 1,
+    "waffo_min_topup": 1,
+    "waffo_pancake_min_topup": 1,
+    "amount_options": [10, 30, 50, 100, 300],
+    "discount": { "100": 0.95, "300": 0.9 },
+    "topup_link": ""
+  }
+}
+```
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `enable_online_topup` | boolean | 是否开启易支付（在线扫码）充值 |
+| `enable_stripe_topup` / `enable_creem_topup` | boolean | 是否开启 Stripe / Creem 充值 |
+| `enable_waffo_topup` / `enable_waffo_pancake_topup` | boolean | 是否开启 Waffo / Waffo Pancake 全球支付 |
+| `enable_redemption` | boolean | 是否允许使用兑换码（`POST /api/user/topup`） |
+| `payment_compliance_confirmed` | boolean | 管理员是否已确认支付合规条款（未确认时 `pay_methods` 为空） |
+| `payment_compliance_terms_version` | number | 当前合规条款版本号 |
+| `pay_methods` | array | 易支付可用支付方式列表，每项 `{ name, type, color, min_topup }` |
+| `pay_methods[].type` | string | 支付方式标识，发起支付时作为 `payment_method` 传入，例如 `alipay`、`wxpay` |
+| `pay_methods[].min_topup` | string | 该支付方式的最低充值额（**字符串**，与顶层 `min_topup` 整数不同） |
+| `waffo_pay_methods` | array \| null | Waffo 支付子方式；未开启 Waffo 时为 `null` |
+| `creem_products` | array \| null | Creem 商品列表；未配置时为 `null` |
+| `min_topup` | integer | 易支付最低充值额度数量（低于此值 `POST /api/user/amount` 报错） |
+| `stripe_min_topup` / `waffo_min_topup` / `waffo_pancake_min_topup` | integer | 对应渠道的最低充值额 |
+| `amount_options` | number[] | 充值页快捷金额按钮 |
+| `discount` | object | 阶梯折扣表 `{ 额度: 折扣系数 }`，乘在实付金额上 |
+| `topup_link` | string | 外部充值跳转链接（为空表示用站内充值） |
+
+<Note>
+接口契约来源：new-api 源码 `controller/topup.go` `GetTopUpInfo` + 官方 API 文档 `GET /api/user/topup/info`。示例值随站点配置而变。
+</Note>

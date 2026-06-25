@@ -1,0 +1,65 @@
+---
+title: "Statistiques d'utilisation"
+description: "GET /api/data/self"
+---
+
+## En-têtes de requête
+
+| En-tête | Obligatoire | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, jeton d'accès du compte (état de connexion de la console, non pas la clé API `sk-` générée par la gestion des jetons) |
+
+Interface : `GET /api/data/self`
+
+Retourne les détails d'utilisation agrégés par « date × modèle » pour l'utilisateur actuel dans la plage de temps spécifiée. Chaque enregistrement correspond au nombre d'appels, aux tokens consommés et au quota consommé pour un modèle donné au cours d'une journée.
+
+## Paramètres de requête
+
+| Paramètre | Obligatoire | Type | Description |
+| --- | --- | --- | --- |
+| `start_timestamp` |  | integer | Heure de début, en secondes Unix |
+| `end_timestamp` |  | integer | Heure de fin, en secondes Unix |
+
+```bash
+curl "https://bearlab.ai/api/data/self?start_timestamp=1717200000&end_timestamp=1718000000" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json 回应
+{
+  "success": true,
+  "message": "",
+  "data": [
+    {
+      "id": 1,
+      "user_id": 42,
+      "username": "alice",
+      "model_name": "gpt-5.4",
+      "created_at": 1717200000,
+      "use_group": "default",
+      "token_id": 7,
+      "channel_id": 12,
+      "node_name": "",
+      "token_used": 1024,
+      "count": 8,
+      "quota": 240
+    }
+  ]
+}
+```
+
+| Champ | Type | Description |
+| --- | --- | --- |
+| `data` | array | Tableau d'enregistrements d'utilisation (`data` est directement un tableau, sans emballage de pagination) |
+| `model_name` | string | Nom du modèle |
+| `created_at` | integer | Date d'agrégation (secondes Unix) |
+| `use_group` | string | Groupe utilisé |
+| `token_id` | integer | ID du jeton |
+| `channel_id` | integer | ID du canal |
+| `token_used` | integer | Nombre de tokens consommés |
+| `count` | integer | Nombre d'appels |
+| `quota` | integer | Quota consommé (quota, 500000 = 1 dollar américain) |
+
+<Note>
+Source : code source new-api `controller/usedata.go` `GetUserQuotaDates` + `model/usedata.go` `QuotaData`. Le serveur lit uniquement `start_timestamp` / `end_timestamp`, sans paramètres `granularity` / `dimension` ; la réponse est `{ success, message, data: [...] }`, `data` est un tableau plat.
+</Note>

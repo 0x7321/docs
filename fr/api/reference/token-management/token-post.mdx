@@ -1,0 +1,47 @@
+---
+title: "Créer un Token"
+description: "POST /api/token/"
+---
+
+## En-têtes de requête
+
+| En-tête | Obligatoire | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, jeton d'accès du compte (état de connexion de la console, pas la Clé API `sk-`) |
+| `Content-Type` | ✓ | `application/json` |
+
+Point de terminaison : `POST /api/token/`
+
+Crée une nouvelle Clé API. La clé est générée par le serveur, **elle n'est pas retournée dans la réponse** — elle doit être copiée et enregistrée une seule fois depuis la console.
+
+## Corps de la requête
+
+| Champ | Obligatoire | Type | Description |
+| --- | --- | --- | --- |
+| `name` | ✓ | string | Nom du Token (≤ 50 caractères) |
+| `expired_time` | ✓ | integer | Heure d'expiration en secondes Unix ; `-1` signifie jamais expiré |
+| `remain_quota` | ✓ | integer | Quota initial ; utilisez `unlimited_quota: true` pour un quota illimité |
+| `unlimited_quota` | ✓ | boolean | S'il faut un quota illimité |
+| `model_limits_enabled` |  | boolean | S'il faut activer la liste blanche des modèles |
+| `model_limits` |  | string | Liste blanche des modèles (séparée par des virgules, chaîne vide = pas de restriction) |
+| `allow_ips` |  | string \| null | Liste blanche d'IP (chaîne vide / `null` = pas de restriction) |
+| `group` |  | string | Groupe, obtenu de la clé de `GET /api/user/self/groups` ; chaîne vide signifie non spécifié |
+| `cross_group_retry` |  | boolean | S'il faut réessayer entre groupes (valide uniquement pour le groupe `auto`) |
+
+```bash
+curl -X POST https://bearlab.ai/api/token/ \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"my-token","expired_time":-1,"remain_quota":-1,"unlimited_quota":true,"model_limits_enabled":false,"group":""}'
+```
+
+```json Response
+{
+  "success": true,
+  "message": ""
+}
+```
+
+<Note>
+Source : code source de new-api `controller/token.go` `AddToken`. La réponse réussie contient uniquement `{ success, message }`, **pas de `data`**, et ne retourne pas la clé complète. La structure Token n'a pas de champ `exclude_ips`. Après la création, utilisez `GET /api/token/` pour voir les détails (la `key` est masquée).
+</Note>

@@ -1,0 +1,61 @@
+---
+title: "टोकन खोजें"
+description: "GET /api/token/search"
+---
+
+## अनुरोध हेडर
+
+| अनुरोध हेडर | आवश्यक | विवरण |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, खाता अभिगम टोकन (कंसोल लॉगिन स्थिति, `sk-` API Key नहीं) |
+
+इंटरफ़ेस: `GET /api/token/search`
+
+वर्तमान खाते के टोकन को नाम या Key उपसर्ग द्वारा खोजें, परिणाम पृष्ठबद्ध रूप से लौटाए जाते हैं।
+
+## क्वेरी पैरामीटर
+
+| क्वेरी पैरामीटर | आवश्यक | प्रकार | विवरण |
+| --- | --- | --- | --- |
+| `keyword` |  | string | टोकन नाम द्वारा फ़ज़ी खोज |
+| `token` |  | string | Key उपसर्ग द्वारा फ़िल्टर करें |
+| `p` |  | integer | पृष्ठ संख्या, 1 से शुरू |
+| `page_size` |  | integer | प्रति पृष्ठ संख्या |
+
+```bash
+curl "https://bearlab.ai/api/token/search?keyword=my-token" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json 回应
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "items": [
+      {
+        "id": 10623,
+        "user_id": 42,
+        "key": "ntEH**********7nAh",
+        "status": 1,
+        "name": "my-token",
+        "created_time": 1781977779,
+        "expired_time": -1,
+        "remain_quota": 0,
+        "unlimited_quota": true,
+        "used_quota": 0,
+        "group": ""
+      }
+    ],
+    "page": 1,
+    "page_size": 10,
+    "total": 1
+  }
+}
+```
+
+प्रतिक्रिया संरचना `GET /api/token/` के समान है (`key` संवेदनशील डेटा हटाया गया है, क्षेत्र विवरण के लिए [टोकन सूची](/hi/api/reference/token-management/token-get) देखें)।
+
+<Note>
+स्रोत: new-api स्रोत कोड `controller/token.go` `SearchTokens`। `keyword` (नाम) और `token` (Key उपसर्ग) दोनों खोज पैरामीटर और पृष्ठांकन को स्वीकार करता है। नोट: `GET /api/token/` सूची इंटरफ़ेस `keyword` को **नहीं** स्वीकार करता है, फ़ज़ी खोज के लिए इस इंटरफ़ेस का उपयोग करें।
+</Note>

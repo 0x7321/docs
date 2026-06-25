@@ -1,0 +1,78 @@
+---
+title: "Authentication System Overview"
+description: "Explanation of the differences between account access tokens and model API Keys, and which key to use for each type of interface."
+---
+
+BearLab AI uses two completely different Bearer values that must not be mixed:
+
+| Name | Placeholder in This Document | Format | Purpose | Source |
+| --- | --- | --- | --- | --- |
+| Account Access Token | `YOUR_ACCESS_TOKEN` | Console login state token | Call management interfaces: `GET /api/token/`, `GET /api/data/self`, `GET /api/user/self`, etc. | Obtain from the console "Account" page, or regenerate via `GET /api/user/token` |
+| Model API Key | `YOUR_MODEL_API_KEY` | Full key value in format `sk-...`; displayed masked in lists as `sk-VrqY**********tE4I` | Call model interfaces, and query the key's own usage via `GET /api/usage/token/` | Copy and save from the console; API lists only return masked values |
+
+
+<Note>
+`group` is not a secret key, but rather a route group selected when creating/updating a Token, such as `free-play` or `claude-aws`. Do not put the `group` value in `Authorization`. `Authorization` can only contain `YOUR_ACCESS_TOKEN` or the full `YOUR_MODEL_API_KEY`.
+</Note>
+
+<Warning>
+All token management interfaces in this document (e.g., `GET /api/token/`, `POST /api/token/`) use `YOUR_ACCESS_TOKEN`. Only `GET /api/usage/token/` uses `YOUR_MODEL_API_KEY`.
+</Warning>
+
+## Management Interface Request Headers
+
+```http
+Authorization: Bearer YOUR_ACCESS_TOKEN
+```
+
+Applicable interfaces:
+
+Token Management
+- `GET /api/token/`
+- `GET /api/token/{id}`
+- `POST /api/token/`
+- `PUT /api/token/`
+- `DELETE /api/token/{id}`
+- `POST /api/token/batch`
+- `GET /api/token/search`
+
+Account and Groups
+- `GET /api/user/self`
+- `GET /api/user/self/groups`
+
+Top-up/Recharge
+- `GET /api/user/topup/info`
+- `POST /api/user/amount`
+- `POST /api/user/pay`
+- `GET /api/user/topup/self`
+- `POST /api/user/topup`
+
+Usage and Logs
+- `GET /api/data/self`
+- `GET /api/log/self`
+- `GET /api/log/self/stat`
+
+## Token Usage Interface Request Headers
+
+```http
+Authorization: Bearer YOUR_MODEL_API_KEY
+```
+
+Only applies to:
+
+- `GET /api/usage/token/`
+
+<Note>
+Observed behavior: Using `YOUR_ACCESS_TOKEN` to call `/api/usage/token/` returns `401 Invalid Token`; calling `/api/token/` and `/api/data/self` without authentication returns `401 No permission`; using `YOUR_ACCESS_TOKEN` to call `/api/token/` and `/api/data/self` returns 200.
+</Note>
+
+## Do Not Mix the Two
+
+- To "manage/create/delete tokens": use `YOUR_ACCESS_TOKEN`.
+- To "call a model with a generated Key": use `YOUR_MODEL_API_KEY`.
+- To "check how much quota a generated Key has remaining": use `YOUR_MODEL_API_KEY` to call `/api/usage/token/`.
+- To "check overall account usage statistics": use `YOUR_ACCESS_TOKEN` to call `/api/data/self`.
+
+<Warning>
+Do not expose real account access tokens or full API Keys in documentation, screenshots, or support tickets. Note: The response from `GET /api/user/self` does **not** include `access_token` (new-api excludes it with `json:"-"`); access tokens can only be obtained through the console or via `GET /api/user/token`.
+</Warning>

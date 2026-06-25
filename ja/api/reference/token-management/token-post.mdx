@@ -1,0 +1,47 @@
+---
+title: "トークンを作成"
+description: "POST /api/token/"
+---
+
+## リクエストヘッダ
+
+| リクエストヘッダ | 必須 | 説明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`、アカウントアクセストークン（コンソールログイン状態、`sk-` API Key ではない） |
+| `Content-Type` | ✓ | `application/json` |
+
+エンドポイント：`POST /api/token/`
+
+新しい API Key を作成します。Key はサーバー側で生成され、**レスポンスに返されません**——コンソールで一度だけコピーして保存する必要があります。
+
+## リクエストボディ
+
+| フィールド | 必須 | 型 | 説明 |
+| --- | --- | --- | --- |
+| `name` | ✓ | string | トークン名（≤ 50 字） |
+| `expired_time` | ✓ | integer | 有効期限 Unix秒；`-1` は有効期限なし |
+| `remain_quota` | ✓ | integer | 初期クォータ；無制限クォータの場合は `unlimited_quota: true` と組み合わせ |
+| `unlimited_quota` | ✓ | boolean | クォータ無制限かどうか |
+| `model_limits_enabled` |  | boolean | モデルホワイトリストを有効にするかどうか |
+| `model_limits` |  | string | モデルホワイトリスト（カンマ区切り、空文字列は制限なし） |
+| `allow_ips` |  | string \| null | IP ホワイトリスト（空文字列 / `null` は制限なし） |
+| `group` |  | string | グループ、`GET /api/user/self/groups` のキーから取得；空文字列は指定なし |
+| `cross_group_retry` |  | boolean | グループ間リトライを行うかどうか（`auto` グループのみ有効） |
+
+```bash
+curl -X POST https://bearlab.ai/api/token/ \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"my-token","expired_time":-1,"remain_quota":-1,"unlimited_quota":true,"model_limits_enabled":false,"group":""}'
+```
+
+```json 回応
+{
+  "success": true,
+  "message": ""
+}
+```
+
+<Note>
+出典：new-api ソースコード `controller/token.go` `AddToken`。成功レスポンスは `{ success, message }` のみ、**`data` を含まず**、完全な Key も返されません。Token 構造体に `exclude_ips` フィールドはありません。作成後は `GET /api/token/` で確認可能です（`key` は既にマスクされています）。
+</Note>

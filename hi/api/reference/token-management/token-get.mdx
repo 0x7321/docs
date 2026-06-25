@@ -1,0 +1,77 @@
+---
+title: "टोकन सूची"
+description: "GET /api/token/"
+---
+
+## अनुरोध शीर्षलेख
+
+| अनुरोध शीर्षलेख | आवश्यक | विवरण |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, खाता पहुंच टोकन (कंसोल लॉगिन स्थिति, `sk-` API Key नहीं) |
+
+इंटरफ़ेस: `GET /api/token/`
+
+वर्तमान खाते की सभी API Keys को पेजित सूची में दिखाता है। नाम / उपसर्ग खोज के लिए `GET /api/token/search` का उपयोग करें।
+
+## क्वेरी पैरामीटर
+
+| क्वेरी पैरामीटर | आवश्यक | प्रकार | विवरण |
+| --- | --- | --- | --- |
+| `p` |  | integer | पृष्ठ संख्या, 1 से शुरू |
+| `page_size` |  | integer | प्रति पृष्ठ मात्रा |
+
+```bash
+curl "https://bearlab.ai/api/token/?p=1&page_size=10" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json 回应
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "items": [
+      {
+        "id": 10623,
+        "user_id": 42,
+        "key": "ntEH**********7nAh",
+        "status": 1,
+        "name": "my-token",
+        "created_time": 1781977779,
+        "accessed_time": 1781977779,
+        "expired_time": -1,
+        "remain_quota": 0,
+        "unlimited_quota": true,
+        "used_quota": 0,
+        "model_limits_enabled": false,
+        "model_limits": "",
+        "allow_ips": "",
+        "group": "",
+        "cross_group_retry": false
+      }
+    ],
+    "page": 1,
+    "page_size": 10,
+    "total": 7
+  }
+}
+```
+
+| क्षेत्र | प्रकार | विवरण |
+| --- | --- | --- |
+| `key` | string | संवेदनशीलता मास्क किया गया (पहले 4 + `**********` + अंतिम 4 अंक); पूर्ण Key केवल निर्माण के समय एक बार दृश्यमान है |
+| `status` | integer | `1` सक्षम / `2` अक्षम / `3` समाप्त / `4` समाप्त |
+| `expired_time` | integer | समाप्ति समय (Unix सेकंड), `-1` कभी समाप्त न होना |
+| `remain_quota` | integer | शेष कोटा (quota, 500000 = 1 अमेरिकी डॉलर) |
+| `unlimited_quota` | boolean | क्या असीमित कोटा है |
+| `used_quota` | integer | उपयोग किया गया कोटा |
+| `model_limits_enabled` | boolean | क्या मॉडल व्हाइटलिस्ट सक्षम है |
+| `model_limits` | string | मॉडल व्हाइटलिस्ट (अल्पविराम से अलग, खाली स्ट्रिंग कोई प्रतिबंध नहीं) |
+| `allow_ips` | string \| null | IP व्हाइटलिस्ट (खाली स्ट्रिंग / `null` कोई प्रतिबंध नहीं) |
+| `group` | string | टोकन समूह |
+| `cross_group_retry` | boolean | क्या क्रॉस-ग्रुप पुनः प्रयास करें (केवल `auto` ग्रुप के लिए मान्य) |
+| `data.page` / `page_size` / `total` | integer | पेजिनेशन जानकारी |
+
+<Note>
+स्रोत: new-api स्रोत कोड `controller/token.go` `GetAllTokens` + `model/token.go` `Token`। `GET /api/token/` केवल पेजिनेशन पैरामीटर स्वीकार करता है; `key` `MaskTokenKey` द्वारा संवेदनशीलता मास्क किया गया है। पुरानी डॉक्यूमेंटेशन के `remain_count` / `unlimited_count` / `exclude_ips` / `rate_limits` जैसे क्षेत्र new-api में **मौजूद नहीं हैं**।
+</Note>

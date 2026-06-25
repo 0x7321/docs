@@ -1,0 +1,41 @@
+---
+title: "Available Groups"
+description: "GET /api/user/self/groups"
+---
+
+## Request Headers
+
+| Header | Required | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, account access token (console login state, not `sk-` API Key) |
+
+Endpoint: `GET /api/user/self/groups`
+
+Lists the groups available to the current user and their billing multipliers. The **keys** of the returned object are group names, which are passed as the `group` field when creating or updating tokens.
+
+```bash
+curl "https://bearlab.ai/api/user/self/groups" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json Response
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "default": { "ratio": 1, "desc": "Default group" },
+    "vip": { "ratio": 0.8, "desc": "VIP group" },
+    "auto": { "ratio": "auto", "desc": "Automatically select available group" }
+  }
+}
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `data` | object | Keys are group names, values are group information `{ ratio, desc }` |
+| `data.<group>.ratio` | number \| string | Billing multiplier for this group; `auto` group is the string `"auto"` |
+| `data.<group>.desc` | string | Group description |
+
+<Note>
+Source: new-api source code `controller/group.go` `GetUserGroups` (route `GET /api/user/self/groups`, requires login authentication). Response `data` is a `{ group_name: { ratio, desc } }` map, not an array. The `GET /api/token/group` path in older documentation does **not exist** in new-api.
+</Note>

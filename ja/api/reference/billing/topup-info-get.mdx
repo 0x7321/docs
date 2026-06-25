@@ -1,0 +1,72 @@
+---
+title: "チャージ情報を取得"
+description: "GET /api/user/topup/info"
+---
+
+## リクエストヘッダー
+
+| リクエストヘッダー | 必須 | 説明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`、アカウントアクセストークン（コンソールログイン状態、`sk-` API Key ではない） |
+
+エンドポイント：`GET /api/user/topup/info`
+
+現在のサイトのチャージ設定を返します：利用可能な支払い方法、最小チャージ額、クイック金額、割引、および各種オンライン支払い/リデンプションコードスイッチ。フロントエンドのチャージページはこれをもとにレンダリングします。オンライン支払いを開始する（`POST /api/user/pay`）前に、このエンドポイントを呼び出して `pay_methods[].type` を取得してください。
+
+```bash
+curl "https://bearlab.ai/api/user/topup/info" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json レスポンス
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "enable_online_topup": true,
+    "enable_stripe_topup": false,
+    "enable_creem_topup": false,
+    "enable_waffo_topup": false,
+    "enable_waffo_pancake_topup": false,
+    "enable_redemption": true,
+    "payment_compliance_confirmed": true,
+    "payment_compliance_terms_version": 1,
+    "pay_methods": [
+      { "name": "支付宝", "type": "alipay", "color": "rgba(var(--semi-blue-5), 1)", "min_topup": "1" },
+      { "name": "微信", "type": "wxpay", "color": "rgba(var(--semi-green-5), 1)", "min_topup": "1" }
+    ],
+    "waffo_pay_methods": null,
+    "creem_products": null,
+    "min_topup": 1,
+    "stripe_min_topup": 1,
+    "waffo_min_topup": 1,
+    "waffo_pancake_min_topup": 1,
+    "amount_options": [10, 30, 50, 100, 300],
+    "discount": { "100": 0.95, "300": 0.9 },
+    "topup_link": ""
+  }
+}
+```
+
+| フィールド | 型 | 説明 |
+| --- | --- | --- |
+| `enable_online_topup` | boolean | Easy Pay（オンラインコード）チャージが有効かどうか |
+| `enable_stripe_topup` / `enable_creem_topup` | boolean | Stripe / Creem チャージが有効かどうか |
+| `enable_waffo_topup` / `enable_waffo_pancake_topup` | boolean | Waffo / Waffo Pancake グローバル支払いが有効かどうか |
+| `enable_redemption` | boolean | リデンプションコード（`POST /api/user/topup`）の使用が許可されているかどうか |
+| `payment_compliance_confirmed` | boolean | 管理者が支払いコンプライアンス条件を確認したかどうか（未確認の場合 `pay_methods` は空） |
+| `payment_compliance_terms_version` | number | 現在のコンプライアンス条件バージョン番号 |
+| `pay_methods` | array | Easy Pay で利用可能な支払い方法のリスト、各項目は `{ name, type, color, min_topup }` |
+| `pay_methods[].type` | string | 支払い方法の識別子、支払いを開始するときに `payment_method` として渡されます（例：`alipay`、`wxpay`） |
+| `pay_methods[].min_topup` | string | その支払い方法の最小チャージ額（**文字列**、トップレベルの `min_topup` 整数と異なる） |
+| `waffo_pay_methods` | array \| null | Waffo 支払い部分方法；Waffo が有効でない場合は `null` |
+| `creem_products` | array \| null | Creem 商品リスト；未設定の場合は `null` |
+| `min_topup` | integer | Easy Pay の最小チャージ額（この値未満の場合 `POST /api/user/amount` でエラー） |
+| `stripe_min_topup` / `waffo_min_topup` / `waffo_pancake_min_topup` | integer | 対応するチャネルの最小チャージ額 |
+| `amount_options` | number[] | チャージページのクイック金額ボタン |
+| `discount` | object | 段階的割引テーブル `{ 額度: 割引係数 }`、実際の支払い額に乗算されます |
+| `topup_link` | string | 外部チャージリダイレクトリンク（空の場合はサイト内チャージを使用） |
+
+<Note>
+エンドポイント仕様の出典：new-api ソースコード `controller/topup.go` の `GetTopUpInfo` + 公式 API ドキュメント `GET /api/user/topup/info`。例値はサイト設定に応じて異なります。
+</Note>

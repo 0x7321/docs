@@ -1,0 +1,58 @@
+---
+title: "Token Usage"
+description: "GET /api/usage/token/"
+---
+
+Endpoint: `GET /api/usage/token/`
+
+## Request Headers
+
+| Header | Required | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_MODEL_API_KEY`, a model API Key created from token management; do not use the account access token `YOUR_ACCESS_TOKEN` |
+
+Query the quota and consumption of this API Key itself. This endpoint uses the API Key itself for authentication, not the account `access_token`.
+
+<Warning>
+You must use the model API Key created in token management (written uniformly in this document as `YOUR_MODEL_API_KEY`, typically in the form `sk-...` for model calls). You cannot use the account access token `YOUR_ACCESS_TOKEN` here; using the wrong one will return `401 Invalid Token`. The path must include the trailing slash.
+</Warning>
+
+```bash
+curl https://bearlab.ai/api/usage/token/ \
+  -H "Authorization: Bearer YOUR_MODEL_API_KEY"
+```
+
+```json response
+{
+  "code": true,
+  "message": "ok",
+  "data": {
+    "object": "token_usage",
+    "name": "default",
+    "total_granted": 500000,
+    "total_used": 444364,
+    "total_available": 55636,
+    "unlimited_quota": false,
+    "model_limits": {},
+    "model_limits_enabled": false,
+    "expires_at": 0
+  }
+}
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `code` | boolean | `true` on success (note that this endpoint uses `code` at the outer level, **not** `success`) |
+| `data.object` | string | Fixed as `token_usage` |
+| `data.name` | string | Token name |
+| `data.total_granted` | integer | Total quota (remaining + used, quota) |
+| `data.total_used` | integer | Used quota |
+| `data.total_available` | integer | Remaining quota |
+| `data.unlimited_quota` | boolean | Whether this is an unlimited quota token |
+| `data.model_limits` | object | Model whitelist mapping (empty when not enabled) |
+| `data.model_limits_enabled` | boolean | Whether model whitelist is enabled |
+| `data.expires_at` | integer | Expiration time (Unix seconds, `0` means never expires) |
+
+<Note>
+Source: new-api source code `controller/token.go` `GetTokenUsage`. The successful response wraps the outer layer as `{ code: true, message: "ok", data }` (different from other endpoints' `success` wrapping). Authentication failure returns `401 Invalid Token`.
+</Note>

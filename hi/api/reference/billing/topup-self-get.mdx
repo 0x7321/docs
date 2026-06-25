@@ -1,0 +1,70 @@
+---
+title: "रिचार्ज रिकॉर्ड"
+description: "GET /api/user/topup/self"
+---
+
+## अनुरोध हेडर
+
+| अनुरोध हेडर | आवश्यक | विवरण |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, खाता एक्सेस टोकन |
+
+इंटरफ़ेस: `GET /api/user/topup/self`
+
+वर्तमान उपयोगकर्ता के रिचार्ज ऑर्डर रिकॉर्ड को पृष्ठांकित तरीके से क्वेरी करें (लंबित भुगतान, पूर्ण आदि स्थिति सहित)।
+
+## क्वेरी पैरामीटर
+
+| पैरामीटर | प्रकार | आवश्यक | विवरण |
+| --- | --- | --- | --- |
+| `page` | integer | | पृष्ठ संख्या, 1 से शुरू |
+| `page_size` | integer | | प्रति पृष्ठ आइटम संख्या |
+| `keyword` | string | | ऑर्डर संख्या (`trade_no`) द्वारा फ़ज़ी खोज |
+
+```bash
+curl "https://bearlab.ai/api/user/topup/self?page=1&page_size=10" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json response
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "items": [
+      {
+        "id": 1024,
+        "user_id": 42,
+        "amount": 100,
+        "money": 95.00,
+        "trade_no": "USR42NOa1b2c31718000000",
+        "payment_method": "alipay",
+        "payment_provider": "epay",
+        "status": "success",
+        "create_time": 1718000000,
+        "complete_time": 1718000060
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "page_size": 10
+  }
+}
+```
+
+| फ़ील्ड | प्रकार | विवरण |
+| --- | --- | --- |
+| `data.items` | array | रिचार्ज ऑर्डर सूची |
+| `amount` | integer | रिचार्ज राशि मात्रा |
+| `money` | number | वास्तविक भुगतान राशि |
+| `trade_no` | string | व्यापारी ऑर्डर संख्या |
+| `payment_method` | string | भुगतान विधि पहचान (`alipay` / `wxpay` / `stripe` …) |
+| `payment_provider` | string | भुगतान चैनल (`epay` / `stripe` / `creem` …) |
+| `status` | string | ऑर्डर स्थिति: `pending` लंबित भुगतान / `success` पूर्ण |
+| `create_time` | integer | निर्माण समय (Unix सेकंड) |
+| `complete_time` | integer | पूर्ण समय (Unix सेकंड), अधूरा होने पर `0` |
+| `data.total` / `page` / `page_size` | integer | पृष्ठांकन जानकारी |
+
+<Note>
+स्रोत: `controller/topup.go` `GetUserTopUps`, पृष्ठांकन को new-api मानक `PageInfo` में लपेटा गया (`items` + `total` + `page` + `page_size`)।
+</Note>

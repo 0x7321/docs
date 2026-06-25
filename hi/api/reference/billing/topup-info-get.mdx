@@ -1,0 +1,72 @@
+---
+title: "रिचार्ज जानकारी प्राप्त करें"
+description: "GET /api/user/topup/info"
+---
+
+## अनुरोध शीर्षलेख
+
+| अनुरोध शीर्षलेख | आवश्यक | विवरण |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`，खाता पहुंच टोकन (कंसोल लॉगिन स्थिति, `sk-` API कुंजी नहीं) |
+
+इंटरफ़ेस: `GET /api/user/topup/info`
+
+वर्तमान साइट का रिचार्ज कॉन्फ़िगरेशन लौटाता है: उपलब्ध भुगतान विधियां, न्यूनतम रिचार्ज राशि, त्वरित राशि, छूट, और विभिन्न ऑनलाइन भुगतान/रिडेम्पशन कोड स्विच। फ्रंटएंड रिचार्ज पृष्ठ इसके आधार पर रेंडर करता है; ऑनलाइन भुगतान शुरू करने से पहले (`POST /api/user/pay`) इस इंटरफ़ेस को कॉल करें `pay_methods[].type` प्राप्त करने के लिए।
+
+```bash
+curl "https://bearlab.ai/api/user/topup/info" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json प्रतिक्रिया
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "enable_online_topup": true,
+    "enable_stripe_topup": false,
+    "enable_creem_topup": false,
+    "enable_waffo_topup": false,
+    "enable_waffo_pancake_topup": false,
+    "enable_redemption": true,
+    "payment_compliance_confirmed": true,
+    "payment_compliance_terms_version": 1,
+    "pay_methods": [
+      { "name": "支付宝", "type": "alipay", "color": "rgba(var(--semi-blue-5), 1)", "min_topup": "1" },
+      { "name": "微信", "type": "wxpay", "color": "rgba(var(--semi-green-5), 1)", "min_topup": "1" }
+    ],
+    "waffo_pay_methods": null,
+    "creem_products": null,
+    "min_topup": 1,
+    "stripe_min_topup": 1,
+    "waffo_min_topup": 1,
+    "waffo_pancake_min_topup": 1,
+    "amount_options": [10, 30, 50, 100, 300],
+    "discount": { "100": 0.95, "300": 0.9 },
+    "topup_link": ""
+  }
+}
+```
+
+| क्षेत्र | प्रकार | विवरण |
+| --- | --- | --- |
+| `enable_online_topup` | boolean | क्या ईज़ी पे (ऑनलाइन स्कैन कोड) रिचार्ज सक्षम है |
+| `enable_stripe_topup` / `enable_creem_topup` | boolean | क्या स्ट्राइप / क्रीम रिचार्ज सक्षम है |
+| `enable_waffo_topup` / `enable_waffo_pancake_topup` | boolean | क्या वाफो / वाफो पैनकेक वैश्विक भुगतान सक्षम है |
+| `enable_redemption` | boolean | क्या रिडेम्पशन कोड का उपयोग करने की अनुमति है (`POST /api/user/topup`) |
+| `payment_compliance_confirmed` | boolean | क्या प्रशासक ने भुगतान अनुपालन शर्तों की पुष्टि की है (पुष्टि न होने पर `pay_methods` खाली है) |
+| `payment_compliance_terms_version` | number | वर्तमान अनुपालन शर्तों का संस्करण नंबर |
+| `pay_methods` | array | ईज़ी पे उपलब्ध भुगतान विधियों की सूची, प्रत्येक `{ name, type, color, min_topup }` |
+| `pay_methods[].type` | string | भुगतान विधि पहचानकर्ता, भुगतान शुरू करते समय `payment_method` के रूप में पास करें, उदाहरण के लिए `alipay`, `wxpay` |
+| `pay_methods[].min_topup` | string | इस भुगतान विधि के लिए न्यूनतम रिचार्ज राशि (**स्ट्रिंग**, शीर्ष स्तर पूर्णांक `min_topup` से अलग) |
+| `waffo_pay_methods` | array \| null | वाफो भुगतान उप-विधियां; वाफो सक्षम न होने पर `null` |
+| `creem_products` | array \| null | क्रीम उत्पाद सूची; कॉन्फ़िगर न होने पर `null` |
+| `min_topup` | integer | ईज़ी पे न्यूनतम रिचार्ज राशि (इस मान से कम `POST /api/user/amount` त्रुटि) |
+| `stripe_min_topup` / `waffo_min_topup` / `waffo_pancake_min_topup` | integer | संबंधित चैनल के लिए न्यूनतम रिचार्ज राशि |
+| `amount_options` | number[] | रिचार्ज पृष्ठ त्वरित राशि बटन |
+| `discount` | object | स्तरीय छूट तालिका `{ राशि: छूट गुणांक }`, वास्तविक भुगतान पर गुणा किया जाता है |
+| `topup_link` | string | बाहरी रिचार्ज रीडायरेक्ट लिंक (खाली मतलब साइट में रिचार्ज का उपयोग करें) |
+
+<Note>
+इंटरफ़ेस अनुबंध स्रोत: new-api स्रोत कोड `controller/topup.go` `GetTopUpInfo` + आधिकारिक API दस्तावेज़ `GET /api/user/topup/info`। उदाहरण मान साइट कॉन्फ़िगरेशन के अनुसार भिन्न होता है।
+</Note>

@@ -1,0 +1,44 @@
+---
+title: "リデンプションコードを兑換する"
+description: "POST /api/user/topup"
+---
+
+## リクエストヘッダー
+
+| リクエストヘッダー | 必須 | 説明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`、アカウントアクセストークン |
+| `Content-Type` | ✓ | `application/json` |
+
+エンドポイント：`POST /api/user/topup`
+
+リデンプションコードを使用して現在のアカウントにクレジットをチャージします。このエンドポイントは「リデンプションコードによるチャージ」であり、オンライン支払いで注文を作成するものではありません。
+
+## リクエストボディ
+
+| フィールド | 必須 | タイプ | 説明 |
+| --- | --- | --- | --- |
+| `key` | ✓ | string | リデンプションコード |
+
+```bash
+curl "https://bearlab.ai/api/user/topup" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"key":"REDEMPTION_CODE"}'
+```
+
+```json 回応
+{
+  "success": true,
+  "message": "",
+  "data": 10
+}
+```
+
+| フィールド | タイプ | 説明 |
+| --- | --- | --- |
+| `data` | integer | 今回の兑換で追加されたクレジット（`model.Redeem` は `int` を返す、単位は quota、金額文字列ではない） |
+
+<Note>
+ソース：new-api の `controller.TopUp`（リデンプションコード → `model.Redeem`）。成功後は、`GET /api/user/self` でアカウント残高を更新することをお勧めします。
+</Note>

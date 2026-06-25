@@ -1,0 +1,51 @@
+---
+title: "Calculer le montant réel à payer"
+description: "POST /api/user/amount"
+---
+
+## En-têtes de la requête
+
+| En-tête | Obligatoire | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, jeton d'accès du compte |
+| `Content-Type` | ✓ | `application/json` |
+
+Point de terminaison : `POST /api/user/amount`
+
+Calcule d'avance le montant réel à payer pour recharger le compte de `amount` crédits en appliquant la remise du groupe de l'utilisateur actuel. Utilisé pour calculer en temps réel le prix à payer dans la page de recharge (« entrée du crédit → affichage du montant à payer »), sans créer de commande.
+
+## Corps de la requête
+
+| Champ | Type | Obligatoire | Description |
+| --- | --- | --- | --- |
+| `amount` | integer | ✓ | Nombre de crédits à recharger, doit être ≥ `min_topup` retourné par `topup/info` |
+
+```bash
+curl "https://bearlab.ai/api/user/amount" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{ "amount": 100 }'
+```
+
+```json Succès
+{
+  "message": "success",
+  "data": "95.00"
+}
+```
+
+```json Erreur
+{
+  "message": "error",
+  "data": "充值数量不能小于 1"
+}
+```
+
+| Champ | Type | Description |
+| --- | --- | --- |
+| `message` | string | `success` indique le succès, `error` indique une erreur |
+| `data` | string | En cas de succès : chaîne du montant réel à payer (deux décimales, remise de groupe comprise) ; en cas d'erreur : description de l'erreur |
+
+<Note>
+Cette API renvoie du `c.JSON` brut, **la réponse ne contient pas le champ `success`**, seulement `message` + `data`, ce qui diffère du format `{ success, message, data }` de `topup/info`. Source : `controller/topup.go` `RequestAmount`.
+</Note>

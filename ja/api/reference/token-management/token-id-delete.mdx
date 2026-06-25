@@ -1,0 +1,40 @@
+---
+title: "Token を削除"
+description: "DELETE /api/token/{id}"
+---
+
+## リクエストヘッダー
+
+| リクエストヘッダー | 必須 | 説明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`。アカウントアクセストークン（コンソールログイン状態、`sk-` API キーではありません） |
+
+インターフェース：`DELETE /api/token/{id}`
+
+指定された API キーを削除します。
+
+## パスパラメータ
+
+| パラメータ | 必須 | 型 | 説明 |
+| --- | --- | --- | --- |
+| `id` | ✓ | integer | 削除する Token ID。`GET /api/token/` からの `data.items[].id` で取得 |
+
+<Warning>
+パスに**末尾スラッシュなし**の `DELETE /api/token/{id}` を使用してください。末尾スラッシュ付きの `DELETE /api/token/{id}/` は gin により 307 リダイレクトで末尾スラッシュなしパスにリダイレクトされます。クライアントが 307 に従わない場合、削除は実行されません。
+</Warning>
+
+```bash
+curl -X DELETE https://bearlab.ai/api/token/10623 \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json 回応
+{
+  "success": true,
+  "message": ""
+}
+```
+
+<Note>
+出典：new-api ソースコード `controller/token.go` の `DeleteToken`。成功レスポンスは `{ success, message }` のみで、`data` フィールドはありません。
+</Note>

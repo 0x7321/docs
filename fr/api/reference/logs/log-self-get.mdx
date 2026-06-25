@@ -1,0 +1,88 @@
+---
+title: "Obtenir les journaux personnels"
+description: "GET /api/log/self"
+---
+
+## En-têtes de requête
+
+| En-tête | Obligatoire | Description |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`, jeton d'accès au compte (état de connexion de la console, non la clé API `sk-`) |
+
+Interface : `GET /api/log/self`
+
+Requête paginée des journaux d'appel du compte actuel.
+
+## Paramètres de requête
+
+| Paramètre de requête | Obligatoire | Type | Description |
+| --- | --- | --- | --- |
+| `p` |  | integer | Numéro de page, à partir de 1 |
+| `page_size` |  | integer | Nombre d'éléments par page |
+| `type` |  | integer | Type de journal (`2` consommation / `1` recharge / `3` gestion / `4` système / `5` erreur ; omis ou `0` pour tous) |
+| `token_name` |  | string | Filtrer par nom de jeton |
+| `model_name` |  | string | Filtrer par nom de modèle |
+| `group` |  | string | Filtrer par groupe |
+| `start_timestamp` |  | integer | Heure de début, en secondes Unix |
+| `end_timestamp` |  | integer | Heure de fin, en secondes Unix |
+| `request_id` |  | string | Requête exacte par ID de requête |
+| `upstream_request_id` |  | string | Requête par ID de requête en amont |
+
+```bash
+curl "https://bearlab.ai/api/log/self?p=1&page_size=10&type=2" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json Response
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "items": [
+      {
+        "id": 123,
+        "user_id": 42,
+        "created_at": 1718000000,
+        "type": 2,
+        "content": "模型 gpt-5.4，倍率 ...",
+        "username": "alice",
+        "token_name": "default",
+        "model_name": "gpt-5.4",
+        "quota": 240,
+        "prompt_tokens": 100,
+        "completion_tokens": 50,
+        "use_time": 3,
+        "is_stream": false,
+        "channel": 12,
+        "token_id": 7,
+        "group": "default",
+        "request_id": "2026062500000000",
+        "upstream_request_id": ""
+      }
+    ],
+    "page": 1,
+    "page_size": 10,
+    "total": 5
+  }
+}
+```
+
+| Champ | Type | Description |
+| --- | --- | --- |
+| `data.items` | array | Tableau des enregistrements de journal |
+| `type` | integer | Type de journal (identique à ce qui précède) |
+| `content` | string | Description du journal (taux de facturation, etc.) |
+| `token_name` | string | Nom du jeton |
+| `model_name` | string | Nom du modèle |
+| `quota` | integer | Quota consommé lors de cet appel |
+| `prompt_tokens` / `completion_tokens` | integer | Nombre de tokens d'entrée / sortie |
+| `use_time` | integer | Temps d'exécution de la requête (secondes) |
+| `is_stream` | boolean | Indique si c'est du streaming |
+| `channel` | integer | ID du canal (notez que le nom du champ JSON est `channel`, non `channel_id`) |
+| `group` | string | Groupe utilisé |
+| `request_id` | string | ID de requête |
+| `data.page` / `page_size` / `total` | integer | Informations de pagination |
+
+<Note>
+Source : code source new-api `controller/log.go` `GetUserLogs` + `model/log.go` `Log`. La requête des journaux personnels **ne prend pas en charge** les paramètres de requête `keyword` ou `channel` (`/api/log/self/search` est obsolète) ; `channel` est retourné uniquement en tant que champ de réponse.
+</Note>

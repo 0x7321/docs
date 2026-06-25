@@ -1,0 +1,70 @@
+---
+title: "充值记录"
+description: "GET /api/user/topup/self"
+---
+
+## 请求头
+
+| 请求头 | 必填 | 说明 |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`，账号访问令牌 |
+
+接口：`GET /api/user/topup/self`
+
+分页查询当前用户的充值订单记录（含待支付、已完成等状态）。
+
+## 查询参数
+
+| 参数 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `page` | integer | | 页码，从 1 开始 |
+| `page_size` | integer | | 每页条数 |
+| `keyword` | string | | 按订单号（`trade_no`）模糊搜索 |
+
+```bash
+curl "https://bearlab.ai/api/user/topup/self?page=1&page_size=10" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json 回应
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "items": [
+      {
+        "id": 1024,
+        "user_id": 42,
+        "amount": 100,
+        "money": 95.00,
+        "trade_no": "USR42NOa1b2c31718000000",
+        "payment_method": "alipay",
+        "payment_provider": "epay",
+        "status": "success",
+        "create_time": 1718000000,
+        "complete_time": 1718000060
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "page_size": 10
+  }
+}
+```
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `data.items` | array | 充值订单列表 |
+| `amount` | integer | 充值额度数量 |
+| `money` | number | 实付金额 |
+| `trade_no` | string | 商户订单号 |
+| `payment_method` | string | 支付方式标识（`alipay` / `wxpay` / `stripe` …） |
+| `payment_provider` | string | 支付渠道（`epay` / `stripe` / `creem` …） |
+| `status` | string | 订单状态：`pending` 待支付 / `success` 已完成 |
+| `create_time` | integer | 创建时间（Unix 秒） |
+| `complete_time` | integer | 完成时间（Unix 秒），未完成为 `0` |
+| `data.total` / `page` / `page_size` | integer | 分页信息 |
+
+<Note>
+来源：`controller/topup.go` `GetUserTopUps`，分页包装为 new-api 标准 `PageInfo`（`items` + `total` + `page` + `page_size`）。
+</Note>

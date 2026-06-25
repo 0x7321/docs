@@ -1,0 +1,44 @@
+---
+title: "रिडेम्पशन कोड को रिडीम करें"
+description: "POST /api/user/topup"
+---
+
+## अनुरोध शीर्षलेख
+
+| अनुरोध शीर्षलेख | आवश्यक | विवरण |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`，खाता एक्सेस टोकन |
+| `Content-Type` | ✓ | `application/json` |
+
+इंटरफेस：`POST /api/user/topup`
+
+वर्तमान खाते को रिडीम करने के लिए रिडेम्पशन कोड का उपयोग करें। यह इंटरफेस "रिडेम्पशन कोड रीचार्ज" है, ऑनलाइन भुगतान के माध्यम से ऑर्डर बनाना नहीं है।
+
+## अनुरोध निकाय
+
+| क्षेत्र | आवश्यक | प्रकार | विवरण |
+| --- | --- | --- | --- |
+| `key` | ✓ | string | रिडेम्पशन कोड |
+
+```bash
+curl "https://bearlab.ai/api/user/topup" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"key":"REDEMPTION_CODE"}'
+```
+
+```json 
+{
+  "success": true,
+  "message": "",
+  "data": 10
+}
+```
+
+| क्षेत्र | प्रकार | विवरण |
+| --- | --- | --- |
+| `data` | integer | इस रिडेम्पशन से जोड़ी गई राशि (`model.Redeem` `int` देता है, quota इकाइयों में, राशि स्ट्रिंग नहीं) |
+
+<Note>
+स्रोत: new-api `controller.TopUp`(रिडेम्पशन कोड → `model.Redeem`)। सफलता के बाद `GET /api/user/self` खाता शेष को ताज़ा करने की अनुशंसा की जाती है।
+</Note>

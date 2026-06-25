@@ -81,13 +81,13 @@
                     ]
                   },
                   {
-                    "group": "充值与订单",
+                    "group": "充值",
                     "expanded": true,
                     "pages": [
-                      "api/reference/billing/user-payment-get",
-                      "api/reference/billing/user-order-post",
-                      "api/reference/billing/user-order-status-get",
-                      "api/reference/billing/payment-order-self-get",
+                      "api/reference/billing/topup-info-get",
+                      "api/reference/billing/amount-post",
+                      "api/reference/billing/pay-post",
+                      "api/reference/billing/topup-self-get",
                       "api/reference/billing/user-topup-post"
                     ]
                   },
@@ -189,6 +189,71 @@
                 ]
               }
             ]
+          },
+          {
+            "tab": "API Reference",
+            "groups": [
+              {
+                "group": "Management API",
+                "pages": [
+                  "en/api/reference/auth/overview",
+                  {
+                    "group": "Account",
+                    "expanded": true,
+                    "pages": [
+                      "en/api/reference/account/user-self-get"
+                    ]
+                  },
+                  {
+                    "group": "Top-up",
+                    "expanded": true,
+                    "pages": [
+                      "en/api/reference/billing/topup-info-get",
+                      "en/api/reference/billing/amount-post",
+                      "en/api/reference/billing/pay-post",
+                      "en/api/reference/billing/topup-self-get",
+                      "en/api/reference/billing/user-topup-post"
+                    ]
+                  },
+                  {
+                    "group": "Token Management",
+                    "expanded": true,
+                    "pages": [
+                      "en/api/reference/token-management/token-get",
+                      "en/api/reference/token-management/token-id-get",
+                      "en/api/reference/token-management/token-post",
+                      "en/api/reference/token-management/token-put",
+                      "en/api/reference/token-management/token-id-delete",
+                      "en/api/reference/token-management/token-batch-post",
+                      "en/api/reference/token-management/token-search-get",
+                      "en/api/reference/token-management/usage-token-get"
+                    ]
+                  },
+                  {
+                    "group": "Groups",
+                    "expanded": false,
+                    "pages": [
+                      "en/api/reference/token-management/token-group-get"
+                    ]
+                  },
+                  {
+                    "group": "Logs",
+                    "expanded": false,
+                    "pages": [
+                      "en/api/reference/logs/log-self-get",
+                      "en/api/reference/logs/log-self-stat-get"
+                    ]
+                  },
+                  {
+                    "group": "Statistics",
+                    "expanded": false,
+                    "pages": [
+                      "en/api/reference/usage/data-self-get"
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         ]
       },
@@ -244,6 +309,71 @@
                 "group": "SDK",
                 "pages": [
                   "hi/integrations/sdk"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "API संदर्भ",
+            "groups": [
+              {
+                "group": "प्रबंधन API",
+                "pages": [
+                  "hi/api/reference/auth/overview",
+                  {
+                    "group": "खाता",
+                    "expanded": true,
+                    "pages": [
+                      "hi/api/reference/account/user-self-get"
+                    ]
+                  },
+                  {
+                    "group": "रिचार्ज",
+                    "expanded": true,
+                    "pages": [
+                      "hi/api/reference/billing/topup-info-get",
+                      "hi/api/reference/billing/amount-post",
+                      "hi/api/reference/billing/pay-post",
+                      "hi/api/reference/billing/topup-self-get",
+                      "hi/api/reference/billing/user-topup-post"
+                    ]
+                  },
+                  {
+                    "group": "टोकन प्रबंधन",
+                    "expanded": true,
+                    "pages": [
+                      "hi/api/reference/token-management/token-get",
+                      "hi/api/reference/token-management/token-id-get",
+                      "hi/api/reference/token-management/token-post",
+                      "hi/api/reference/token-management/token-put",
+                      "hi/api/reference/token-management/token-id-delete",
+                      "hi/api/reference/token-management/token-batch-post",
+                      "hi/api/reference/token-management/token-search-get",
+                      "hi/api/reference/token-management/usage-token-get"
+                    ]
+                  },
+                  {
+                    "group": "समूह",
+                    "expanded": false,
+                    "pages": [
+                      "hi/api/reference/token-management/token-group-get"
+                    ]
+                  },
+                  {
+                    "group": "लॉग",
+                    "expanded": false,
+                    "pages": [
+                      "hi/api/reference/logs/log-self-get",
+                      "hi/api/reference/logs/log-self-stat-get"
+                    ]
+                  },
+                  {
+                    "group": "आँकड़े",
+                    "expanded": false,
+                    "pages": [
+                      "hi/api/reference/usage/data-self-get"
+                    ]
+                  }
                 ]
               }
             ]
@@ -305,6 +435,71 @@
                 ]
               }
             ]
+          },
+          {
+            "tab": "API リファレンス",
+            "groups": [
+              {
+                "group": "管理 API",
+                "pages": [
+                  "ja/api/reference/auth/overview",
+                  {
+                    "group": "アカウント",
+                    "expanded": true,
+                    "pages": [
+                      "ja/api/reference/account/user-self-get"
+                    ]
+                  },
+                  {
+                    "group": "チャージ",
+                    "expanded": true,
+                    "pages": [
+                      "ja/api/reference/billing/topup-info-get",
+                      "ja/api/reference/billing/amount-post",
+                      "ja/api/reference/billing/pay-post",
+                      "ja/api/reference/billing/topup-self-get",
+                      "ja/api/reference/billing/user-topup-post"
+                    ]
+                  },
+                  {
+                    "group": "トークン管理",
+                    "expanded": true,
+                    "pages": [
+                      "ja/api/reference/token-management/token-get",
+                      "ja/api/reference/token-management/token-id-get",
+                      "ja/api/reference/token-management/token-post",
+                      "ja/api/reference/token-management/token-put",
+                      "ja/api/reference/token-management/token-id-delete",
+                      "ja/api/reference/token-management/token-batch-post",
+                      "ja/api/reference/token-management/token-search-get",
+                      "ja/api/reference/token-management/usage-token-get"
+                    ]
+                  },
+                  {
+                    "group": "グループ",
+                    "expanded": false,
+                    "pages": [
+                      "ja/api/reference/token-management/token-group-get"
+                    ]
+                  },
+                  {
+                    "group": "ログ",
+                    "expanded": false,
+                    "pages": [
+                      "ja/api/reference/logs/log-self-get",
+                      "ja/api/reference/logs/log-self-stat-get"
+                    ]
+                  },
+                  {
+                    "group": "統計",
+                    "expanded": false,
+                    "pages": [
+                      "ja/api/reference/usage/data-self-get"
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         ]
       },
@@ -363,6 +558,71 @@
                 ]
               }
             ]
+          },
+          {
+            "tab": "Référence API",
+            "groups": [
+              {
+                "group": "API de gestion",
+                "pages": [
+                  "fr/api/reference/auth/overview",
+                  {
+                    "group": "Compte",
+                    "expanded": true,
+                    "pages": [
+                      "fr/api/reference/account/user-self-get"
+                    ]
+                  },
+                  {
+                    "group": "Recharge",
+                    "expanded": true,
+                    "pages": [
+                      "fr/api/reference/billing/topup-info-get",
+                      "fr/api/reference/billing/amount-post",
+                      "fr/api/reference/billing/pay-post",
+                      "fr/api/reference/billing/topup-self-get",
+                      "fr/api/reference/billing/user-topup-post"
+                    ]
+                  },
+                  {
+                    "group": "Gestion des jetons",
+                    "expanded": true,
+                    "pages": [
+                      "fr/api/reference/token-management/token-get",
+                      "fr/api/reference/token-management/token-id-get",
+                      "fr/api/reference/token-management/token-post",
+                      "fr/api/reference/token-management/token-put",
+                      "fr/api/reference/token-management/token-id-delete",
+                      "fr/api/reference/token-management/token-batch-post",
+                      "fr/api/reference/token-management/token-search-get",
+                      "fr/api/reference/token-management/usage-token-get"
+                    ]
+                  },
+                  {
+                    "group": "Groupes",
+                    "expanded": false,
+                    "pages": [
+                      "fr/api/reference/token-management/token-group-get"
+                    ]
+                  },
+                  {
+                    "group": "Journaux",
+                    "expanded": false,
+                    "pages": [
+                      "fr/api/reference/logs/log-self-get",
+                      "fr/api/reference/logs/log-self-stat-get"
+                    ]
+                  },
+                  {
+                    "group": "Statistiques",
+                    "expanded": false,
+                    "pages": [
+                      "fr/api/reference/usage/data-self-get"
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         ]
       },
@@ -418,6 +678,71 @@
                 "group": "SDK",
                 "pages": [
                   "zh-Hans/integrations/sdk"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "API 参考",
+            "groups": [
+              {
+                "group": "管理接口",
+                "pages": [
+                  "zh-Hans/api/reference/auth/overview",
+                  {
+                    "group": "账号",
+                    "expanded": true,
+                    "pages": [
+                      "zh-Hans/api/reference/account/user-self-get"
+                    ]
+                  },
+                  {
+                    "group": "充值",
+                    "expanded": true,
+                    "pages": [
+                      "zh-Hans/api/reference/billing/topup-info-get",
+                      "zh-Hans/api/reference/billing/amount-post",
+                      "zh-Hans/api/reference/billing/pay-post",
+                      "zh-Hans/api/reference/billing/topup-self-get",
+                      "zh-Hans/api/reference/billing/user-topup-post"
+                    ]
+                  },
+                  {
+                    "group": "令牌管理",
+                    "expanded": true,
+                    "pages": [
+                      "zh-Hans/api/reference/token-management/token-get",
+                      "zh-Hans/api/reference/token-management/token-id-get",
+                      "zh-Hans/api/reference/token-management/token-post",
+                      "zh-Hans/api/reference/token-management/token-put",
+                      "zh-Hans/api/reference/token-management/token-id-delete",
+                      "zh-Hans/api/reference/token-management/token-batch-post",
+                      "zh-Hans/api/reference/token-management/token-search-get",
+                      "zh-Hans/api/reference/token-management/usage-token-get"
+                    ]
+                  },
+                  {
+                    "group": "分组",
+                    "expanded": false,
+                    "pages": [
+                      "zh-Hans/api/reference/token-management/token-group-get"
+                    ]
+                  },
+                  {
+                    "group": "日志",
+                    "expanded": false,
+                    "pages": [
+                      "zh-Hans/api/reference/logs/log-self-get",
+                      "zh-Hans/api/reference/logs/log-self-stat-get"
+                    ]
+                  },
+                  {
+                    "group": "数据统计",
+                    "expanded": false,
+                    "pages": [
+                      "zh-Hans/api/reference/usage/data-self-get"
+                    ]
+                  }
                 ]
               }
             ]

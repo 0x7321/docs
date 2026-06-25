@@ -1,0 +1,65 @@
+---
+title: "उपयोग आंकड़े"
+description: "GET /api/data/self"
+---
+
+## अनुरोध हेडर
+
+| अनुरोध हेडर | आवश्यक | विवरण |
+| --- | --- | --- |
+| `Authorization` | ✓ | `Bearer YOUR_ACCESS_TOKEN`，खाता पहुंच टोकन (कंसोल लॉगिन अवस्था, `sk-` API कुंजी प्रबंधन द्वारा उत्पन्न नहीं) |
+
+इंटरफेस: `GET /api/data/self`
+
+निर्दिष्ट समय श्रेणी में वर्तमान उपयोगकर्ता के लिए "तारीख × मॉडल" द्वारा एकत्रित उपयोग विवरण लौटाता है। प्रत्येक रिकॉर्ड एक दिन में किसी मॉडल के कॉल की संख्या, खपत किए गए टोकन और कोटा के अनुरूप है।
+
+## क्वेरी पैरामीटर
+
+| पैरामीटर | आवश्यक | प्रकार | विवरण |
+| --- | --- | --- | --- |
+| `start_timestamp` |  | integer | प्रारंभ समय, Unix सेकंड |
+| `end_timestamp` |  | integer | समाप्ति समय, Unix सेकंड |
+
+```bash
+curl "https://bearlab.ai/api/data/self?start_timestamp=1717200000&end_timestamp=1718000000" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+```json 回应
+{
+  "success": true,
+  "message": "",
+  "data": [
+    {
+      "id": 1,
+      "user_id": 42,
+      "username": "alice",
+      "model_name": "gpt-5.4",
+      "created_at": 1717200000,
+      "use_group": "default",
+      "token_id": 7,
+      "channel_id": 12,
+      "node_name": "",
+      "token_used": 1024,
+      "count": 8,
+      "quota": 240
+    }
+  ]
+}
+```
+
+| फ़ील्ड | प्रकार | विवरण |
+| --- | --- | --- |
+| `data` | array | उपयोग रिकॉर्ड सरणी (`data` सीधे एक सरणी है, कोई पेजिंग रैपर नहीं) |
+| `model_name` | string | मॉडल नाम |
+| `created_at` | integer | एकत्रित तारीख (Unix सेकंड) |
+| `use_group` | string | उपयोग किया गया समूह |
+| `token_id` | integer | टोकन आईडी |
+| `channel_id` | integer | चैनल आईडी |
+| `token_used` | integer | खपत किए गए टोकन की संख्या |
+| `count` | integer | कॉल की संख्या |
+| `quota` | integer | खपत कोटा (quota, 500000 = 1 अमेरिकी डॉलर) |
+
+<Note>
+स्रोत: new-api स्रोत कोड `controller/usedata.go` `GetUserQuotaDates` + `model/usedata.go` `QuotaData`। सर्वर केवल `start_timestamp` / `end_timestamp` को पढ़ता है, `granularity` / `dimension` पैरामीटर नहीं हैं; प्रतिक्रिया `{ success, message, data: [...] }` है, `data` एक सपाट सरणी है।
+</Note>
