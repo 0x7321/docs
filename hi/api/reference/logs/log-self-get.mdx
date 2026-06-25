@@ -84,5 +84,5 @@ curl "https://bearlab.ai/api/log/self?p=1&page_size=10&type=2" \
 | `data.page` / `page_size` / `total` | integer | पेजिंग जानकारी |
 
 <Note>
-स्रोत: new-api स्रोत कोड `controller/log.go` `GetUserLogs` + `model/log.go` `Log`। व्यक्तिगत लॉग क्वेरी `keyword` या `channel` क्वेरी पैरामीटर को **समर्थित नहीं करता है** (`/api/log/self/search`弃用 हो गया है); `channel` केवल प्रतिक्रिया फील्ड के रूप में लौटाया जाता है।
+स्रोत: new-api स्रोत कोड `controller/log.go` `GetUserLogs` + `model/log.go` `Log`। व्यक्तिगत लॉग क्वेरी `keyword` या `channel` क्वेरी पैरामीटर को **समर्थित नहीं करता है** (`/api/log/self/search` हटा दिया गया है); `channel` केवल प्रतिक्रिया फील्ड के रूप में लौटाया जाता है।
 </Note>

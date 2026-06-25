@@ -25,7 +25,7 @@ curl "https://bearlab.ai/api/user/self/groups" \
   "data": {
     "default": { "ratio": 1, "desc": "Default group" },
     "vip": { "ratio": 0.8, "desc": "VIP group" },
-    "auto": { "ratio": "auto", "desc": "Automatically select available group" }
+    "auto": { "ratio": "自动", "desc": "Automatically select available group" }
   }
 }
 ```
@@ -33,7 +33,7 @@ curl "https://bearlab.ai/api/user/self/groups" \
 | Field | Type | Description |
 | --- | --- | --- |
 | `data` | object | Keys are group names, values are group information `{ ratio, desc }` |
-| `data.<group>.ratio` | number \| string | Billing multiplier for this group; `auto` group is the string `"auto"` |
+| `data.<group>.ratio` | number \| string | Billing multiplier for this group; the `auto` group returns the literal string `"自动"` (a Chinese value sent verbatim by the backend — do not translate) |
 | `data.<group>.desc` | string | Group description |
 
 <Note>

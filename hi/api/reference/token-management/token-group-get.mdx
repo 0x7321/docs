@@ -18,14 +18,14 @@ curl "https://bearlab.ai/api/user/self/groups" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
-```json प्रतिक्रिया
+```json Response
 {
   "success": true,
   "message": "",
   "data": {
     "default": { "ratio": 1, "desc": "डिफ़ॉल्ट समूह" },
     "vip": { "ratio": 0.8, "desc": "VIP समूह" },
-    "auto": { "ratio": "स्वचालित", "desc": "उपलब्ध समूह स्वचालित रूप से चुनें" }
+    "auto": { "ratio": "自动", "desc": "उपलब्ध समूह स्वचालित रूप से चुनें" }
   }
 }
 ```
@@ -33,7 +33,7 @@ curl "https://bearlab.ai/api/user/self/groups" \
 | फील्ड | प्रकार | विवरण |
 | --- | --- | --- |
 | `data` | ऑब्जेक्ट | कुंजी समूह का नाम है, मान समूह जानकारी `{ ratio, desc }` है |
-| `data.<group>.ratio` | संख्या \| स्ट्रिंग | उस समूह की बिलिंग दर; `auto` समूह के लिए स्ट्रिंग `"स्वचालित"` |
+| `data.<group>.ratio` | संख्या \| स्ट्रिंग | उस समूह की बिलिंग दर; `auto` समूह के लिए शाब्दिक स्ट्रिंग `"自动"` लौटाई जाती है (बैकएंड द्वारा यथावत भेजा गया मान — अनुवाद न करें) |
 | `data.<group>.desc` | स्ट्रिंग | समूह विवरण |
 
 <Note>

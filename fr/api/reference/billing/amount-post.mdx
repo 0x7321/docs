@@ -27,17 +27,17 @@ curl "https://bearlab.ai/api/user/amount" \
   -d '{ "amount": 100 }'
 ```
 
-```json Succès
+```json Success
 {
   "message": "success",
   "data": "95.00"
 }
 ```
 
-```json Erreur
+```json Failed
 {
   "message": "error",
-  "data": "充值数量不能小于 1"
+  "data": "Le montant de recharge ne peut pas être inférieur à 1"
 }
 ```
 

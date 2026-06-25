@@ -18,14 +18,14 @@ curl "https://bearlab.ai/api/user/self/groups" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
-```json 回应
+```json Response
 {
   "success": true,
   "message": "",
   "data": {
-    "default": { "ratio": 1, "desc": "默认分组" },
-    "vip": { "ratio": 0.8, "desc": "VIP 分组" },
-    "auto": { "ratio": "自动", "desc": "自动选择可用分组" }
+    "default": { "ratio": 1, "desc": "デフォルトグループ" },
+    "vip": { "ratio": 0.8, "desc": "VIP グループ" },
+    "auto": { "ratio": "自动", "desc": "利用可能なグループを自動選択" }
   }
 }
 ```
@@ -33,7 +33,7 @@ curl "https://bearlab.ai/api/user/self/groups" \
 | フィールド | 型 | 説明 |
 | --- | --- | --- |
 | `data` | object | キーはグループ名、値はグループ情報 `{ ratio, desc }` |
-| `data.<group>.ratio` | number \| string | 該当グループの請求倍率。`auto` グループは文字列 `"自動"` |
+| `data.<group>.ratio` | number \| string | 該当グループの請求倍率。`auto` グループはリテラル文字列 `"自动"`（バックエンドがそのまま返す中国語の値、翻訳しないこと） |
 | `data.<group>.desc` | string | グループの説明 |
 
 <Note>
